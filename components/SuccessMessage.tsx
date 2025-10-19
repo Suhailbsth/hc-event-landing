@@ -1,12 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
-import { CheckCircle, Download, Mail, Calendar } from 'lucide-react';
+import { CheckCircle, Download, Mail, Calendar, Smartphone } from 'lucide-react';
 import { EventData } from '@/lib/eventApi';
 
 interface RegistrationData {
   serialNumber?: string;
   registrationNumber?: string;
+  registrationId?: string;
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -25,9 +27,75 @@ interface SuccessMessageProps {
   lang: string;
 }
 
-export default function SuccessMessage({ registration, lang }: SuccessMessageProps) {
+export default function SuccessMessage({ registration, event, lang }: SuccessMessageProps) {
   const isArabic = lang === 'ar';
   const regData: RegistrationData = registration.registration || {};
+  const [walletLoading, setWalletLoading] = useState<string | null>(null);
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+
+  const handleAddToAppleWallet = async () => {
+    if (!regData.registrationId) return;
+    
+    try {
+      setWalletLoading('apple');
+      const url = `${API_BASE_URL}/api/EventWallet/apple/generate-pass?registrationId=${regData.registrationId}&email=${encodeURIComponent(regData.email || '')}`;
+      window.open(url, '_blank');
+    } catch (error) {
+      console.error('Error generating Apple Wallet pass:', error);
+      alert('Failed to generate Apple Wallet pass. Please try again.');
+    } finally {
+      setWalletLoading(null);
+    }
+  };
+
+  const handleAddToGoogleWallet = async () => {
+    if (!regData.registrationId) return;
+    
+    try {
+      setWalletLoading('google');
+      const response = await fetch(
+        `${API_BASE_URL}/api/EventWallet/google/generate-jwt?registrationId=${regData.registrationId}&email=${encodeURIComponent(regData.email || '')}`,
+        { method: 'POST' }
+      );
+      
+      if (!response.ok) throw new Error('Failed to generate Google Wallet pass');
+      
+      const data = await response.json();
+      if (data.walletUrl) {
+        window.open(data.walletUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error generating Google Wallet pass:', error);
+      alert('Failed to generate Google Wallet pass. Please try again.');
+    } finally {
+      setWalletLoading(null);
+    }
+  };
+
+  const handleAddToSamsungWallet = async () => {
+    if (!regData.registrationId) return;
+    
+    try {
+      setWalletLoading('samsung');
+      const response = await fetch(
+        `${API_BASE_URL}/api/EventWallet/samsung/generate-jwt?registrationId=${regData.registrationId}&email=${encodeURIComponent(regData.email || '')}`,
+        { method: 'POST' }
+      );
+      
+      if (!response.ok) throw new Error('Failed to generate Samsung Wallet pass');
+      
+      const data = await response.json();
+      if (data.walletUrl) {
+        window.open(data.walletUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error generating Samsung Wallet pass:', error);
+      alert('Failed to generate Samsung Wallet pass. Please try again.');
+    } finally {
+      setWalletLoading(null);
+    }
+  };
 
   const handleDownloadPass = () => {
     if (regData.appleWalletPassUrl) {
@@ -143,20 +211,70 @@ export default function SuccessMessage({ registration, lang }: SuccessMessagePro
         </div>
       )}
 
-      {/* Digital Wallet Pass */}
-      {regData.appleWalletPassUrl && (
-        <div className="mb-6">
-          <button
-            onClick={handleDownloadPass}
-            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-3"
-          >
+      {/* Digital Wallet Passes */}
+      <div className="mb-6 space-y-3">
+        <h3 className={`text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+          <Smartphone className="w-5 h-5" />
+          {isArabic ? 'إضافة إلى المحفظة الرقمية' : 'Add to Digital Wallet'}
+        </h3>
+
+        {/* Apple Wallet Button */}
+        <button
+          onClick={handleAddToAppleWallet}
+          disabled={walletLoading === 'apple'}
+          className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white font-medium py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-3"
+        >
+          {walletLoading === 'apple' ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+          ) : (
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6.5 4C4.6 4 3 5.6 3 7.5v9C3 18.4 4.6 20 6.5 20h11c1.9 0 3.5-1.6 3.5-3.5v-9C21 5.6 19.4 4 17.5 4h-11zm0 2h11c.8 0 1.5.7 1.5 1.5v1h-14v-1C5 6.7 5.7 6 6.5 6zM5 10.5h14v6c0 .8-.7 1.5-1.5 1.5h-11c-.8 0-1.5-.7-1.5-1.5v-6zm2 2v1h4v-1H7z"/>
+              <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
             </svg>
-            <span>{isArabic ? 'إضافة إلى Apple Wallet' : 'Add to Apple Wallet'}</span>
-          </button>
-        </div>
-      )}
+          )}
+          <span>{isArabic ? 'إضافة إلى Apple Wallet' : 'Add to Apple Wallet'}</span>
+        </button>
+
+        {/* Google Wallet Button */}
+        <button
+          onClick={handleAddToGoogleWallet}
+          disabled={walletLoading === 'google'}
+          className="w-full bg-white hover:bg-gray-50 disabled:bg-gray-100 border-2 border-gray-300 text-gray-800 font-medium py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-3"
+        >
+          {walletLoading === 'google' ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-800"></div>
+          ) : (
+            <svg className="w-6 h-6" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+          )}
+          <span>{isArabic ? 'إضافة إلى Google Wallet' : 'Add to Google Wallet'}</span>
+        </button>
+
+        {/* Samsung Wallet Button */}
+        <button
+          onClick={handleAddToSamsungWallet}
+          disabled={walletLoading === 'samsung'}
+          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-3"
+        >
+          {walletLoading === 'samsung' ? (
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+          ) : (
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+            </svg>
+          )}
+          <span>{isArabic ? 'إضافة إلى Samsung Wallet' : 'Add to Samsung Wallet'}</span>
+        </button>
+
+        <p className="text-xs text-gray-500 text-center mt-2">
+          {isArabic
+            ? 'اختر المحفظة الرقمية المفضلة لديك لإضافة تذكرة الفعالية'
+            : 'Choose your preferred digital wallet to add your event pass'}
+        </p>
+      </div>
 
       {/* Next Steps */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-3">
