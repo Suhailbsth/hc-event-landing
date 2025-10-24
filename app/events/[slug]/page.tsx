@@ -29,7 +29,7 @@ export async function generateMetadata({
         ? event.descriptionAr
         : event.description || event.shortDescription;
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
     const eventUrl = `${appUrl}/events/${resolvedParams.slug}`;
 
     return {

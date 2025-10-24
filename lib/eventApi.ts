@@ -1,7 +1,20 @@
 // Event Management API Service for Next.js
 // Server and Client compatible
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:7003';
+
+// For server-side requests in development with self-signed certificates
+const getFetchOptions = (options?: RequestInit): RequestInit => {
+  // Only disable SSL verification on server-side in development
+  if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
+    return {
+      ...options,
+      // @ts-ignore - Node.js specific option
+      agent: undefined,
+    };
+  }
+  return options || {};
+};
 
 export interface EventData {
   id: string;
@@ -119,13 +132,14 @@ export async function fetchEventBySlug(
   options?: RequestInit
 ): Promise<EventData> {
   try {
+    const fetchOptions = getFetchOptions(options);
     const response = await fetch(
       `${API_BASE_URL}/api/Event/slug/${slug}`,
       {
-        ...options,
+        ...fetchOptions,
         headers: {
           'Content-Type': 'application/json',
-          ...options?.headers,
+          ...fetchOptions?.headers,
         },
       }
     );
@@ -150,13 +164,14 @@ export async function fetchEventById(
   options?: RequestInit
 ): Promise<EventData> {
   try {
+    const fetchOptions = getFetchOptions(options);
     const response = await fetch(
       `${API_BASE_URL}/api/Event/${eventId}?companyId=${companyId}`,
       {
-        ...options,
+        ...fetchOptions,
         headers: {
           'Content-Type': 'application/json',
-          ...options?.headers,
+          ...fetchOptions?.headers,
         },
       }
     );
@@ -212,11 +227,12 @@ export async function fetchAllEvents(
       ? `${API_BASE_URL}/api/Event?companyId=${companyId}&take=100`
       : `${API_BASE_URL}/api/Event?take=100`;
 
+    const fetchOptions = getFetchOptions(options);
     const response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers: {
         'Content-Type': 'application/json',
-        ...options?.headers,
+        ...fetchOptions?.headers,
       },
     });
 
