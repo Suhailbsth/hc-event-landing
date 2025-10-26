@@ -1,8 +1,8 @@
-import { fetchAllEvents } from '@/lib/eventApi';
+import { fetchAllEvents, EventData } from '@/lib/eventApi';
 import HomePageClient from '@/components/HomePageClient';
 
 export default async function Home() {
-  let events: any[] = [];
+  let events: EventData[] = [];
   
   try {
     events = await fetchAllEvents();

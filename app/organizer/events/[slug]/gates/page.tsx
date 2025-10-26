@@ -34,8 +34,9 @@ export default function GateSelectionPage() {
       }
 
       setEvent(selectedEvent);
-    } catch (err: any) {
-      setError(err.message || "Failed to load event details");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load event details";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -49,8 +50,9 @@ export default function GateSelectionPage() {
       await organizerApi.startGateSession(eventId, gateId);
       // Redirect to scanner page
       router.push("/organizer/scanner");
-    } catch (err: any) {
-      setError(err.message || "Failed to start session");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to start session";
+      setError(errorMessage);
     } finally {
       setStarting(null);
     }

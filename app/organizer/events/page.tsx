@@ -24,8 +24,9 @@ export default function OrganizerEventsPage() {
     try {
       const data = await organizerApi.getMyEvents();
       setEvents(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to load events");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to load events";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

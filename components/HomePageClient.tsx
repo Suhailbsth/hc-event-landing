@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { Calendar, MapPin, Users, ArrowRight, Globe } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { EventData } from '@/lib/eventApi';
 
 interface HomePageClientProps {
-  events: any[];
+  events: EventData[];
 }
 
 export default function HomePageClient({ events }: HomePageClientProps) {

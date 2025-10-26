@@ -9,7 +9,7 @@ const getFetchOptions = (options?: RequestInit): RequestInit => {
   if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
     return {
       ...options,
-      // @ts-ignore - Node.js specific option
+      // @ts-expect-error - Node.js specific option
       agent: undefined,
     };
   }
