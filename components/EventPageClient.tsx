@@ -38,35 +38,53 @@ export default function EventPageClient({ event }: EventPageClientProps) {
 
   return (
     <>
-      {/* Language Toggle */}
-      <LanguageToggle hasArabicContent={hasArabicContent} />
-
-      {/* Organizer Login Button */}
-      <Link 
-        href="/organizer/login"
-        className="fixed top-6 left-6 z-50 px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300 flex items-center gap-2 shadow-lg group"
-      >
-        <svg 
-          className="w-5 h-5 group-hover:scale-110 transition-transform" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
+      {/* Top Navigation Bar */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4">
+        {/* Left side - Organizer Login */}
+        <Link 
+          href="/organizer/login"
+          className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300 flex items-center gap-2 shadow-lg group"
         >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
-          />
-        </svg>
-        <span className="text-sm font-medium">
-          {language === 'ar' ? 'دخول المنظم' : 'Organizer Login'}
-        </span>
-      </Link>
+          <svg 
+            className="w-5 h-5 group-hover:scale-110 transition-transform" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+            />
+          </svg>
+          <span className="text-sm font-medium">
+            {language === 'ar' ? 'دخول المنظم' : 'Organizer Login'}
+          </span>
+        </Link>
+
+        {/* Right side - Register Button and Language Toggle */}
+        <div className="flex items-center gap-3">
+          {event.registrationOpen && (
+            <button
+              onClick={handleRegisterClick}
+              className="px-6 py-2.5 bg-gradient-to-r from-white to-gray-50 text-blue-900 rounded-full font-bold text-sm shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 border-2 border-white/50 flex items-center gap-2"
+            >
+              <span>{t('register')}</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+          )}
+          
+          <LanguageToggle hasArabicContent={hasArabicContent} />
+        </div>
+      </div>
 
       <EventHero 
         event={event}
         onRegisterClick={handleRegisterClick}
+        hideRegisterButton={true}
       />
 
       {/* Registration Section - Only show when button clicked */}

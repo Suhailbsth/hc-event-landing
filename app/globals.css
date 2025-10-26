@@ -25,6 +25,22 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Enhanced Animations */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out;
+}
+
 /* Animation Delay Utilities */
 .animation-delay-2000 {
   animation-delay: 2s;

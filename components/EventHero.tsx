@@ -9,9 +9,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 interface EventHeroProps {
   event: EventData;
   onRegisterClick: () => void;
+  hideRegisterButton?: boolean;
 }
 
-export default function EventHero({ event, onRegisterClick }: EventHeroProps) {
+export default function EventHero({ event, onRegisterClick, hideRegisterButton = false }: EventHeroProps) {
   const { language, t } = useLanguage();
   
   // Use backgroundImageUrl (from API) or fallback to bannerImageUrl for backward compatibility
@@ -69,13 +70,8 @@ export default function EventHero({ event, onRegisterClick }: EventHeroProps) {
           </div>
         )}
 
-        {/* Particle Pattern Overlay */}
-        <div 
-          className="absolute inset-0 opacity-20" 
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-          }}
-        />
+        {/* Subtle Gradient Overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/30" />
 
         {/* Floating Particles */}
         <div className="absolute w-2 h-2 bg-white/20 rounded-full animate-float-1" style={{top: '20%', left: '10%'}} />
@@ -109,120 +105,145 @@ export default function EventHero({ event, onRegisterClick }: EventHeroProps) {
               </div>
             )}
 
-            {/* Title */}
-            <h1 className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-lg leading-tight ${isArabic ? 'text-right font-arabic' : ''}`}>
+            {/* Title with enhanced animation */}
+            <h1 className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up ${isArabic ? 'text-right font-arabic' : ''}`}>
               {title}
             </h1>
 
-            {/* Short Description */}
+            {/* Short Description with better contrast */}
             {shortDesc && (
-              <p className={`text-2xl text-white/90 mb-10 max-w-2xl drop-shadow-md ${isArabic ? 'text-right' : ''}`}>
+              <p className={`text-xl sm:text-2xl text-white/95 mb-10 max-w-2xl drop-shadow-lg leading-relaxed ${isArabic ? 'text-right' : ''}`}>
                 {shortDesc}
               </p>
             )}
 
-            {/* Event Details Grid */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {/* Date */}
-              <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <Calendar className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="text-white/70 text-sm mb-1">
-                    {isArabic ? 'التاريخ' : 'Date'}
+            {/* Premium Event Details Cards */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+              {/* Date Card */}
+              <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
+                <div className="flex items-center gap-3 w-full">
+                  <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
+                    <Calendar className="w-5 h-5 text-white" />
                   </div>
-                  <div className="text-white font-semibold text-sm">
-                    {dateRange}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold">
+                      {isArabic ? 'التاريخ' : 'Date'}
+                    </div>
+                    <div className="text-white font-bold text-sm leading-tight">
+                      {dateRange}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Time */}
+              {/* Time Card */}
               {(event.startTime || event.endTime) && (
-                <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                  <Clock className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
-                  <div>
-                    <div className="text-white/70 text-sm mb-1">
-                      {isArabic ? 'الوقت' : 'Time'}
+                <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
+                      <Clock className="w-5 h-5 text-white" />
                     </div>
-                    <div className="text-white font-semibold text-sm">
-                      {startTimeFormatted}
-                      {endTimeFormatted && ` - ${endTimeFormatted}`}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Location */}
-              {(venue || location) && (
-                <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                  <MapPin className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
-                  <div>
-                    <div className="text-white/70 text-sm mb-1">
-                      {t('location')}
-                    </div>
-                    <div className="text-white font-semibold text-sm">
-                      {venue || location}
-                    </div>
-                    {event.city && (
-                      <div className="text-white/80 text-xs mt-1">
-                        {event.city}, {event.country}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold">
+                        {isArabic ? 'الوقت' : 'Time'}
                       </div>
-                    )}
+                      <div className="text-white font-bold text-sm leading-tight">
+                        {startTimeFormatted}
+                        {endTimeFormatted && <><br className="leading-tight"/>{endTimeFormatted}</>}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Capacity */}
-              <div className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <Users className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
-                <div className="w-full">
-                  <div className="text-white/70 text-sm mb-1">
-                    {isArabic ? 'السعة المتبقية' : 'Seats Available'}
+              {/* Location Card */}
+              {(venue || location) && (
+                <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
+                      <MapPin className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold">
+                        {t('location')}
+                      </div>
+                      <div className="text-white font-bold text-sm leading-tight line-clamp-2">
+                        {venue || location}
+                      </div>
+                      {event.city && (
+                        <div className="text-white/70 text-[10px] mt-1 truncate">
+                          {event.city}, {event.country}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-white font-semibold text-sm mb-2">
-                    {remainingCapacity} / {event.capacity}
+                </div>
+              )}
+
+              {/* Capacity Card */}
+              <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
+                <div className="flex items-center gap-3 w-full">
+                  <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
+                    <Users className="w-5 h-5 text-white" />
                   </div>
-                  {/* Capacity Bar */}
-                  <div className="w-full bg-white/20 rounded-full h-2">
-                    <div 
-                      className="bg-white rounded-full h-2 transition-all duration-300"
-                      style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
-                    />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold">
+                      {isArabic ? 'المقاعد' : 'Seats'}
+                    </div>
+                    <div className="text-white font-bold text-xl leading-tight mb-2">
+                      {remainingCapacity}<span className="text-xs text-white/70 font-normal">/{event.capacity}</span>
+                    </div>
+                    {/* Modern Progress Bar */}
+                    <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        className={`h-1.5 rounded-full transition-all duration-700 ${
+                          capacityPercentage > 80 ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                          capacityPercentage > 50 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
+                          'bg-gradient-to-r from-green-400 to-emerald-500'
+                        }`}
+                        style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Price & Register Button */}
-            <div className="flex flex-wrap items-center gap-6 mb-12">
-              {!event.isFree && (
-                <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md rounded-full px-6 py-3 border border-white/30">
-                  <span className="text-white/80 text-sm">
-                    {isArabic ? 'السعر من' : 'Starting from'}
-                  </span>
-                  <span className="text-white text-2xl font-bold">
-                    {event.earlyBirdPrice || event.regularPrice} {event.currency}
-                  </span>
-                </div>
-              )}
-              
-              {event.isFree && (
-                <div className="inline-flex items-center bg-green-500/30 backdrop-blur-md rounded-full px-6 py-3 border border-green-400/50">
-                  <span className="text-white text-lg font-bold">
-                    {t('free')}
-                  </span>
-                </div>
-              )}
+            {/* Enhanced CTA Section - Price & Register Button */}
+            {!hideRegisterButton && (
+              <div className="flex flex-wrap items-center gap-6">
+                {!event.isFree && (
+                  <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-lg rounded-2xl px-8 py-5 border-2 border-white/30 shadow-xl hover:bg-white/25 transition-all duration-300">
+                    <span className="text-white/90 text-sm font-semibold uppercase tracking-wider">
+                      {isArabic ? 'السعر' : 'Price'}
+                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-white text-4xl font-bold tracking-tight">
+                        {event.earlyBirdPrice || event.regularPrice}
+                      </span>
+                      <span className="text-white/80 text-lg font-semibold">
+                        {event.currency}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-              {event.registrationOpen && (
-                <button
-                  onClick={onRegisterClick}
-                  className="px-8 py-4 bg-white text-blue-900 rounded-full font-bold text-lg hover:scale-105 hover:shadow-2xl transition-all duration-300 shadow-xl"
-                >
-                  {t('register')}
-                </button>
-              )}
-            </div>
+                {event.registrationOpen && (
+                  <button
+                    onClick={onRegisterClick}
+                    className="group relative px-12 py-5 bg-gradient-to-r from-white to-gray-50 text-blue-900 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-3xl hover:scale-[1.02] transition-all duration-300 overflow-hidden border-2 border-white/50"
+                  >
+                    <span className="relative z-10 flex items-center gap-2">
+                      {t('register')}
+                      <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 via-blue-400/10 to-blue-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Stats Section */}
             <div className="grid grid-cols-3 gap-6 max-w-2xl">
