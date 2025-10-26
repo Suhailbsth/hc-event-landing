@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { CheckCircle, Download, Mail, Calendar, Smartphone } from 'lucide-react';
 import { EventData } from '@/lib/eventApi';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface RegistrationData {
   serialNumber?: string;
@@ -24,11 +25,11 @@ interface SuccessMessageProps {
     registration: RegistrationData;
   };
   event: EventData;
-  lang: string;
 }
 
-export default function SuccessMessage({ registration, event, lang }: SuccessMessageProps) {
-  const isArabic = lang === 'ar';
+export default function SuccessMessage({ registration, event }: SuccessMessageProps) {
+  const { language } = useLanguage();
+  const isArabic = language === 'ar';
   const regData: RegistrationData = registration.registration || {};
   const [walletLoading, setWalletLoading] = useState<string | null>(null);
 

@@ -78,7 +78,9 @@ export interface EventData {
   registrationDeadline?: string;
   
   // Branding
-  bannerImageUrl?: string;
+  backgroundImageUrl?: string;
+  bannerImageUrl?: string; // Alias for backgroundImageUrl for backward compatibility
+  useBackgroundAsHero?: boolean;
   logoUrl?: string;
   primaryColor?: string;
   secondaryColor?: string;

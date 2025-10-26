@@ -113,7 +113,7 @@ export default async function EventPage({
       />
 
       <main className="min-h-screen">
-        <EventPageClient event={event} lang={lang} />
+        <EventPageClient event={event} />
 
         {/* Event Description Section */}
         <section className="py-16 px-4 max-w-7xl mx-auto">

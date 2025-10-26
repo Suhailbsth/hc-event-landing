@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { registerForEvent, RegistrationRequest, EventData } from '@/lib/eventApi';
 import { Loader2, CheckCircle } from 'lucide-react';
 import SuccessMessage from './SuccessMessage';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface RegistrationData {
   serialNumber?: string;
@@ -18,11 +19,11 @@ interface RegistrationData {
 
 interface RegistrationFormProps {
   event: EventData;
-  lang: string;
 }
 
-export default function RegistrationForm({ event, lang }: RegistrationFormProps) {
-  const isArabic = lang === 'ar';
+export default function RegistrationForm({ event }: RegistrationFormProps) {
+  const { language, t } = useLanguage();
+  const isArabic = language === 'ar';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{
@@ -79,7 +80,7 @@ export default function RegistrationForm({ event, lang }: RegistrationFormProps)
   };
 
   if (success) {
-    return <SuccessMessage registration={success} event={event} lang={lang} />;
+    return <SuccessMessage registration={success} event={event} />;
   }
 
   const isEventFull = event.totalRegistrations >= event.capacity;

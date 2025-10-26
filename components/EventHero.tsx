@@ -1,28 +1,33 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
-import { Calendar, MapPin, Clock, Users, Globe, ImageIcon } from 'lucide-react';
+import { Calendar, MapPin, Clock, Users } from 'lucide-react';
 import { EventData } from '@/lib/eventApi';
 import { formatDateRange, formatTime } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EventHeroProps {
   event: EventData;
-  lang: string;
-  onLanguageToggle: () => void;
   onRegisterClick: () => void;
 }
 
-export default function EventHero({ event, lang, onLanguageToggle, onRegisterClick }: EventHeroProps) {
-  const [backgroundMode, setBackgroundMode] = useState<'gradient' | 'image'>('gradient');
-  const isArabic = lang === 'ar';
+export default function EventHero({ event, onRegisterClick }: EventHeroProps) {
+  const { language, t } = useLanguage();
   
-  const title = isArabic && event.titleAr ? event.titleAr : event.title;
-  const shortDesc = isArabic && event.shortDescriptionAr 
-    ? event.shortDescriptionAr 
+  // Use backgroundImageUrl (from API) or fallback to bannerImageUrl for backward compatibility
+  const backgroundImage = event.backgroundImageUrl || event.bannerImageUrl;
+  
+  // Use the event's useBackgroundAsHero setting to determine background mode (configuration-based, no user toggle)
+  const showImageBackground = event.useBackgroundAsHero && backgroundImage;
+  
+  const isArabic = language === 'ar';
+  
+  const title = isArabic && event.arabicTitle ? event.arabicTitle : event.title;
+  const shortDesc = isArabic && event.arabicShortDescription 
+    ? event.arabicShortDescription 
     : event.shortDescription;
-  const venue = isArabic && event.venueAr ? event.venueAr : event.venue;
-  const location = isArabic && event.locationAr ? event.locationAr : event.location;
+  const venue = isArabic && event.arabicVenue ? event.arabicVenue : event.venue;
+  const location = isArabic && event.arabicLocation ? event.arabicLocation : event.location;
 
   const dateRange = formatDateRange(event.startDate, event.endDate, isArabic ? 'ar-AE' : 'en-US');
   const startTimeFormatted = formatTime(event.startTime, isArabic ? 'ar-AE' : 'en-US');
@@ -38,7 +43,7 @@ export default function EventHero({ event, lang, onLanguageToggle, onRegisterCli
         {/* Gradient Background */}
         <div 
           className={`absolute inset-0 transition-opacity duration-1000 ${
-            backgroundMode === 'gradient' ? 'opacity-100' : 'opacity-0'
+            showImageBackground ? 'opacity-0' : 'opacity-100'
           }`}
           style={{ 
             background: `linear-gradient(135deg, ${event.primaryColor || '#1e3a8a'} 0%, ${event.secondaryColor || '#3b82f6'} 100%)` 
@@ -46,14 +51,14 @@ export default function EventHero({ event, lang, onLanguageToggle, onRegisterCli
         />
         
         {/* Image Background */}
-        {event.bannerImageUrl && (
+        {backgroundImage && (
           <div 
             className={`absolute inset-0 transition-opacity duration-1000 ${
-              backgroundMode === 'image' ? 'opacity-100' : 'opacity-0'
+              showImageBackground ? 'opacity-100' : 'opacity-0'
             }`}
           >
             <Image
-              src={event.bannerImageUrl}
+              src={backgroundImage}
               alt={title}
               fill
               className="object-cover"
@@ -85,30 +90,6 @@ export default function EventHero({ event, lang, onLanguageToggle, onRegisterCli
         <div className="absolute -bottom-20 left-20 w-72 h-72 bg-gradient-to-t from-green-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" />
         <div className="absolute bottom-40 right-40 w-72 h-72 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-blob animation-delay-6000" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-8000" />
-      </div>
-
-      {/* Navigation Controls */}
-      <div className="absolute top-6 right-6 z-20 flex gap-3">
-        {/* Background Toggle */}
-        {event.bannerImageUrl && (
-          <button
-            onClick={() => setBackgroundMode(prev => prev === 'gradient' ? 'image' : 'gradient')}
-            className="p-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 group"
-            title={backgroundMode === 'gradient' ? 'Show Image' : 'Show Gradient'}
-          >
-            <ImageIcon className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-          </button>
-        )}
-        
-        {/* Language Toggle */}
-        <button
-          onClick={onLanguageToggle}
-          className="flex items-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 hover:bg-white/20 transition-all duration-300 group"
-          title={isArabic ? 'Switch to English' : 'Switch to Arabic'}
-        >
-          <Globe className="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
-          <span className="text-white text-sm font-semibold">{isArabic ? 'EN' : 'AR'}</span>
-        </button>
       </div>
 
       {/* Content */}
@@ -177,7 +158,7 @@ export default function EventHero({ event, lang, onLanguageToggle, onRegisterCli
                   <MapPin className="w-5 h-5 text-white mt-0.5 flex-shrink-0" />
                   <div>
                     <div className="text-white/70 text-sm mb-1">
-                      {isArabic ? 'المكان' : 'Location'}
+                      {t('location')}
                     </div>
                     <div className="text-white font-semibold text-sm">
                       {venue || location}
@@ -228,7 +209,7 @@ export default function EventHero({ event, lang, onLanguageToggle, onRegisterCli
               {event.isFree && (
                 <div className="inline-flex items-center bg-green-500/30 backdrop-blur-md rounded-full px-6 py-3 border border-green-400/50">
                   <span className="text-white text-lg font-bold">
-                    {isArabic ? 'حدث مجاني' : 'Free Event'}
+                    {t('free')}
                   </span>
                 </div>
               )}
@@ -238,7 +219,7 @@ export default function EventHero({ event, lang, onLanguageToggle, onRegisterCli
                   onClick={onRegisterClick}
                   className="px-8 py-4 bg-white text-blue-900 rounded-full font-bold text-lg hover:scale-105 hover:shadow-2xl transition-all duration-300 shadow-xl"
                 >
-                  {isArabic ? 'سجل الآن' : 'Register Now'}
+                  {t('register')}
                 </button>
               )}
             </div>
