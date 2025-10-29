@@ -26,7 +26,7 @@ export default function GateSelectionPage() {
   const loadEvent = async () => {
     try {
       const events = await organizerApi.getMyEvents();
-      const selectedEvent = events.find((e) => e.id === eventId);
+      const selectedEvent = events.find((e) => e.eventId === eventId);
 
       if (!selectedEvent) {
         setError("Event not found or you don't have access");
@@ -48,6 +48,8 @@ export default function GateSelectionPage() {
 
     try {
       await organizerApi.startGateSession(eventId, gateId);
+      // Store eventId for scanner page
+      localStorage.setItem("activeEventId", eventId);
       // Redirect to scanner page
       router.push("/organizer/scanner");
     } catch (err: unknown) {
@@ -153,7 +155,7 @@ export default function GateSelectionPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {event.gates.map((gate: EventGate) => (
               <div
-                key={gate.id}
+                key={gate.gateId}
                 className={`bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden ${
                   !gate.isActive ? "opacity-60" : ""
                 }`}
@@ -191,11 +193,11 @@ export default function GateSelectionPage() {
 
                   {/* Select Button */}
                   <button
-                    onClick={() => handleGateSelect(gate.id)}
-                    disabled={!gate.isActive || starting === gate.id}
+                    onClick={() => handleGateSelect(gate.gateId)}
+                    disabled={!gate.isActive || starting === gate.gateId}
                     className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {starting === gate.id ? (
+                    {starting === gate.gateId ? (
                       <span className="flex items-center justify-center">
                         <svg
                           className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"

@@ -1,6 +1,7 @@
 // Organizer API Service for Next.js
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5237';
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7003";
 
 export interface OrganizerUser {
   id: string;
@@ -17,7 +18,7 @@ export interface OrganizerLoginResponse {
 }
 
 export interface OrganizerEvent {
-  id: string;
+  eventId: string;
   title: string;
   startDate: string;
   endDate: string;
@@ -28,7 +29,7 @@ export interface OrganizerEvent {
 }
 
 export interface EventGate {
-  id: string;
+  gateId: string;
   name: string;
   description?: string;
   isActive: boolean;
@@ -36,7 +37,7 @@ export interface EventGate {
 }
 
 export interface GateSession {
-  id: string;
+  sessionId: string;
   eventId: string;
   gateId: string;
   gateName: string;
@@ -58,13 +59,13 @@ export interface AttendeeCheckIn {
 class OrganizerApiService {
   private getHeaders(includeAuth: boolean = false): HeadersInit {
     const headers: HeadersInit = {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
-    if (includeAuth && typeof window !== 'undefined') {
-      const token = localStorage.getItem('organizerToken');
+    if (includeAuth && typeof window !== "undefined") {
+      const token = localStorage.getItem("organizerToken");
       if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+        headers["Authorization"] = `Bearer ${token}`;
       }
     }
 
@@ -74,16 +75,19 @@ class OrganizerApiService {
   /**
    * Login as organizer
    */
-  async login(username: string, password: string): Promise<OrganizerLoginResponse> {
+  async login(
+    username: string,
+    password: string
+  ): Promise<OrganizerLoginResponse> {
     const response = await fetch(`${API_BASE_URL}/api/Organizer/login`, {
-      method: 'POST',
+      method: "POST",
       headers: this.getHeaders(false),
       body: JSON.stringify({ username, password }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Login failed');
+      throw new Error(error.message || "Login failed");
     }
 
     return response.json();
@@ -94,12 +98,12 @@ class OrganizerApiService {
    */
   async getMyEvents(): Promise<OrganizerEvent[]> {
     const response = await fetch(`${API_BASE_URL}/api/Organizer/events`, {
-      method: 'GET',
+      method: "GET",
       headers: this.getHeaders(true),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch events');
+      throw new Error("Failed to fetch events");
     }
 
     return response.json();
@@ -108,16 +112,22 @@ class OrganizerApiService {
   /**
    * Start a gate session
    */
-  async startGateSession(eventId: string, gateId: string): Promise<GateSession> {
-    const response = await fetch(`${API_BASE_URL}/api/Organizer/session/start`, {
-      method: 'POST',
-      headers: this.getHeaders(true),
-      body: JSON.stringify({ eventId, gateId }),
-    });
+  async startGateSession(
+    eventId: string,
+    gateId: string
+  ): Promise<GateSession> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/Organizer/session/start`,
+      {
+        method: "POST",
+        headers: this.getHeaders(true),
+        body: JSON.stringify({ eventId, gateId }),
+      }
+    );
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Failed to start session');
+      throw new Error(error.message || "Failed to start session");
     }
 
     return response.json();
@@ -126,18 +136,21 @@ class OrganizerApiService {
   /**
    * Get active session for organizer
    */
-  async getActiveSession(): Promise<GateSession | null> {
-    const response = await fetch(`${API_BASE_URL}/api/Organizer/session/active`, {
-      method: 'GET',
-      headers: this.getHeaders(true),
-    });
+  async getActiveSession(eventId: string): Promise<GateSession | null> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/Organizer/session/active?eventId=${eventId}`,
+      {
+        method: "GET",
+        headers: this.getHeaders(true),
+      }
+    );
 
     if (response.status === 404) {
       return null;
     }
 
     if (!response.ok) {
-      throw new Error('Failed to fetch active session');
+      throw new Error("Failed to fetch active session");
     }
 
     return response.json();
@@ -146,14 +159,17 @@ class OrganizerApiService {
   /**
    * End the current gate session
    */
-  async endGateSession(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/Organizer/session/end`, {
-      method: 'POST',
-      headers: this.getHeaders(true),
-    });
+  async endGateSession(eventId: string, sessionId: string): Promise<void> {
+    const response = await fetch(
+      `${API_BASE_URL}/api/Organizer/session/end?eventId=${eventId}&sessionId=${sessionId}`,
+      {
+        method: "POST",
+        headers: this.getHeaders(true),
+      }
+    );
 
     if (!response.ok) {
-      throw new Error('Failed to end session');
+      throw new Error("Failed to end session");
     }
   }
 
@@ -161,13 +177,16 @@ class OrganizerApiService {
    * Send heartbeat to keep session alive
    */
   async sendHeartbeat(): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/Organizer/session/heartbeat`, {
-      method: 'POST',
-      headers: this.getHeaders(true),
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/Organizer/session/heartbeat`,
+      {
+        method: "POST",
+        headers: this.getHeaders(true),
+      }
+    );
 
     if (!response.ok) {
-      console.warn('Heartbeat failed');
+      console.warn("Heartbeat failed");
     }
   }
 
@@ -176,14 +195,14 @@ class OrganizerApiService {
    */
   async checkInAttendee(qrCode: string): Promise<AttendeeCheckIn> {
     const response = await fetch(`${API_BASE_URL}/api/Event/check-in`, {
-      method: 'POST',
+      method: "POST",
       headers: this.getHeaders(true),
       body: JSON.stringify({ qrCode }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Check-in failed');
+      throw new Error(error.message || "Check-in failed");
     }
 
     return response.json();
@@ -193,9 +212,9 @@ class OrganizerApiService {
    * Logout and clear session
    */
   logout(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('organizerToken');
-      localStorage.removeItem('organizerUser');
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("organizerToken");
+      localStorage.removeItem("organizerUser");
     }
   }
 
@@ -203,16 +222,16 @@ class OrganizerApiService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('organizerToken');
+    if (typeof window === "undefined") return false;
+    return !!localStorage.getItem("organizerToken");
   }
 
   /**
    * Get current user info
    */
   getCurrentUser(): OrganizerUser | null {
-    if (typeof window === 'undefined') return null;
-    const userStr = localStorage.getItem('organizerUser');
+    if (typeof window === "undefined") return null;
+    const userStr = localStorage.getItem("organizerUser");
     return userStr ? JSON.parse(userStr) : null;
   }
 }

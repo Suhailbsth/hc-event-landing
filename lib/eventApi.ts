@@ -135,6 +135,7 @@ export async function fetchEventBySlug(
 ): Promise<EventData> {
   try {
     const fetchOptions = getFetchOptions(options);
+    debugger;
     const response = await fetch(
       `${API_BASE_URL}/api/Event/slug/${slug}`,
       {

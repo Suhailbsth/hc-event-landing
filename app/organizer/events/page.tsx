@@ -115,8 +115,8 @@ export default function OrganizerEventsPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
               <div
-                key={event.id}
-                onClick={() => handleEventSelect(event.id)}
+                key={event.eventId}
+                onClick={() => handleEventSelect(event.eventId)}
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition cursor-pointer overflow-hidden"
               >
                 <div className="p-6">

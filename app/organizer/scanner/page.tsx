@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { organizerApi, GateSession, AttendeeCheckIn } from "@/lib/organizerApi";
 import QRScanner from "@/components/QRScanner";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 export default function ScannerPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function ScannerPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
+  const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -40,7 +42,13 @@ export default function ScannerPage() {
 
   const loadActiveSession = async () => {
     try {
-      const activeSession = await organizerApi.getActiveSession();
+      const eventId = localStorage.getItem("activeEventId");
+      if (!eventId) {
+        router.push("/organizer/events");
+        return;
+      }
+
+      const activeSession = await organizerApi.getActiveSession(eventId);
       if (!activeSession) {
         router.push("/organizer/events");
         return;
@@ -62,13 +70,15 @@ export default function ScannerPage() {
     try {
       const checkIn = await organizerApi.checkInAttendee(code);
       setLastCheckIn(checkIn);
-      setSuccess(`✓ ${checkIn.fullName || "Attendee"} checked in successfully!`);
-      
+      setSuccess(
+        `✓ ${checkIn.fullName || "Attendee"} checked in successfully!`
+      );
+
       // Vibrate for success (if supported)
       if (navigator.vibrate) {
         navigator.vibrate([100, 50, 100]);
       }
-      
+
       // Update check-in count
       if (session) {
         setSession({
@@ -80,9 +90,10 @@ export default function ScannerPage() {
       // Auto-clear success message after 3 seconds
       setTimeout(() => setSuccess(""), 3000);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Check-in failed";
+      const message =
+        error instanceof Error ? error.message : "Check-in failed";
       setError(message);
-      
+
       // Vibrate for error (if supported)
       if (navigator.vibrate) {
         navigator.vibrate(500);
@@ -101,12 +112,21 @@ export default function ScannerPage() {
   };
 
   const handleEndSession = async () => {
-    if (!confirm("Are you sure you want to end this session?")) {
-      return;
-    }
+    setShowEndSessionDialog(true);
+  };
 
+  const confirmEndSession = async () => {
+    setShowEndSessionDialog(false);
     try {
-      await organizerApi.endGateSession();
+      const eventId = localStorage.getItem("activeEventId");
+      const sessionId = session?.sessionId;
+      if (eventId && sessionId) {
+        await organizerApi.endGateSession(eventId, sessionId);
+      } else {
+        throw new Error("Missing event or session ID");
+      }
+      // Clear stored eventId
+      localStorage.removeItem("activeEventId");
       router.push("/organizer/events");
     } catch (error) {
       console.error("Failed to end session:", error);
@@ -163,10 +183,12 @@ export default function ScannerPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{session.gateName}</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                {session.gateName}
+              </h1>
               <p className="text-sm text-gray-600">
-                Session started at {formatTime(session.sessionStartTime)} • Duration:{" "}
-                {getSessionDuration()}
+                Session started at {formatTime(session.sessionStartTime)} •
+                Duration: {getSessionDuration()}
               </p>
             </div>
             <button
@@ -184,7 +206,9 @@ export default function ScannerPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center space-x-8">
             <div className="text-center">
-              <p className="text-3xl font-bold text-indigo-600">{session.checkInCount}</p>
+              <p className="text-3xl font-bold text-indigo-600">
+                {session.checkInCount}
+              </p>
               <p className="text-sm text-gray-600">Check-ins</p>
             </div>
             <div className="h-12 w-px bg-gray-300"></div>
@@ -203,7 +227,9 @@ export default function ScannerPage() {
         {/* Success Message */}
         {success && (
           <div className="mb-6 p-4 bg-green-50 border-2 border-green-500 rounded-lg animate-pulse">
-            <p className="text-lg font-semibold text-green-800 text-center">{success}</p>
+            <p className="text-lg font-semibold text-green-800 text-center">
+              {success}
+            </p>
           </div>
         )}
 
@@ -265,7 +291,9 @@ export default function ScannerPage() {
 
           {/* Manual Entry Form */}
           <div className="border-t pt-6">
-            <p className="text-sm text-gray-600 text-center mb-4">Or enter code manually:</p>
+            <p className="text-sm text-gray-600 text-center mb-4">
+              Or enter code manually:
+            </p>
             <form onSubmit={handleManualEntry} className="space-y-4">
               <div>
                 <input
@@ -316,22 +344,30 @@ export default function ScannerPage() {
         {/* Last Check-in Info */}
         {lastCheckIn && (
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Last Check-in</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Last Check-in
+            </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Name:</span>
-                <span className="font-medium text-gray-900">{lastCheckIn.fullName}</span>
+                <span className="font-medium text-gray-900">
+                  {lastCheckIn.fullName}
+                </span>
               </div>
               {lastCheckIn.email && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Email:</span>
-                  <span className="font-medium text-gray-900">{lastCheckIn.email}</span>
+                  <span className="font-medium text-gray-900">
+                    {lastCheckIn.email}
+                  </span>
                 </div>
               )}
               {lastCheckIn.ticketType && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Ticket:</span>
-                  <span className="font-medium text-gray-900">{lastCheckIn.ticketType}</span>
+                  <span className="font-medium text-gray-900">
+                    {lastCheckIn.ticketType}
+                  </span>
                 </div>
               )}
               <div className="flex justify-between">
@@ -344,6 +380,18 @@ export default function ScannerPage() {
           </div>
         )}
       </main>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={showEndSessionDialog}
+        title="End Session?"
+        message="Are you sure you want to end this scanning session? All current session data will be saved, but you won't be able to scan more attendees until you start a new session."
+        confirmText="End Session"
+        cancelText="Continue Scanning"
+        variant="danger"
+        onConfirm={confirmEndSession}
+        onCancel={() => setShowEndSessionDialog(false)}
+      />
     </div>
   );
 }

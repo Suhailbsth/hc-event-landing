@@ -33,7 +33,7 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
   const regData: RegistrationData = registration.registration || {};
   const [walletLoading, setWalletLoading] = useState<string | null>(null);
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:7003';
 
   const handleAddToAppleWallet = async () => {
     if (!regData.registrationId) return;
