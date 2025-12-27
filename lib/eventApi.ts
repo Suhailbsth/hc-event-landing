@@ -1,7 +1,7 @@
 // Event Management API Service for Next.js
 // Server and Client compatible
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:7003';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:5237';
 
 // For server-side requests in development with self-signed certificates
 const getFetchOptions = (options?: RequestInit): RequestInit => {
