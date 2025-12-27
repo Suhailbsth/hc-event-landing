@@ -129,7 +129,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
               onChange={handleChange}
               required
               disabled={isRegistrationClosed || isEventFull}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
               placeholder={isArabic ? 'أدخل الاسم الأول' : 'Enter first name'}
             />
           </div>
@@ -146,7 +146,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
               onChange={handleChange}
               required
               disabled={isRegistrationClosed || isEventFull}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
               placeholder={isArabic ? 'أدخل اسم العائلة' : 'Enter last name'}
             />
           </div>
@@ -165,7 +165,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
             onChange={handleChange}
             required
             disabled={isRegistrationClosed || isEventFull}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
             placeholder={isArabic ? 'example@email.com' : 'example@email.com'}
           />
         </div>
@@ -182,7 +182,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
             value={formData.phone}
             onChange={handleChange}
             disabled={isRegistrationClosed || isEventFull}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
             placeholder={isArabic ? '+971 50 123 4567' : '+971 50 123 4567'}
           />
         </div>
@@ -200,7 +200,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
               value={formData.company}
               onChange={handleChange}
               disabled={isRegistrationClosed || isEventFull}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
               placeholder={isArabic ? 'اسم الشركة' : 'Company name'}
             />
           </div>
@@ -216,7 +216,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
               value={formData.jobTitle}
               onChange={handleChange}
               disabled={isRegistrationClosed || isEventFull}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
               placeholder={isArabic ? 'المسمى الوظيفي' : 'Your job title'}
             />
           </div>
@@ -235,7 +235,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
               value={formData.city}
               onChange={handleChange}
               disabled={isRegistrationClosed || isEventFull}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
               placeholder={isArabic ? 'المدينة' : 'City'}
             />
           </div>
@@ -251,7 +251,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
               value={formData.country}
               onChange={handleChange}
               disabled={isRegistrationClosed || isEventFull}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
               placeholder={isArabic ? 'الدولة' : 'Country'}
             />
           </div>
@@ -293,7 +293,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
             value={formData.dietaryRequirements}
             onChange={handleChange}
             disabled={isRegistrationClosed || isEventFull}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
             placeholder={isArabic ? 'مثال: نباتي، خالي من الغلوتين' : 'e.g., Vegetarian, Gluten-free'}
           />
         </div>
@@ -310,7 +310,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
             onChange={handleChange}
             rows={3}
             disabled={isRegistrationClosed || isEventFull}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none text-black"
             placeholder={isArabic ? 'أي طلبات أو ملاحظات إضافية' : 'Any additional requests or notes'}
           />
         </div>

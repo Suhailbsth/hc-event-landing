@@ -1,7 +1,7 @@
 // Organizer API Service for Next.js
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:7003";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5237";
 
 export interface OrganizerUser {
   id: string;
@@ -32,6 +32,16 @@ export interface EventGate {
   gateId: string;
   name: string;
   description?: string;
+  isActive: boolean;
+  currentOrganizer?: string;
+}
+
+export interface DetailedEventGate {
+  gateId: string;
+  name: string;
+  type: string;
+  location: string;
+  capacity: number;
   isActive: boolean;
   currentOrganizer?: string;
 }
@@ -104,6 +114,22 @@ class OrganizerApiService {
 
     if (!response.ok) {
       throw new Error("Failed to fetch events");
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get detailed gates for a specific event
+   */
+  async getDetailedGatesForEvent(eventId: string): Promise<DetailedEventGate[]> {
+    const response = await fetch(`${API_BASE_URL}/api/Organizer/events/${eventId}/gates`, {
+      method: "GET",
+      headers: this.getHeaders(true),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch gates");
     }
 
     return response.json();

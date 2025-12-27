@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { organizerApi, OrganizerEvent, EventGate } from "@/lib/organizerApi";
+import { organizerApi, OrganizerEvent, DetailedEventGate } from "@/lib/organizerApi";
 
 export default function GateSelectionPage() {
   const router = useRouter();
@@ -10,6 +10,7 @@ export default function GateSelectionPage() {
   const eventId = params.slug as string;
 
   const [event, setEvent] = useState<OrganizerEvent | null>(null);
+  const [gates, setGates] = useState<DetailedEventGate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [starting, setStarting] = useState<string | null>(null);
@@ -34,6 +35,10 @@ export default function GateSelectionPage() {
       }
 
       setEvent(selectedEvent);
+
+      // Fetch detailed gates
+      const detailedGates = await organizerApi.getDetailedGatesForEvent(eventId);
+      setGates(detailedGates);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load event details";
       setError(errorMessage);
@@ -61,7 +66,7 @@ export default function GateSelectionPage() {
   };
 
   const handleBack = () => {
-    router.push("/organizer/events");
+    router.back();
   };
 
   if (loading) {
@@ -131,7 +136,7 @@ export default function GateSelectionPage() {
           </div>
         )}
 
-        {!event.gates || event.gates.length === 0 ? (
+        {!gates || gates.length === 0 ? (
           <div className="text-center py-12">
             <svg
               className="mx-auto h-12 w-12 text-gray-400"
@@ -153,7 +158,7 @@ export default function GateSelectionPage() {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {event.gates.map((gate: EventGate) => (
+            {gates.map((gate: DetailedEventGate) => (
               <div
                 key={gate.gateId}
                 className={`bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden ${
@@ -175,10 +180,18 @@ export default function GateSelectionPage() {
                     )}
                   </div>
 
-                  {/* Gate Description */}
-                  {gate.description && (
-                    <p className="text-sm text-gray-600 mb-4">{gate.description}</p>
-                  )}
+                  {/* Gate Details */}
+                  <div className="mb-4 space-y-2">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Type:</span> {gate.type}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Location:</span> {gate.location}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Capacity:</span> {gate.capacity}
+                    </p>
+                  </div>
 
                   {/* Current Organizer Status */}
                   {gate.currentOrganizer && (
