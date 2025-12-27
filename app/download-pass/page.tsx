@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle, AlertCircle, Download, Smartphone, Loader2 } from 'lucide-react';
 
@@ -17,7 +17,7 @@ interface TokenData {
     eventVenue?: string;
 }
 
-export default function DownloadPassPage() {
+function DownloadPassContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
 
@@ -263,5 +263,24 @@ export default function DownloadPassPage() {
                 </p>
             </div>
         </div>
+    );
+}
+
+function LoadingFallback() {
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-700 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+                <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+                <p className="text-gray-600">Loading...</p>
+            </div>
+        </div>
+    );
+}
+
+export default function DownloadPassPage() {
+    return (
+        <Suspense fallback={<LoadingFallback />}>
+            <DownloadPassContent />
+        </Suspense>
     );
 }
