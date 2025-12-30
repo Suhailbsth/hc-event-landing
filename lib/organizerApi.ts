@@ -1,7 +1,24 @@
 // Organizer API Service for Next.js
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5237";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:5237';
+export interface InviteOrganizerRequest {
+  email: string;
+  fullName?: string;
+  notes?: string;
+}
+export interface InviteOrganizerResponse {
+  message: string;
+  organizer: {
+    id: string;
+    eventId: string;
+    userEmail: string;
+    fullName?: string;
+    invitationStatus: string;
+    invitationSentAt: string;
+    invitationExpiresAt: string;
+  };
+}
+
 
 export interface OrganizerUser {
   id: string;
@@ -64,6 +81,49 @@ export interface AttendeeCheckIn {
   checkInTime: string;
   gateName: string;
   organizerName: string;
+}
+
+
+export async function inviteOrganizer(
+  eventId: string,
+  request: InviteOrganizerRequest,
+  token: string
+): Promise<InviteOrganizerResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/Organizer/event/${eventId}/invite`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(request)
+    }
+  );
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to invite organizer');
+  }
+  return await response.json();
+}
+
+export async function getEventOrganizers(
+  eventId: string,
+  token: string
+): Promise<any[]> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/Organizer/event/${eventId}/organizers`,
+    {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }
+  );
+  if (!response.ok) {
+    throw new Error('Failed to fetch organizers');
+  }
+  return await response.json();
 }
 
 class OrganizerApiService {

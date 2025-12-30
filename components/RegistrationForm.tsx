@@ -42,8 +42,8 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
     city: '',
     country: '',
     registrationType: 'regular' as 'regular' | 'vip',
-    dietaryRequirements: '',
-    specialRequests: '',
+    // dietaryRequirements: '',
+    // specialRequests: '',
   });
 
   const handleChange = (
@@ -282,7 +282,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
         )}
 
         {/* Dietary Requirements */}
-        <div>
+        {/* <div>
           <label htmlFor="dietaryRequirements" className="block text-sm font-medium text-gray-700 mb-2">
             {isArabic ? 'المتطلبات الغذائية' : 'Dietary Requirements'}
           </label>
@@ -296,10 +296,10 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-black"
             placeholder={isArabic ? 'مثال: نباتي، خالي من الغلوتين' : 'e.g., Vegetarian, Gluten-free'}
           />
-        </div>
+        </div> */}
 
         {/* Special Requests */}
-        <div>
+        {/* <div>
           <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-2">
             {isArabic ? 'طلبات خاصة' : 'Special Requests'}
           </label>
@@ -313,7 +313,7 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed resize-none text-black"
             placeholder={isArabic ? 'أي طلبات أو ملاحظات إضافية' : 'Any additional requests or notes'}
           />
-        </div>
+        </div> */}
 
         {/* Submit Button */}
         <button
