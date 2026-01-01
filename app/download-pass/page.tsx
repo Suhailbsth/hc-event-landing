@@ -12,6 +12,10 @@ interface TokenData {
     firstName: string;
     lastName: string;
     isVIP: boolean;
+    tokenType?: string;
+    passHolderType?: string;
+    ticketLabel?: string;
+    backgroundColor?: string;
     eventTitle?: string;
     eventDate?: string;
     eventVenue?: string;
@@ -58,13 +62,51 @@ function DownloadPassContent() {
         }
     };
 
+
+    const getWalletEndpoint = (walletType: 'apple' | 'google' | 'samsung') => {
+        console.log('🔍 getWalletEndpoint called with walletType:', walletType);
+        console.log('🎯 tokenData:', tokenData);
+        console.log('🎫 tokenType:', tokenData?.tokenType);
+
+        const baseUrl = `${API_BASE_URL}/api/EventWallet`;
+
+        // Check token type and build appropriate endpoint
+        if (tokenData?.tokenType === 'speaker') {
+            console.log('✅ SPEAKER endpoint selected');
+            const result = {
+                endpoint: `${baseUrl}/${walletType}/generate-speaker-ticket`,
+                params: `speakerId=${tokenData.registrationId}&eventId=${tokenData.eventId}&email=${encodeURIComponent(tokenData.email)}`
+            };
+            console.log('📤 Calling:', result.endpoint + '?' + result.params);
+            return result;
+        } else if (tokenData?.tokenType === 'exhibitor') {
+            console.log('✅ EXHIBITOR endpoint selected');
+            const result = {
+                endpoint: `${baseUrl}/${walletType}/generate-exhibitor-ticket`,
+                params: `exhibitorId=${tokenData.registrationId}&eventId=${tokenData.eventId}&email=${encodeURIComponent(tokenData.email)}`
+            };
+            console.log('📤 Calling:', result.endpoint + '?' + result.params);
+            return result;
+        } else {
+            console.log('⚠️ ATTENDEE endpoint selected (fallback)');
+            const result = {
+                endpoint: `${baseUrl}/${walletType}/generate-event-ticket`,
+                params: `registrationId=${tokenData?.registrationId || ''}&email=${encodeURIComponent(tokenData?.email || '')}`
+            };
+            console.log('📤 Calling:', result.endpoint + '?' + result.params);
+            return result;
+        }
+    };
+
+
     const handleAddToAppleWallet = async () => {
         if (!tokenData?.registrationId) return;
 
         try {
             setWalletLoading('apple');
+            const { endpoint, params } = getWalletEndpoint('apple');
             const response = await fetch(
-                `${API_BASE_URL}/api/EventWallet/apple/generate-event-ticket?registrationId=${tokenData.registrationId}&email=${encodeURIComponent(tokenData.email)}`,
+                `${endpoint}?${params}`,
                 { method: 'POST' }
             );
 
@@ -92,8 +134,9 @@ function DownloadPassContent() {
 
         try {
             setWalletLoading('google');
+            const { endpoint, params } = getWalletEndpoint('google');
             const response = await fetch(
-                `${API_BASE_URL}/api/EventWallet/google/generate-event-ticket?registrationId=${tokenData.registrationId}&email=${encodeURIComponent(tokenData.email)}`,
+                `${endpoint}?${params}`,
                 { method: 'POST' }
             );
 
@@ -114,8 +157,9 @@ function DownloadPassContent() {
 
         try {
             setWalletLoading('samsung');
+            const { endpoint, params } = getWalletEndpoint('samsung');
             const response = await fetch(
-                `${API_BASE_URL}/api/EventWallet/samsung/generate-event-ticket?registrationId=${tokenData.registrationId}&email=${encodeURIComponent(tokenData.email)}`,
+                `${endpoint}?${params}`,
                 { method: 'POST' }
             );
 
@@ -173,7 +217,7 @@ function DownloadPassContent() {
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Event Pass</h2>
                     {tokenData?.isVIP && (
                         <span className="inline-block bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-bold px-4 py-1 rounded-full">
-                            ⭐ VIP PASS
+                            {tokenData.ticketLabel || "⭐ VIP PASS"}
                         </span>
                     )}
                 </div>

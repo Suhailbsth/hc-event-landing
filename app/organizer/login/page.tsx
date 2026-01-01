@@ -18,11 +18,11 @@ export default function OrganizerLoginPage() {
 
     try {
       const response = await organizerApi.login(username, password);
-      
+
       // Store token and user info
       localStorage.setItem("organizerToken", response.token);
       localStorage.setItem("organizerUser", JSON.stringify(response.user));
-      
+
       // Redirect to events selection
       router.push("/organizer/events");
     } catch (err: unknown) {
@@ -93,7 +93,7 @@ export default function OrganizerLoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-black"
-              placeholder="Enter your username"
+              placeholder="Enter your username or Email"
               disabled={loading}
             />
           </div>
