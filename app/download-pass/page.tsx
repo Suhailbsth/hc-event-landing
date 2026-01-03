@@ -105,26 +105,17 @@ function DownloadPassContent() {
         try {
             setWalletLoading('apple');
             const { endpoint, params } = getWalletEndpoint('apple');
-            const response = await fetch(
-                `${endpoint}?${params}`,
-                { method: 'POST' }
-            );
-
-            if (!response.ok) throw new Error('Failed to generate pass');
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `event-pass-${tokenData.registrationId}.pkpass`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            
+            // For Safari/iOS compatibility, directly navigate to the pass URL
+            // instead of using blob downloads
+            const passUrl = `${endpoint}?${params}`;
+            window.location.href = passUrl;
+            
+            // Keep loading state for a bit to show feedback
+            setTimeout(() => setWalletLoading(null), 2000);
         } catch (error) {
             console.error('Error:', error);
             alert('Failed to generate Apple Wallet pass. Please try again.');
-        } finally {
             setWalletLoading(null);
         }
     };
