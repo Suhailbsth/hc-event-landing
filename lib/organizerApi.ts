@@ -110,7 +110,7 @@ export async function inviteOrganizer(
 export async function getEventOrganizers(
   eventId: string,
   token: string
-): Promise<any[]> {
+): Promise<unknown[]> {
   const response = await fetch(
     `${API_BASE_URL}/api/Organizer/event/${eventId}/organizers`,
     {
