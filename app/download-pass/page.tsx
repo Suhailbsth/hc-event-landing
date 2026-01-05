@@ -101,25 +101,32 @@ function DownloadPassContent() {
 
     const handleAddToAppleWallet = async () => {
         if (!tokenData?.registrationId) return;
-
         try {
             setWalletLoading('apple');
             const { endpoint, params } = getWalletEndpoint('apple');
-            
-            // For Safari/iOS compatibility, directly navigate to the pass URL
-            // instead of using blob downloads
-            const passUrl = `${endpoint}?${params}`;
-            window.location.href = passUrl;
-            
-            // Keep loading state for a bit to show feedback
-            setTimeout(() => setWalletLoading(null), 2000);
+
+            const response = await fetch(
+                `${endpoint}?${params}`,
+                { method: 'POST' }
+            );
+            if (!response.ok) {
+                throw new Error("Failed to generate pass");
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `event-pass-${tokenData.registrationId}.pkpass`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         } catch (error) {
-            console.error('Error:', error);
+            console.error("Error:", error);
             alert('Failed to generate Apple Wallet pass. Please try again.');
             setWalletLoading(null);
         }
     };
-
     const handleAddToGoogleWallet = async () => {
         if (!tokenData?.registrationId) return;
 
@@ -134,7 +141,11 @@ function DownloadPassContent() {
             if (!response.ok) throw new Error('Failed to generate pass');
 
             const data = await response.json();
-            if (data.walletUrl) window.open(data.walletUrl, '_blank');
+            if (data.walletUrl) {
+                window.location.href = data.walletUrl;
+            } else {
+                alert("Failed to generate Google Wallet pass");
+            }
         } catch (error) {
             console.error('Error:', error);
             alert('Failed to generate Google Wallet pass.');
@@ -157,7 +168,11 @@ function DownloadPassContent() {
             if (!response.ok) throw new Error('Failed to generate pass');
 
             const data = await response.json();
-            if (data.walletUrl) window.open(data.walletUrl, '_blank');
+            if (data.walletUrl) {
+                window.location.href = data.walletUrl;
+            } else {
+                alert("Failed to generate Samsung Wallet pass");
+            }
         } catch (error) {
             console.error('Error:', error);
             alert('Failed to generate Samsung Wallet pass.');
