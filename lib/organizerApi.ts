@@ -281,12 +281,18 @@ class OrganizerApiService {
    * Check in an attendee - validates wallet QR codes with JWT tokens and performs check-in
    */
   async checkInAttendee(qrCode: string): Promise<AttendeeCheckIn> {
+    console.log("🔍 [DEBUG] Step 1: Getting active session...");
+
     // Get active session to get eventId and gate info
     // This assumes the organizer has an active session
     const activeSession = await this.getActiveSessionAny();
+    console.log("🔍 [DEBUG] Step 2: Active session retrieved:", activeSession);
+
     if (!activeSession) {
       throw new Error("No active gate session. Please start a session first.");
     }
+
+    console.log("🔍 [DEBUG] Step 3: Starting validation...");
 
     // Step 1: Validate the QR code
     const validateResponse = await fetch(`${API_BASE_URL}/api/EventRegistration/validate`, {
@@ -301,6 +307,8 @@ class OrganizerApiService {
       }),
     });
 
+    console.log("🔍 [DEBUG] Step 4: Validation response status:", validateResponse.status, validateResponse.ok);
+
     if (!validateResponse.ok) {
       let error;
       try {
@@ -311,7 +319,9 @@ class OrganizerApiService {
       throw new Error(error.message || "QR code validation failed");
     }
 
+    console.log("🔍 [DEBUG] Step 5: Parsing validation response...");
     const validationResult = await validateResponse.json();
+    console.log("🔍 [DEBUG] Step 6: Validation result:", JSON.stringify(validationResult, null, 2));
 
     // Check if validation failed
     if (!validationResult.isValid) {
@@ -320,6 +330,7 @@ class OrganizerApiService {
 
     // Check if already checked in
     if (validationResult.alreadyCheckedIn) {
+      console.log("🔍 [DEBUG] Guest already checked in, returning early");
       // Return the existing check-in info
       return {
         userId: validationResult.registrationId,
@@ -333,34 +344,46 @@ class OrganizerApiService {
       };
     }
 
+    console.log("🔍 [DEBUG] Step 7: Preparing check-in request payload...");
+    const checkInPayload = {
+      registrationId: validationResult.registrationId,
+      eventId: activeSession.eventId,
+      gateId: activeSession.gateId,
+      gateName: activeSession.gateName,
+      checkInGate: activeSession.gateName,
+      scannerDeviceId: activeSession.sessionId,
+      scannerUserName: this.getCurrentUser()?.fullName || "Organizer",
+      passType: validationResult.passType,
+      entityId: validationResult.entityId,
+    };
+    console.log("🔍 [DEBUG] Step 8: Check-in payload:", JSON.stringify(checkInPayload, null, 2));
+
+    console.log("🔍 [DEBUG] Step 9: Sending check-in request...");
+
     // Step 2: Perform the actual check-in
     const checkInResponse = await fetch(`${API_BASE_URL}/api/EventRegistration/check-in`, {
       method: "POST",
       headers: this.getHeaders(true),
-      body: JSON.stringify({
-        registrationId: validationResult.registrationId,
-        eventId: activeSession.eventId,
-        gateId: activeSession.gateId,
-        gateName: activeSession.gateName,
-        checkInGate: activeSession.gateName,
-        scannerDeviceId: activeSession.sessionId,
-        scannerUserName: this.getCurrentUser()?.fullName || "Organizer",
-        passType: validationResult.passType,
-        entityId: validationResult.entityId,
-      }),
+      body: JSON.stringify(checkInPayload),
     });
+
+    console.log("🔍 [DEBUG] Step 10: Check-in response status:", checkInResponse.status, checkInResponse.ok);
 
     if (!checkInResponse.ok) {
       let error;
       try {
         error = await checkInResponse.json();
-      } catch {
+        console.log("🔍 [DEBUG] Check-in error response:", error);
+      } catch (parseError) {
+        console.log("🔍 [DEBUG] Failed to parse check-in error:", parseError);
         throw new Error(`Check-in failed: ${checkInResponse.status} ${checkInResponse.statusText}`);
       }
       throw new Error(error.message || "Check-in failed");
     }
 
+    console.log("🔍 [DEBUG] Step 11: Parsing check-in response...");
     const checkInResult = await checkInResponse.json();
+    console.log("🔍 [DEBUG] Step 12: Check-in result:", JSON.stringify(checkInResult, null, 2));
 
     // Return the check-in info
     return {
