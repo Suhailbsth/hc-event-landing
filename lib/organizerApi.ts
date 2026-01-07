@@ -81,6 +81,7 @@ export interface AttendeeCheckIn {
   checkInTime: string;
   gateName: string;
   organizerName: string;
+  isDuplicate?: boolean;
 }
 
 
@@ -277,21 +278,105 @@ class OrganizerApiService {
   }
 
   /**
-   * Check in an attendee
+   * Check in an attendee - validates wallet QR codes with JWT tokens and performs check-in
    */
   async checkInAttendee(qrCode: string): Promise<AttendeeCheckIn> {
-    const response = await fetch(`${API_BASE_URL}/api/Event/check-in`, {
+    // Get active session to get eventId and gate info
+    // This assumes the organizer has an active session
+    const activeSession = await this.getActiveSessionAny();
+    if (!activeSession) {
+      throw new Error("No active gate session. Please start a session first.");
+    }
+
+    // Step 1: Validate the QR code
+    const validateResponse = await fetch(`${API_BASE_URL}/api/EventRegistration/validate`, {
       method: "POST",
       headers: this.getHeaders(true),
-      body: JSON.stringify({ qrCode }),
+      body: JSON.stringify({
+        QRCodeContent: qrCode,
+        EventId: activeSession.eventId,
+        DeviceId: activeSession.sessionId,
+        GateId: activeSession.gateId,
+        Gate: activeSession.gateName,
+      }),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
+    if (!validateResponse.ok) {
+      const error = await validateResponse.json();
+      throw new Error(error.message || "QR code validation failed");
+    }
+
+    const validationResult = await validateResponse.json();
+
+    // Check if validation failed
+    if (!validationResult.isValid) {
+      throw new Error(validationResult.message || "Invalid QR code");
+    }
+
+    // Check if already checked in
+    if (validationResult.alreadyCheckedIn) {
+      // Return the existing check-in info
+      return {
+        userId: validationResult.registrationId,
+        fullName: validationResult.guestName,
+        email: validationResult.guestEmail,
+        ticketType: validationResult.registrationType,
+        checkInTime: validationResult.previousCheckInTime,
+        gateName: validationResult.previousCheckInGate || activeSession.gateName,
+        organizerName: "",
+        isDuplicate: true,
+      };
+    }
+
+    // Step 2: Perform the actual check-in
+    const checkInResponse = await fetch(`${API_BASE_URL}/api/EventRegistration/check-in`, {
+      method: "POST",
+      headers: this.getHeaders(true),
+      body: JSON.stringify({
+        RegistrationId: validationResult.registrationId,
+        EventId: activeSession.eventId,
+        GateId: activeSession.gateId,
+        GateName: activeSession.gateName,
+        CheckInGate: activeSession.gateName,
+        ScannerDeviceId: activeSession.sessionId,
+        ScannerUserName: this.getCurrentUser()?.fullName || "Organizer",
+        PassType: validationResult.passType,
+        EntityId: validationResult.entityId,
+      }),
+    });
+
+    if (!checkInResponse.ok) {
+      const error = await checkInResponse.json();
       throw new Error(error.message || "Check-in failed");
     }
 
-    return response.json();
+    const checkInResult = await checkInResponse.json();
+
+    // Return the check-in info
+    return {
+      userId: validationResult.registrationId,
+      fullName: validationResult.guestName,
+      email: validationResult.guestEmail,
+      ticketType: validationResult.registrationType,
+      checkInTime: checkInResult.checkIn?.checkInTime || new Date().toISOString(),
+      gateName: activeSession.gateName,
+      organizerName: this.getCurrentUser()?.fullName || "",
+      isDuplicate: false,
+    };
+  }
+
+  /**
+   * Get active session for any event (helper method)
+   */
+  private async getActiveSessionAny(): Promise<GateSession | null> {
+    const events = await this.getMyEvents();
+    for (const event of events) {
+      const session = await this.getActiveSession(event.eventId);
+      if (session) {
+        return session;
+      }
+    }
+    return null;
   }
 
   /**
