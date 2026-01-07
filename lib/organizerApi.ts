@@ -293,11 +293,11 @@ class OrganizerApiService {
       method: "POST",
       headers: this.getHeaders(true),
       body: JSON.stringify({
-        QRCodeContent: qrCode,
-        EventId: activeSession.eventId,
-        DeviceId: activeSession.sessionId,
-        GateId: activeSession.gateId,
-        Gate: activeSession.gateName,
+        qrCodeContent: qrCode,
+        eventId: activeSession.eventId,
+        deviceId: activeSession.sessionId,
+        gateId: activeSession.gateId,
+        gate: activeSession.gateName,
       }),
     });
 
