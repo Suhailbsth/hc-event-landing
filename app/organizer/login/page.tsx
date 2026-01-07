@@ -19,9 +19,11 @@ export default function OrganizerLoginPage() {
     try {
       const response = await organizerApi.login(username, password);
 
-      // Store token and user info
+      // Store token and user info (only if they exist)
       localStorage.setItem("organizerToken", response.token);
-      localStorage.setItem("organizerUser", JSON.stringify(response.user));
+      if (response.user) {
+        localStorage.setItem("organizerUser", JSON.stringify(response.user));
+      }
 
       // Redirect to events selection
       router.push("/organizer/events");

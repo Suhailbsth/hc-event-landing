@@ -436,7 +436,17 @@ class OrganizerApiService {
   getCurrentUser(): OrganizerUser | null {
     if (typeof window === "undefined") return null;
     const userStr = localStorage.getItem("organizerUser");
-    return userStr ? JSON.parse(userStr) : null;
+
+    // Handle bad data in localStorage (e.g., the string "undefined")
+    if (!userStr || userStr === "undefined" || userStr === "null") return null;
+
+    try {
+      return JSON.parse(userStr);
+    } catch (error) {
+      console.warn("Failed to parse organizerUser from localStorage, clearing bad data", error);
+      localStorage.removeItem("organizerUser");
+      return null;
+    }
   }
 }
 
