@@ -285,18 +285,52 @@ export default function ScannerPage() {
           </div>
 
           {/* Camera Toggle */}
-          <div className="mb-6 flex justify-center">
+          <div className="mb-6 flex justify-center gap-3">
             <button
               onClick={() => setCameraActive(!cameraActive)}
-              className={`px-6 py-3 rounded-lg font-semibold transition ${
-                cameraActive
+              className={`px-6 py-3 rounded-lg font-semibold transition ${cameraActive
                   ? "bg-red-600 text-white hover:bg-red-700"
                   : "bg-indigo-600 text-white hover:bg-indigo-700"
-              }`}
+                }`}
             >
               {cameraActive ? "📷 Stop Camera" : "📷 Start Camera"}
             </button>
+
+            {/* QR Code Upload */}
+            <label className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold cursor-pointer hover:bg-green-700 transition">
+              📤 Upload QR
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={scanning}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  setScanning(true);
+                  setError("");
+
+                  try {
+                    // Dynamically import Html5Qrcode
+                    const { Html5Qrcode } = await import("html5-qrcode");
+                    const html5QrCode = new Html5Qrcode("qr-file-reader");
+                    const decodedText = await html5QrCode.scanFile(file, false);
+                    await handleCheckIn(decodedText);
+                    e.target.value = ""; // Reset input
+                  } catch (err) {
+                    const errorMsg = err instanceof Error ? err.message : "Failed to read QR code from image";
+                    setError(errorMsg);
+                  } finally {
+                    setScanning(false);
+                  }
+                }}
+              />
+            </label>
           </div>
+
+          {/* Hidden div for file scanning */}
+          <div id="qr-file-reader" style={{ display: "none" }}></div>
 
           {/* QR Scanner */}
           {cameraActive && (
