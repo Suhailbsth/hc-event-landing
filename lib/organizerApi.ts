@@ -302,7 +302,12 @@ class OrganizerApiService {
     });
 
     if (!validateResponse.ok) {
-      const error = await validateResponse.json();
+      let error;
+      try {
+        error = await validateResponse.json();
+      } catch {
+        throw new Error(`Validation failed: ${validateResponse.status} ${validateResponse.statusText}`);
+      }
       throw new Error(error.message || "QR code validation failed");
     }
 
@@ -346,7 +351,12 @@ class OrganizerApiService {
     });
 
     if (!checkInResponse.ok) {
-      const error = await checkInResponse.json();
+      let error;
+      try {
+        error = await checkInResponse.json();
+      } catch {
+        throw new Error(`Check-in failed: ${checkInResponse.status} ${checkInResponse.statusText}`);
+      }
       throw new Error(error.message || "Check-in failed");
     }
 
