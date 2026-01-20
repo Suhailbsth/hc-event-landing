@@ -32,6 +32,7 @@ export interface OrganizerLoginResponse {
   token: string;
   user: OrganizerUser;
   expiresAt: string;
+  assignedEvents?: OrganizerEvent[];
 }
 
 export interface OrganizerEvent {
@@ -43,6 +44,10 @@ export interface OrganizerEvent {
   status: string;
   gates: EventGate[];
   organizerRole?: string;
+  backgroundImageUrl?: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
 }
 
 export interface EventGate {
@@ -82,6 +87,8 @@ export interface AttendeeCheckIn {
   gateName: string;
   organizerName: string;
   isDuplicate?: boolean;
+  timestamp?: string;     // For relative time display
+  isNew?: boolean;        // For highlight animation
 }
 
 

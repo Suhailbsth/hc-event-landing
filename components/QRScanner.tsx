@@ -16,7 +16,7 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
   const [error, setError] = useState<string>("");
   const [hasTorch, setHasTorch] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
-  
+
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerIdRef = useRef("qr-reader");
 
@@ -30,7 +30,7 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
             label: device.label || `Camera ${device.id}`,
           }));
           setCameras(cameraList);
-          
+
           // Try to select back camera by default
           const backCamera = devices.find((device) =>
             device.label.toLowerCase().includes("back")
@@ -86,25 +86,27 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
       await scanner.start(
         cameraId,
         {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-          aspectRatio: 1.0,
+          fps: 20, // Increased for better responsiveness
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            // Responsive box: 70% of the smallest dimension
+            const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+            const boxSize = Math.floor(minEdgeSize * 0.7);
+            return { width: boxSize, height: boxSize };
+          },
+          // Removed fixed aspectRatio: 1.0 to prevent stretching distortion
         },
         (decodedText) => {
           // Success callback
           onScan(decodedText);
-          
+
           // Vibrate on successful scan (if supported)
           if (navigator.vibrate) {
             navigator.vibrate(200);
           }
         },
         (errorMessage) => {
-          // Error callback (called very frequently, so we don't show these)
-          // Only log actual errors, not "No QR code found"
-          if (!errorMessage.includes("No MultiFormat Readers")) {
-            // console.log("Scan error:", errorMessage);
-          }
+          // Silent callback for frame scanning failures.
+          // This prevents "No MultiFormat Readers..." spam in terminal.
         }
       );
 
@@ -114,7 +116,7 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
       // Check if torch is available
       const capabilities = await scanner.getRunningTrackCameraCapabilities();
       setHasTorch(capabilities.torchFeature().isSupported());
-      
+
     } catch (err) {
       console.error("Error starting scanner:", err);
       const errorMsg = err instanceof Error ? err.message : "Failed to start camera";
@@ -142,7 +144,7 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
 
     const currentIndex = cameras.findIndex((cam) => cam.id === cameraId);
     const nextIndex = (currentIndex + 1) % cameras.length;
-    
+
     await stopScanning();
     setCameraId(cameras[nextIndex].id);
   };
@@ -198,11 +200,10 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
           {hasTorch && (
             <button
               onClick={toggleTorch}
-              className={`px-4 py-2 rounded-lg transition ${
-                torchOn
-                  ? "bg-yellow-500 text-white"
-                  : "bg-gray-700 text-white hover:bg-gray-800"
-              }`}
+              className={`px-4 py-2 rounded-lg transition ${torchOn
+                ? "bg-yellow-500 text-white"
+                : "bg-gray-700 text-white hover:bg-gray-800"
+                }`}
             >
               <svg
                 className="w-5 h-5"

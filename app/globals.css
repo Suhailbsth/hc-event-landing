@@ -31,7 +31,20 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
     opacity: 1;
     transform: translateY(0);
   }
@@ -39,6 +52,10 @@ body {
 
 .animate-fade-in-up {
   animation: fade-in-up 0.8s ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
 }
 
 /* Animation Delay Utilities */
@@ -91,6 +108,6 @@ body {
 }
 
 /* Preserve specific RTL overrides */
-[dir="rtl"] .space-x-reverse > :not([hidden]) ~ :not([hidden]) {
+[dir="rtl"] .space-x-reverse> :not([hidden])~ :not([hidden]) {
   --tw-space-x-reverse: 1;
 }

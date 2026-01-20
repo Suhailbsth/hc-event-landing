@@ -1,15 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { organizerApi } from "@/lib/organizerApi";
 
 export default function OrganizerLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Read context from URL query params
+  const returnToEventId = searchParams.get("returnTo");
+  const returnToEventTitle = searchParams.get("eventTitle");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +30,33 @@ export default function OrganizerLoginPage() {
         localStorage.setItem("organizerUser", JSON.stringify(response.user));
       }
 
-      // Redirect to events selection
+      // Get assigned events from login response
+      const assignedEvents = response.assignedEvents || [];
+
+      // Smart redirect based on context
+      if (returnToEventId) {
+        // User came from a specific event page
+        const matchingEvent = assignedEvents.find(
+          (e: { eventId: string }) => e.eventId === returnToEventId
+        );
+
+        if (matchingEvent && assignedEvents.length === 1) {
+          // Assigned to ONLY this event → go directly to gates
+          router.push(`/organizer/events/${matchingEvent.eventId}/gates`);
+          return;
+        } else if (matchingEvent) {
+          // Assigned to this event AND others → go to picker (no warning needed)
+          router.push("/organizer/events");
+          return;
+        } else {
+          // NOT assigned to expected event → pass context for warning
+          const warningParam = `?notAssignedTo=${encodeURIComponent(returnToEventTitle || "that event")}`;
+          router.push(`/organizer/events${warningParam}`);
+          return;
+        }
+      }
+
+      // No context (direct login) → go to events picker
       router.push("/organizer/events");
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Login failed. Please check your credentials.";

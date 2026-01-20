@@ -23,7 +23,7 @@ export default function EventPageClient({ event }: EventPageClientProps) {
     setShowRegistrationForm(true);
     // Smooth scroll to registration form
     setTimeout(() => {
-      document.getElementById('registration')?.scrollIntoView({ 
+      document.getElementById('registration')?.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
       });
@@ -41,21 +41,21 @@ export default function EventPageClient({ event }: EventPageClientProps) {
       {/* Top Navigation Bar */}
       <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4">
         {/* Left side - Organizer Login */}
-        <Link 
-          href="/organizer/login"
+        <Link
+          href={`/organizer/login?returnTo=${event.id}&eventTitle=${encodeURIComponent(event.title)}`}
           className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300 flex items-center gap-2 shadow-lg group"
         >
-          <svg 
-            className="w-5 h-5 group-hover:scale-110 transition-transform" 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className="w-5 h-5 group-hover:scale-110 transition-transform"
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
             />
           </svg>
           <span className="text-sm font-medium">
@@ -76,12 +76,12 @@ export default function EventPageClient({ event }: EventPageClientProps) {
               </svg>
             </button>
           )}
-          
+
           <LanguageToggle hasArabicContent={hasArabicContent} />
         </div>
       </div>
 
-      <EventHero 
+      <EventHero
         event={event}
         onRegisterClick={handleRegisterClick}
         hideRegisterButton={true}

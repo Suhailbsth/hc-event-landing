@@ -1,7 +1,7 @@
 // Event Management API Service for Next.js
 // Server and Client compatible
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:5237';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5237/api';
 
 // For server-side requests in development with self-signed certificates
 const getFetchOptions = (options?: RequestInit): RequestInit => {
@@ -39,7 +39,7 @@ export interface EventData {
   earlyBirdDeadline?: string;
   currency: string;
   status: string;
-  
+
   // Multi-language
   languages?: string[];
   titleAr?: string;
@@ -52,7 +52,7 @@ export interface EventData {
   arabicShortDescription?: string;
   arabicLocation?: string;
   arabicVenue?: string;
-  
+
   // Content
   highlights?: string[];
   agenda?: Array<{
@@ -60,23 +60,23 @@ export interface EventData {
     title: string;
     description?: string;
   }>;
-  
+
   // Statistics
   totalRegistrations: number;
   vipRegistrations: number;
   regularRegistrations: number;
   totalCheckIns: number;
-  
+
   // Landing Page
   landingPageSlug?: string;
   customDomain?: string;
-  
+
   // Settings
   requireApproval: boolean;
   allowGuestAddition: boolean;
   registrationOpen: boolean;
   registrationDeadline?: string;
-  
+
   // Branding
   backgroundImageUrl?: string;
   bannerImageUrl?: string; // Alias for backgroundImageUrl for backward compatibility
@@ -84,7 +84,7 @@ export interface EventData {
   logoUrl?: string;
   primaryColor?: string;
   secondaryColor?: string;
-  
+
   // Meta
   createdAt: string;
   createdBy?: string;

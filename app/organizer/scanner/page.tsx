@@ -16,6 +16,7 @@ export default function ScannerPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
+  const [recentCheckIns, setRecentCheckIns] = useState<AttendeeCheckIn[]>([]);
   const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -70,6 +71,17 @@ export default function ScannerPage() {
     try {
       const checkIn = await organizerApi.checkInAttendee(code);
       setLastCheckIn(checkIn);
+
+      // Add to recent check-ins list (LIFO - newest first)
+      setRecentCheckIns(prev => {
+        const newCheckIn = {
+          ...checkIn,
+          timestamp: new Date().toISOString(), // For relative time display
+          isNew: true // For highlight animation
+        };
+        return [newCheckIn, ...prev].slice(0, 10); // Keep only last 10
+      });
+
       setSuccess(
         `✓ ${checkIn.fullName || "Attendee"} checked in successfully!`
       );
@@ -87,8 +99,16 @@ export default function ScannerPage() {
         });
       }
 
+      // Auto-close camera after successful scan
+      setCameraActive(false);
+
       // Auto-clear success message after 3 seconds
       setTimeout(() => setSuccess(""), 3000);
+
+      // Remove highlight animation after 2 seconds
+      setTimeout(() => {
+        setRecentCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
+      }, 2000);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Check-in failed";
@@ -98,6 +118,8 @@ export default function ScannerPage() {
       if (navigator.vibrate) {
         navigator.vibrate(500);
       }
+
+      // Don't close camera on error - let user try again
     } finally {
       setScanning(false);
       setQrCode("");
@@ -147,6 +169,23 @@ export default function ScannerPage() {
     const now = new Date();
     const diff = Math.floor((now.getTime() - start.getTime()) / 1000 / 60);
     return `${diff}m`;
+  };
+
+  const getRelativeTime = (timestamp?: string) => {
+    if (!timestamp) return "Just now";
+
+    const now = new Date();
+    const checkInTime = new Date(timestamp);
+    const diffMs = now.getTime() - checkInTime.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+
+    if (diffSec < 10) return "Just now";
+    if (diffSec < 60) return `${diffSec}s ago`;
+    if (diffMin < 60) return `${diffMin}m ago`;
+    if (diffHour < 24) return `${diffHour}h ago`;
+    return checkInTime.toLocaleDateString();
   };
 
   if (loading) {
@@ -289,8 +328,8 @@ export default function ScannerPage() {
             <button
               onClick={() => setCameraActive(!cameraActive)}
               className={`px-6 py-3 rounded-lg font-semibold transition ${cameraActive
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-indigo-600 text-white hover:bg-indigo-700"
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-indigo-600 text-white hover:bg-indigo-700"
                 }`}
             >
               {cameraActive ? "📷 Stop Camera" : "📷 Start Camera"}
@@ -430,6 +469,82 @@ export default function ScannerPage() {
                   {formatTime(lastCheckIn.checkInTime)}
                 </span>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Recent Check-ins List */}
+        {recentCheckIns.length > 0 && (
+          <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Recent Check-ins ({recentCheckIns.length})
+            </h3>
+            <div className="space-y-2">
+              {recentCheckIns.map((checkIn, index) => (
+                <div
+                  key={`${checkIn.userId}-${checkIn.timestamp || index}`}
+                  className={`p-4 rounded-lg border-2 transition-all duration-300 ${checkIn.isNew
+                    ? "border-green-500 bg-green-50 shadow-lg"
+                    : "border-gray-200 bg-gray-50"
+                    }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {/* Status Indicator */}
+                      <div
+                        className={`w-3 h-3 rounded-full ${checkIn.isNew ? "bg-green-500 animate-pulse" : "bg-gray-400"
+                          }`}
+                      />
+
+                      {/* Name & Info */}
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {checkIn.fullName || "Unknown"}
+                        </p>
+                        {checkIn.email && (
+                          <p className="text-xs text-gray-600">{checkIn.email}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Badge & Time */}
+                    <div className="flex items-center gap-2">
+                      {/* Ticket Type Badge */}
+                      <span
+                        className={`px-3 py-1 text-xs font-semibold rounded-full ${checkIn.ticketType?.toLowerCase() === "vip"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-blue-100 text-blue-800"
+                          }`}
+                      >
+                        {checkIn.ticketType?.toUpperCase() || "REGULAR"}
+                      </span>
+
+                      {/* Relative Time */}
+                      <span className="text-xs text-gray-500">
+                        {getRelativeTime(checkIn.timestamp)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Duplicate Badge */}
+                  {checkIn.isDuplicate && (
+                    <div className="mt-2 flex items-center gap-1 text-orange-600">
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <span className="text-xs font-medium">Duplicate scan</span>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
