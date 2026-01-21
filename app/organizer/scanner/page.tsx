@@ -82,17 +82,27 @@ export default function ScannerPage() {
         return [newCheckIn, ...prev].slice(0, 10); // Keep only last 10
       });
 
-      setSuccess(
-        `✓ ${checkIn.fullName || "Attendee"} checked in successfully!`
-      );
+      // Show different message for duplicate vs new check-in
+      if (checkIn.isDuplicate) {
+        const checkInTime = checkIn.checkInTime
+          ? formatTime(checkIn.checkInTime)
+          : "earlier";
+        setSuccess(
+          `⚠️ ${checkIn.fullName || "Attendee"} was already checked in at ${checkInTime}`
+        );
+      } else {
+        setSuccess(
+          `✓ ${checkIn.fullName || "Attendee"} checked in successfully!`
+        );
+      }
 
       // Vibrate for success (if supported)
       if (navigator.vibrate) {
         navigator.vibrate([100, 50, 100]);
       }
 
-      // Update check-in count
-      if (session) {
+      // Update check-in count only for new check-ins
+      if (session && !checkIn.isDuplicate) {
         setSession({
           ...session,
           checkInCount: session.checkInCount + 1,
