@@ -37,7 +37,7 @@ export interface OrganizerLoginResponse {
 
 export interface OrganizerEvent {
   eventId: string;
-  title: string;
+  eventTitle: string;
   startDate: string;
   endDate: string;
   location?: string;

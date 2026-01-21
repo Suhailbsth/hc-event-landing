@@ -233,7 +233,7 @@ function OrganizerEventsContent() {
                       </div>
                     )}
                     <h3 className="text-xl sm:text-2xl font-bold text-white leading-tight line-clamp-2 drop-shadow-lg">
-                      {event.title}
+                      {event.eventTitle}
                     </h3>
                   </div>
                 </div>
