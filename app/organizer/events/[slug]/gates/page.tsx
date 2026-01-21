@@ -121,7 +121,7 @@ export default function GateSelectionPage() {
               </svg>
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{event.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{event.eventTitle}</h1>
               <p className="text-sm text-gray-600 mt-1">Select a gate to start check-in</p>
             </div>
           </div>
@@ -161,9 +161,8 @@ export default function GateSelectionPage() {
             {gates.map((gate: DetailedEventGate) => (
               <div
                 key={gate.gateId}
-                className={`bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden ${
-                  !gate.isActive ? "opacity-60" : ""
-                }`}
+                className={`bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden ${!gate.isActive ? "opacity-60" : ""
+                  }`}
               >
                 <div className="p-6">
                   {/* Gate Name */}
