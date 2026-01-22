@@ -91,6 +91,32 @@ export interface AttendeeCheckIn {
   isNew?: boolean;        // For highlight animation
 }
 
+export interface CheckInStats {
+  totalCheckIns: number;
+  summary: {
+    total: number;
+    valid: number;
+    invalid: number;
+    duplicate: number;
+    [key: string]: number; // For gate-specific stats like gate_Main, gate_VIP
+  };
+  hourlyBreakdown: { [hour: string]: number };
+  generatedAt: string;
+}
+
+export interface CheckInStats {
+  totalCheckIns: number;
+  summary: {
+    total: number;
+    valid: number;
+    invalid: number;
+    duplicate: number;
+    [key: string]: number; // For gate-specific stats like gate_Main, gate_VIP
+  };
+  hourlyBreakdown: { [hour: string]: number };
+  generatedAt: string;
+}
+
 
 export async function inviteOrganizer(
   eventId: string,
@@ -282,6 +308,55 @@ class OrganizerApiService {
     if (!response.ok) {
       console.warn("Heartbeat failed");
     }
+  }
+
+  /**
+   * Get recent check-ins for an event
+   */
+  async getEventCheckIns(eventId: string, limit = 10): Promise<AttendeeCheckIn[]> {
+    const response = await fetch(`${API_BASE_URL}/api/CheckIn/event/${eventId}`, {
+      method: "GET",
+      headers: this.getHeaders(true),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch check-ins: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    const checkIns = result.items || [];
+
+    // Transform to AttendeeCheckIn format and limit results
+    return checkIns
+      .sort((a: any, b: any) => new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime())
+      .slice(0, limit)
+      .map((checkIn: any) => ({
+        userId: checkIn.registrationId,
+        fullName: checkIn.guestName,
+        email: checkIn.guestEmail,
+        ticketType: checkIn.registrationType,
+        checkInTime: checkIn.checkInTime,
+        gateName: checkIn.gateName || checkIn.checkedInGate,
+        organizerName: checkIn.scannerUserName || "",
+        isDuplicate: checkIn.isDuplicate || false,
+        timestamp: checkIn.checkInTime,
+      }));
+  }
+
+  /**
+   * Get check-in statistics for an event
+   */
+  async getCheckInStats(eventId: string): Promise<CheckInStats> {
+    const response = await fetch(`${API_BASE_URL}/api/CheckIn/event/${eventId}/stats`, {
+      method: "GET",
+      headers: this.getHeaders(true),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch statistics: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
   }
 
   /**

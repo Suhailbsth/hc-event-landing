@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { organizerApi, GateSession, AttendeeCheckIn } from "@/lib/organizerApi";
+import { organizerApi, GateSession, AttendeeCheckIn, CheckInStats } from "@/lib/organizerApi";
 import QRScanner from "@/components/QRScanner";
 import ConfirmDialog from "@/components/ConfirmDialog";
 
@@ -18,6 +18,7 @@ export default function ScannerPage() {
   const [cameraActive, setCameraActive] = useState(false);
   const [recentCheckIns, setRecentCheckIns] = useState<AttendeeCheckIn[]>([]);
   const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
+  const [statistics, setStatistics] = useState<CheckInStats | null>(null);
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -41,6 +42,14 @@ export default function ScannerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
+  // Load statistics and recent check-ins after session is loaded
+  useEffect(() => {
+    if (session?.eventId) {
+      loadStatistics();
+      loadRecentCheckIns();
+    }
+  }, [session]);
+
   const loadActiveSession = async () => {
     try {
       const eventId = localStorage.getItem("activeEventId");
@@ -60,6 +69,36 @@ export default function ScannerPage() {
       setError("Failed to load session");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadStatistics = async () => {
+    if (!session?.eventId) return;
+    
+    try {
+      const stats = await organizerApi.getCheckInStats(session.eventId);
+      setStatistics(stats);
+    } catch (error) {
+      console.error("Failed to load statistics:", error);
+    }
+  };
+
+  const loadRecentCheckIns = async () => {
+    if (!session?.eventId) return;
+    
+    try {
+      const checkIns = await organizerApi.getEventCheckIns(session.eventId, 10);
+      // Filter by current gate if needed
+      const gateCheckIns = session.gateName 
+        ? checkIns.filter(c => c.gateName === session.gateName)
+        : checkIns;
+      
+      setRecentCheckIns(gateCheckIns);
+      if (gateCheckIns.length > 0) {
+        setLastCheckIn(gateCheckIns[0]); // Most recent
+      }
+    } catch (error) {
+      console.error("Failed to load recent check-ins:", error);
     }
   };
 
