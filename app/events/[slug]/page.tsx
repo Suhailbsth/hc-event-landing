@@ -29,7 +29,7 @@ export async function generateMetadata({
         ? event.descriptionAr
         : event.description || event.shortDescription;
 
-    const eventUrl = `https://${resolvedParams.slug}.uat-events.future-cards.com`;
+    const eventUrl = `http://${resolvedParams.slug}.uat-events.future-cards.com`;
 
     return {
       title: `${title} - Future Cards Events`,

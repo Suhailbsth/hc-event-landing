@@ -85,14 +85,14 @@ export function generateEventJsonLd(event: EventData) {
           price: '0',
           priceCurrency: event.currency,
           availability: 'https://schema.org/InStock',
-          url: `https://${event.landingPageSlug}.uat-events.future-cards.com`,
+          url: `http://${event.landingPageSlug}.uat-events.future-cards.com`,
         }
       : {
           '@type': 'Offer',
           price: event.regularPrice.toString(),
           priceCurrency: event.currency,
           availability: 'https://schema.org/InStock',
-          url: `https://${event.landingPageSlug}.uat-events.future-cards.com`,
+          url: `http://${event.landingPageSlug}.uat-events.future-cards.com`,
         },
   };
 }
