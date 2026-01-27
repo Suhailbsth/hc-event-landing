@@ -111,7 +111,12 @@ export default function HomePageClient({ events }: HomePageClientProps) {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {events.map((event) => {
-                  const eventUrl = `http://${event.landingPageSlug}.uat-events.future-cards.com/${lang === 'ar' ? '?lang=ar' : ''}`;
+                  // Generate title slug for subdomain
+                  const titleSlug = event.title
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-|-$/g, '');
+                  const eventUrl = `http://${titleSlug}.uat-events.future-cards.com/events/${event.landingPageSlug}/${lang === 'ar' ? '?lang=ar' : ''}`;
                   return (
                     <Link
                       key={event.id}

@@ -29,7 +29,12 @@ export async function generateMetadata({
         ? event.descriptionAr
         : event.description || event.shortDescription;
 
-    const eventUrl = `http://${resolvedParams.slug}.uat-events.future-cards.com/`;
+    // Generate title slug for subdomain
+    const titleSlug = event.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const eventUrl = `http://${titleSlug}.uat-events.future-cards.com/events/${resolvedParams.slug}/`;
 
     return {
       title: `${title} - Future Cards Events`,

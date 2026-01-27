@@ -85,14 +85,14 @@ export function generateEventJsonLd(event: EventData) {
         price: '0',
         priceCurrency: event.currency,
         availability: 'https://schema.org/InStock',
-        url: `http://${event.landingPageSlug}.uat-events.future-cards.com/`,
+        url: `http://${event.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.uat-events.future-cards.com/events/${event.landingPageSlug}/`,
       }
       : {
         '@type': 'Offer',
         price: event.regularPrice.toString(),
         priceCurrency: event.currency,
         availability: 'https://schema.org/InStock',
-        url: `http://${event.landingPageSlug}.uat-events.future-cards.com/`,
+        url: `http://${event.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.uat-events.future-cards.com/events/${event.landingPageSlug}/`,
       },
   };
 }
