@@ -39,11 +39,11 @@ export function formatDateRange(
  */
 export function formatTime(time?: string, locale: string = 'en-US'): string {
   if (!time) return '';
-  
+
   const [hours, minutes] = time.split(':');
   const date = new Date();
   date.setHours(parseInt(hours), parseInt(minutes));
-  
+
   return date.toLocaleTimeString(locale, {
     hour: 'numeric',
     minute: '2-digit',
@@ -81,18 +81,18 @@ export function generateEventJsonLd(event: EventData) {
     },
     offers: event.isFree
       ? {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: event.currency,
-          availability: 'https://schema.org/InStock',
-          url: `http://${event.landingPageSlug}.uat-events.future-cards.com`,
-        }
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: event.currency,
+        availability: 'https://schema.org/InStock',
+        url: `http://${event.landingPageSlug}.uat-events.future-cards.com/`,
+      }
       : {
-          '@type': 'Offer',
-          price: event.regularPrice.toString(),
-          priceCurrency: event.currency,
-          availability: 'https://schema.org/InStock',
-          url: `http://${event.landingPageSlug}.uat-events.future-cards.com`,
-        },
+        '@type': 'Offer',
+        price: event.regularPrice.toString(),
+        priceCurrency: event.currency,
+        availability: 'https://schema.org/InStock',
+        url: `http://${event.landingPageSlug}.uat-events.future-cards.com/`,
+      },
   };
 }

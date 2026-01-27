@@ -29,7 +29,7 @@ export async function generateMetadata({
         ? event.descriptionAr
         : event.description || event.shortDescription;
 
-    const eventUrl = `http://${resolvedParams.slug}.uat-events.future-cards.com`;
+    const eventUrl = `http://${resolvedParams.slug}.uat-events.future-cards.com/`;
 
     return {
       title: `${title} - Future Cards Events`,
@@ -50,13 +50,13 @@ export async function generateMetadata({
         siteName: 'Future Cards Events',
         images: event.bannerImageUrl
           ? [
-              {
-                url: event.bannerImageUrl,
-                width: 1200,
-                height: 630,
-                alt: title,
-              },
-            ]
+            {
+              url: event.bannerImageUrl,
+              width: 1200,
+              height: 630,
+              alt: title,
+            },
+          ]
           : [],
         locale: isArabic ? 'ar_AE' : 'en_US',
         type: 'website',

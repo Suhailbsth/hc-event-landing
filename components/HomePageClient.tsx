@@ -111,100 +111,100 @@ export default function HomePageClient({ events }: HomePageClientProps) {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {events.map((event) => {
-                  const eventUrl = `http://${event.landingPageSlug}.uat-events.future-cards.com${lang === 'ar' ? '?lang=ar' : ''}`;
+                  const eventUrl = `http://${event.landingPageSlug}.uat-events.future-cards.com/${lang === 'ar' ? '?lang=ar' : ''}`;
                   return (
-                  <Link
-                    key={event.id}
-                    href={eventUrl}
-                    className="group"
-                  >
-                    <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 hover:bg-white/20 hover:border-white/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-                      {/* Event Image */}
-                      {event.bannerImageUrl && (
-                        <div className="relative h-48 overflow-hidden">
-                          <Image
-                            src={event.bannerImageUrl}
-                            alt={event.title}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-300"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                          
-                          {/* Status Badge */}
-                          {event.registrationOpen ? (
-                            <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                              {t.openReg}
+                    <Link
+                      key={event.id}
+                      href={eventUrl}
+                      className="group"
+                    >
+                      <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 hover:bg-white/20 hover:border-white/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                        {/* Event Image */}
+                        {event.bannerImageUrl && (
+                          <div className="relative h-48 overflow-hidden">
+                            <Image
+                              src={event.bannerImageUrl}
+                              alt={event.title}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-300"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+                            {/* Status Badge */}
+                            {event.registrationOpen ? (
+                              <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                {t.openReg}
+                              </div>
+                            ) : (
+                              <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                {t.closedReg}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Event Details */}
+                        <div className="p-6">
+                          <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors">
+                            {event.title}
+                          </h3>
+
+                          {event.shortDescription && (
+                            <p className="text-white/70 mb-4 line-clamp-2">
+                              {event.shortDescription}
+                            </p>
+                          )}
+
+                          <div className="space-y-2 mb-4">
+                            {/* Date */}
+                            <div className="flex items-center text-white/80 text-sm">
+                              <Calendar className="w-4 h-4 mr-2" />
+                              <span>
+                                {new Date(event.startDate).toLocaleDateString(isArabic ? 'ar-AE' : 'en-US', {
+                                  month: 'long',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                            </div>
+
+                            {/* Location */}
+                            {event.venue && (
+                              <div className="flex items-center text-white/80 text-sm">
+                                <MapPin className="w-4 h-4 mr-2" />
+                                <span>{event.venue}, {event.city}</span>
+                              </div>
+                            )}
+
+                            {/* Capacity */}
+                            <div className="flex items-center text-white/80 text-sm">
+                              <Users className="w-4 h-4 mr-2" />
+                              <span>
+                                {event.totalRegistrations} / {event.capacity} {t.registered}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Price Tag */}
+                          {event.isFree ? (
+                            <div className="inline-flex items-center bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-sm font-semibold mb-4">
+                              {t.freeEvent}
                             </div>
                           ) : (
-                            <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                              {t.closedReg}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Event Details */}
-                      <div className="p-6">
-                        <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors">
-                          {event.title}
-                        </h3>
-                        
-                        {event.shortDescription && (
-                          <p className="text-white/70 mb-4 line-clamp-2">
-                            {event.shortDescription}
-                          </p>
-                        )}
-
-                        <div className="space-y-2 mb-4">
-                          {/* Date */}
-                          <div className="flex items-center text-white/80 text-sm">
-                            <Calendar className="w-4 h-4 mr-2" />
-                            <span>
-                              {new Date(event.startDate).toLocaleDateString(isArabic ? 'ar-AE' : 'en-US', {
-                                month: 'long',
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </span>
-                          </div>
-
-                          {/* Location */}
-                          {event.venue && (
-                            <div className="flex items-center text-white/80 text-sm">
-                              <MapPin className="w-4 h-4 mr-2" />
-                              <span>{event.venue}, {event.city}</span>
+                            <div className="inline-flex items-center bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-semibold mb-4">
+                              {t.from} {event.currency} {event.regularPrice}
                             </div>
                           )}
 
-                          {/* Capacity */}
-                          <div className="flex items-center text-white/80 text-sm">
-                            <Users className="w-4 h-4 mr-2" />
-                            <span>
-                              {event.totalRegistrations} / {event.capacity} {t.registered}
-                            </span>
+                          {/* CTA Button */}
+                          <div className="flex items-center text-purple-300 font-semibold group-hover:text-white transition-colors">
+                            <span>{t.viewDetails}</span>
+                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
                           </div>
-                        </div>
-
-                        {/* Price Tag */}
-                        {event.isFree ? (
-                          <div className="inline-flex items-center bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-sm font-semibold mb-4">
-                            {t.freeEvent}
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-semibold mb-4">
-                            {t.from} {event.currency} {event.regularPrice}
-                          </div>
-                        )}
-
-                        {/* CTA Button */}
-                        <div className="flex items-center text-purple-300 font-semibold group-hover:text-white transition-colors">
-                          <span>{t.viewDetails}</span>
-                          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
                         </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
                   );
                 })}
               </div>
