@@ -110,10 +110,12 @@ export default function HomePageClient({ events }: HomePageClientProps) {
               </div>
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {events.map((event) => (
+                {events.map((event) => {
+                  const eventUrl = `https://${event.landingPageSlug}.uat-events.future-cards.com${lang === 'ar' ? '?lang=ar' : ''}`;
+                  return (
                   <Link
                     key={event.id}
-                    href={`/events/${event.landingPageSlug}?lang=${lang}`}
+                    href={eventUrl}
                     className="group"
                   >
                     <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20 hover:bg-white/20 hover:border-white/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl">
@@ -203,7 +205,8 @@ export default function HomePageClient({ events }: HomePageClientProps) {
                       </div>
                     </div>
                   </Link>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

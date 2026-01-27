@@ -29,8 +29,7 @@ export async function generateMetadata({
         ? event.descriptionAr
         : event.description || event.shortDescription;
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:7003';
-    const eventUrl = `${appUrl}/events/${resolvedParams.slug}`;
+    const eventUrl = `https://${resolvedParams.slug}.uat-events.future-cards.com`;
 
     return {
       title: `${title} - Future Cards Events`,
