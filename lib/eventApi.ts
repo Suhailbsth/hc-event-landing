@@ -197,12 +197,14 @@ export async function registerForEvent(
   registrationData: RegistrationRequest
 ): Promise<{ success: boolean; message: string; registration: RegistrationResponse }> {
   try {
+    // Create FormData and append registration data as a JSON string
+    const formData = new FormData();
+    formData.append('registrationData', JSON.stringify(registrationData));
+
     const response = await fetch(`${API_BASE_URL}/api/EventRegistration`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(registrationData),
+      // Don't set Content-Type header - browser will set it automatically with boundary for FormData
+      body: formData
     });
 
     const data = await response.json();
