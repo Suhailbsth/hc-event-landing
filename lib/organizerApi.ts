@@ -60,8 +60,8 @@ export interface EventGate {
 
 export interface DetailedEventGate {
   gateId: string;
-  name: string;
-  type: string;
+  gateName: string;
+  gateType: string;
   location: string;
   capacity: number;
   isActive: boolean;

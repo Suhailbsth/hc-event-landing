@@ -167,7 +167,7 @@ export default function GateSelectionPage() {
                 <div className="p-6">
                   {/* Gate Name */}
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900">{gate.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-900">{gate.gateName}</h3>
                     {gate.isActive ? (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         Active
@@ -182,7 +182,7 @@ export default function GateSelectionPage() {
                   {/* Gate Details */}
                   <div className="mb-4 space-y-2">
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Type:</span> {gate.type}
+                      <span className="font-medium">Type:</span> {gate.gateType}
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Location:</span> {gate.location}
