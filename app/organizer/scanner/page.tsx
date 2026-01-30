@@ -17,8 +17,11 @@ export default function ScannerPage() {
   const [success, setSuccess] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
   const [recentCheckIns, setRecentCheckIns] = useState<AttendeeCheckIn[]>([]);
+  const [allGateCheckIns, setAllGateCheckIns] = useState<AttendeeCheckIn[]>([]);
   const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
   const [statistics, setStatistics] = useState<CheckInStats | null>(null);
+  const [duplicateInfo, setDuplicateInfo] = useState<AttendeeCheckIn | null>(null);
+  const [checkInTab, setCheckInTab] = useState<"thisGate" | "allGates">("thisGate");
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -74,7 +77,7 @@ export default function ScannerPage() {
 
   const loadStatistics = async () => {
     if (!session?.eventId) return;
-    
+
     try {
       const stats = await organizerApi.getCheckInStats(session.eventId);
       setStatistics(stats);
@@ -85,14 +88,18 @@ export default function ScannerPage() {
 
   const loadRecentCheckIns = async () => {
     if (!session?.eventId) return;
-    
+
     try {
-      const checkIns = await organizerApi.getEventCheckIns(session.eventId, 10);
-      // Filter by current gate if needed
-      const gateCheckIns = session.gateName 
+      const checkIns = await organizerApi.getEventCheckIns(session.eventId, 20);
+
+      // Store all check-ins (for "All Gates" tab)
+      setAllGateCheckIns(checkIns);
+
+      // Filter by current gate (for "This Gate" tab)
+      const gateCheckIns = session.gateName
         ? checkIns.filter(c => c.gateName === session.gateName)
         : checkIns;
-      
+
       setRecentCheckIns(gateCheckIns);
       if (gateCheckIns.length > 0) {
         setLastCheckIn(gateCheckIns[0]); // Most recent
@@ -106,64 +113,75 @@ export default function ScannerPage() {
     setScanning(true);
     setError("");
     setSuccess("");
+    setDuplicateInfo(null);
 
     try {
       const checkIn = await organizerApi.checkInAttendee(code);
       setLastCheckIn(checkIn);
 
-      // Add to recent check-ins list (LIFO - newest first)
-      setRecentCheckIns(prev => {
-        const newCheckIn = {
-          ...checkIn,
-          timestamp: new Date().toISOString(), // For relative time display
-          isNew: true // For highlight animation
-        };
-        return [newCheckIn, ...prev].slice(0, 10); // Keep only last 10
-      });
-
-      // Show different message for duplicate vs new check-in
+      // Show modal for duplicate instead of adding to list
       if (checkIn.isDuplicate) {
-        const checkInTime = checkIn.checkInTime
-          ? formatTime(checkIn.checkInTime)
-          : "earlier";
-        setSuccess(
-          `⚠️ ${checkIn.fullName || "Attendee"} was already checked in at ${checkInTime}`
-        );
+        setDuplicateInfo(checkIn);
+        // Vibrate for warning
+        if (navigator.vibrate) {
+          navigator.vibrate([200, 100, 200]);
+        }
       } else {
+        // Add to recent check-ins list (LIFO - newest first)
+        setRecentCheckIns(prev => {
+          const newCheckIn = {
+            ...checkIn,
+            timestamp: new Date().toISOString(),
+            isNew: true
+          };
+          return [newCheckIn, ...prev].slice(0, 10);
+        });
+
+        // Also add to all gates list
+        setAllGateCheckIns(prev => {
+          const newCheckIn = {
+            ...checkIn,
+            timestamp: new Date().toISOString(),
+            isNew: true
+          };
+          return [newCheckIn, ...prev].slice(0, 20);
+        });
+
         setSuccess(
           `✓ ${checkIn.fullName || "Attendee"} checked in successfully!`
         );
-      }
 
-      // Vibrate for success (if supported)
-      if (navigator.vibrate) {
-        navigator.vibrate([100, 50, 100]);
-      }
+        // Vibrate for success
+        if (navigator.vibrate) {
+          navigator.vibrate([100, 50, 100]);
+        }
 
-      // Update check-in count only for new check-ins
-      if (session && !checkIn.isDuplicate) {
-        setSession({
-          ...session,
-          checkInCount: session.checkInCount + 1,
-        });
+        // Update check-in count
+        if (session) {
+          setSession({
+            ...session,
+            checkInCount: session.checkInCount + 1,
+          });
+        }
+
+        // Auto-clear success message after 3 seconds
+        setTimeout(() => setSuccess(""), 3000);
+
+        // Remove highlight animation after 2 seconds
+        setTimeout(() => {
+          setRecentCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
+          setAllGateCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
+        }, 2000);
       }
 
       // Auto-close camera after successful scan
       setCameraActive(false);
-
-      // Auto-clear success message after 3 seconds
-      setTimeout(() => setSuccess(""), 3000);
-
-      // Remove highlight animation after 2 seconds
-      setTimeout(() => {
-        setRecentCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
-      }, 2000);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Check-in failed";
       setError(message);
 
-      // Vibrate for error (if supported)
+      // Vibrate for error
       if (navigator.vibrate) {
         navigator.vibrate(500);
       }
@@ -522,14 +540,39 @@ export default function ScannerPage() {
           </div>
         )}
 
-        {/* Recent Check-ins List */}
-        {recentCheckIns.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Recent Check-ins ({recentCheckIns.length})
+        {/* Recent Check-ins List with Tabs */}
+        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Recent Check-ins
             </h3>
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setCheckInTab("thisGate")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition ${checkInTab === "thisGate"
+                    ? "bg-white text-indigo-600 shadow"
+                    : "text-gray-600 hover:text-gray-900"
+                  }`}
+              >
+                This Gate ({recentCheckIns.length})
+              </button>
+              <button
+                onClick={() => setCheckInTab("allGates")}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition ${checkInTab === "allGates"
+                    ? "bg-white text-indigo-600 shadow"
+                    : "text-gray-600 hover:text-gray-900"
+                  }`}
+              >
+                All Gates ({allGateCheckIns.length})
+              </button>
+            </div>
+          </div>
+
+          {(checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).length === 0 ? (
+            <p className="text-gray-500 text-center py-4">No check-ins yet</p>
+          ) : (
             <div className="space-y-2">
-              {recentCheckIns.map((checkIn, index) => (
+              {(checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).map((checkIn, index) => (
                 <div
                   key={`${checkIn.userId}-${checkIn.timestamp || index}`}
                   className={`p-4 rounded-lg border-2 transition-all duration-300 ${checkIn.isNew
@@ -539,13 +582,10 @@ export default function ScannerPage() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {/* Status Indicator */}
                       <div
                         className={`w-3 h-3 rounded-full ${checkIn.isNew ? "bg-green-500 animate-pulse" : "bg-gray-400"
                           }`}
                       />
-
-                      {/* Name & Info */}
                       <div>
                         <p className="font-medium text-gray-900">
                           {checkIn.fullName || "Unknown"}
@@ -556,9 +596,7 @@ export default function ScannerPage() {
                       </div>
                     </div>
 
-                    {/* Badge & Time */}
                     <div className="flex items-center gap-2">
-                      {/* Ticket Type Badge */}
                       <span
                         className={`px-3 py-1 text-xs font-semibold rounded-full ${checkIn.ticketType?.toLowerCase() === "vip"
                           ? "bg-yellow-100 text-yellow-800"
@@ -567,37 +605,76 @@ export default function ScannerPage() {
                       >
                         {checkIn.ticketType?.toUpperCase() || "REGULAR"}
                       </span>
-
-                      {/* Relative Time */}
+                      {checkInTab === "allGates" && checkIn.gateName && (
+                        <span className="px-2 py-1 text-xs font-medium rounded bg-gray-200 text-gray-700">
+                          {checkIn.gateName}
+                        </span>
+                      )}
                       <span className="text-xs text-gray-500">
                         {getRelativeTime(checkIn.timestamp)}
                       </span>
                     </div>
                   </div>
-
-                  {/* Duplicate Badge */}
-                  {checkIn.isDuplicate && (
-                    <div className="mt-2 flex items-center gap-1 text-orange-600">
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      <span className="text-xs font-medium">Duplicate scan</span>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </main>
+
+      {/* Duplicate Alert Modal */}
+      {duplicateInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            {/* Header */}
+            <div className="bg-amber-500 p-6 text-center">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-10 h-10 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white">Already Checked In</h2>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              <div className="text-center mb-4">
+                <p className="text-xl font-semibold text-gray-900">{duplicateInfo.fullName}</p>
+                <span className={`inline-block mt-2 px-3 py-1 text-sm font-semibold rounded-full ${duplicateInfo.ticketType?.toLowerCase() === "vip"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-blue-100 text-blue-800"
+                  }`}>
+                  {duplicateInfo.ticketType?.toUpperCase() || "REGULAR"}
+                </span>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <p className="text-sm text-gray-700">
+                  This pass was already scanned at{" "}
+                  <strong>{duplicateInfo.checkInTime ? formatTime(duplicateInfo.checkInTime) : "earlier"}</strong>
+                  {duplicateInfo.gateName && (
+                    <> at <strong>{duplicateInfo.gateName}</strong></>
+                  )}
+                  {duplicateInfo.organizerName && (
+                    <> by <strong>{duplicateInfo.organizerName}</strong></>
+                  )}
+                  .
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => setDuplicateInfo(null)}
+                className="w-full bg-amber-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-amber-600 transition"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirm Dialog */}
       <ConfirmDialog
