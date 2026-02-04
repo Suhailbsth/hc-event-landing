@@ -220,7 +220,7 @@ export default function HomePageClient({ events }: HomePageClientProps) {
         {/* Footer */}
         <footer className="px-6 py-8 border-t border-white/10">
           <div className="max-w-7xl mx-auto text-center text-white/60 text-sm">
-            © 2025 Future Cards Events. All rights reserved.
+            © 2026 Future Cards Events. All rights reserved.
           </div>
         </footer>
       </div>
