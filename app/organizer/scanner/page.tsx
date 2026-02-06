@@ -147,9 +147,14 @@ export default function ScannerPage() {
           return [newCheckIn, ...prev].slice(0, 20);
         });
 
-        setSuccess(
-          `✓ ${checkIn.fullName || "Attendee"} checked in successfully!`
-        );
+        // Dynamic success message based on action type
+        const actionType = checkIn.actionType || 'checkin';
+        if (actionType === 'checkout') {
+          const durationText = checkIn.durationInside ? ` Duration: ${checkIn.durationInside}` : '';
+          setSuccess(`✓ ${checkIn.fullName || "Attendee"} checked out!${durationText}`);
+        } else {
+          setSuccess(`✓ ${checkIn.fullName || "Attendee"} checked in successfully!`);
+        }
 
         // Vibrate for success
         if (navigator.vibrate) {
@@ -308,12 +313,49 @@ export default function ScannerPage() {
                 </svg>
               </button>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  {session.gateName}
-                </h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-bold text-gray-900">
+                    {session.gateName}
+                  </h1>
+                  {/* Gate Type Badge */}
+                  {session.gateType && (
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full flex items-center gap-1 ${session.gateType === 'entry' ? 'bg-green-100 text-green-800' :
+                      session.gateType === 'exit' ? 'bg-red-100 text-red-800' :
+                        'bg-purple-100 text-purple-800'
+                      }`}>
+                      {session.gateType === 'entry' ? (
+                        <>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                          </svg>
+                          Entry
+                        </>
+                      ) : session.gateType === 'exit' ? (
+                        <>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                          </svg>
+                          Exit
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                          </svg>
+                          Both
+                        </>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600">
                   Session started at {formatTime(session.sessionStartTime)} •
                   Duration: {getSessionDuration()}
+                  {session.gateType === 'both' && (
+                    <span className="ml-2 text-indigo-600 font-medium">
+                      • Next scan: {lastCheckIn?.actionType === 'checkin' ? 'Checkout' : 'Check-in'}
+                    </span>
+                  )}
                 </p>
               </div>
             </div>
@@ -550,8 +592,8 @@ export default function ScannerPage() {
               <button
                 onClick={() => setCheckInTab("thisGate")}
                 className={`px-3 py-1 text-sm font-medium rounded-md transition ${checkInTab === "thisGate"
-                    ? "bg-white text-indigo-600 shadow"
-                    : "text-gray-600 hover:text-gray-900"
+                  ? "bg-white text-indigo-600 shadow"
+                  : "text-gray-600 hover:text-gray-900"
                   }`}
               >
                 This Gate ({recentCheckIns.length})
@@ -559,8 +601,8 @@ export default function ScannerPage() {
               <button
                 onClick={() => setCheckInTab("allGates")}
                 className={`px-3 py-1 text-sm font-medium rounded-md transition ${checkInTab === "allGates"
-                    ? "bg-white text-indigo-600 shadow"
-                    : "text-gray-600 hover:text-gray-900"
+                  ? "bg-white text-indigo-600 shadow"
+                  : "text-gray-600 hover:text-gray-900"
                   }`}
               >
                 All Gates ({allGateCheckIns.length})
@@ -597,6 +639,15 @@ export default function ScannerPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {/* Action Badge (IN/OUT) */}
+                      <span
+                        className={`px-2 py-1 text-xs font-bold rounded ${checkIn.actionType === 'checkout'
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-green-100 text-green-800'
+                          }`}
+                      >
+                        {checkIn.actionType === 'checkout' ? 'OUT' : 'IN'}
+                      </span>
                       <span
                         className={`px-3 py-1 text-xs font-semibold rounded-full ${checkIn.ticketType?.toLowerCase() === "vip"
                           ? "bg-yellow-100 text-yellow-800"
@@ -608,6 +659,12 @@ export default function ScannerPage() {
                       {checkInTab === "allGates" && checkIn.gateName && (
                         <span className="px-2 py-1 text-xs font-medium rounded bg-gray-200 text-gray-700">
                           {checkIn.gateName}
+                        </span>
+                      )}
+                      {/* Show duration for checkouts */}
+                      {checkIn.actionType === 'checkout' && checkIn.durationInside && (
+                        <span className="text-xs text-orange-600 font-medium">
+                          {checkIn.durationInside}
                         </span>
                       )}
                       <span className="text-xs text-gray-500">
@@ -641,8 +698,8 @@ export default function ScannerPage() {
               <div className="text-center mb-4">
                 <p className="text-xl font-semibold text-gray-900">{duplicateInfo.fullName}</p>
                 <span className={`inline-block mt-2 px-3 py-1 text-sm font-semibold rounded-full ${duplicateInfo.ticketType?.toLowerCase() === "vip"
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-blue-100 text-blue-800"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-blue-100 text-blue-800"
                   }`}>
                   {duplicateInfo.ticketType?.toUpperCase() || "REGULAR"}
                 </span>

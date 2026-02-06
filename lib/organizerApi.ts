@@ -73,6 +73,7 @@ export interface GateSession {
   eventId: string;
   gateId: string;
   gateName: string;
+  gateType?: string;  // "entry", "exit", "both"
   sessionStartTime: string;
   checkInCount: number;
   isActive: boolean;
@@ -89,6 +90,9 @@ export interface AttendeeCheckIn {
   isDuplicate?: boolean;
   timestamp?: string;     // For relative time display
   isNew?: boolean;        // For highlight animation
+  actionType?: string;    // "checkin" or "checkout"
+  durationInside?: string; // "2h 30m" format
+  cycleNumber?: number;   // Visit number
 }
 
 export interface CheckInStats {
@@ -330,17 +334,33 @@ class OrganizerApiService {
     return checkIns
       .sort((a: any, b: any) => new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime())
       .slice(0, limit)
-      .map((checkIn: any) => ({
-        userId: checkIn.registrationId,
-        fullName: checkIn.guestName,
-        email: checkIn.guestEmail,
-        ticketType: checkIn.registrationType,
-        checkInTime: checkIn.checkInTime,
-        gateName: checkIn.gateName || checkIn.checkedInGate,
-        organizerName: checkIn.scannerUserName || "",
-        isDuplicate: checkIn.isDuplicate || false,
-        timestamp: checkIn.checkInTime,
-      }));
+      .map((checkIn: any) => {
+        // Parse duration from metadata if available
+        let durationInside: string | undefined;
+        if (checkIn.metadata) {
+          try {
+            const metadata = JSON.parse(checkIn.metadata);
+            durationInside = metadata.durationFormatted;
+          } catch {
+            // ignore parse errors
+          }
+        }
+
+        return {
+          userId: checkIn.registrationId,
+          fullName: checkIn.guestName,
+          email: checkIn.guestEmail,
+          ticketType: checkIn.registrationType,
+          checkInTime: checkIn.checkInTime,
+          gateName: checkIn.gateName || checkIn.checkedInGate,
+          organizerName: checkIn.scannerUserName || "",
+          isDuplicate: checkIn.isDuplicate || false,
+          timestamp: checkIn.checkInTime,
+          actionType: checkIn.actionType || "checkin",
+          durationInside: durationInside,
+          cycleNumber: checkIn.cycleNumber || 1,
+        };
+      });
   }
 
   /**
@@ -432,6 +452,7 @@ class OrganizerApiService {
       eventId: activeSession.eventId,
       gateId: activeSession.gateId,
       gateName: activeSession.gateName,
+      gateType: activeSession.gateType || "entry",  // Pass gate type for gate logic
       checkInGate: activeSession.gateName,
       scannerDeviceId: activeSession.sessionId,
       scannerUserName: this.getCurrentUser()?.fullName || "Organizer",
@@ -467,7 +488,18 @@ class OrganizerApiService {
     const checkInResult = await checkInResponse.json();
     console.log("🔍 [DEBUG] Step 12: Check-in result:", JSON.stringify(checkInResult, null, 2));
 
-    // Return the check-in info
+    // Parse duration from metadata if it's a checkout
+    let durationInside: string | undefined;
+    if (checkInResult.checkIn?.metadata) {
+      try {
+        const metadata = JSON.parse(checkInResult.checkIn.metadata);
+        durationInside = metadata.durationFormatted;
+      } catch {
+        // ignore parse errors
+      }
+    }
+
+    // Return the check-in/checkout info
     return {
       userId: validationResult.registrationId,
       fullName: validationResult.guestName,
@@ -476,7 +508,10 @@ class OrganizerApiService {
       checkInTime: checkInResult.checkIn?.checkInTime || new Date().toISOString(),
       gateName: activeSession.gateName,
       organizerName: this.getCurrentUser()?.fullName || "",
-      isDuplicate: false,
+      isDuplicate: checkInResult.checkIn?.isDuplicate || false,
+      actionType: checkInResult.checkIn?.actionType || "checkin",
+      durationInside: durationInside,
+      cycleNumber: checkInResult.checkIn?.cycleNumber || 1,
     };
   }
 
