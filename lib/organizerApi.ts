@@ -79,20 +79,60 @@ export interface GateSession {
   isActive: boolean;
 }
 
-export interface AttendeeCheckIn {
-  userId: string;
-  fullName?: string;
-  email?: string;
-  ticketType?: string;
+export interface AttendeeTimeReport {
+  registrationId: string;
+  guestName: string;
+  totalEventTime: string;
+  totalEventTimeFormatted: string;
+  currentStatus: string;
+  lastActionTime?: string;
+  sessions: VisitSession[];
+  zoneBreakdown: ZoneTimeEntry[];
+}
+
+export interface VisitSession {
+  sessionNumber: number;
+  zoneId: string;
+  zoneName: string;
   checkInTime: string;
-  gateName: string;
-  organizerName: string;
-  isDuplicate?: boolean;
-  timestamp?: string;     // For relative time display
-  isNew?: boolean;        // For highlight animation
-  actionType?: string;    // "checkin" or "checkout"
-  durationInside?: string; // "2h 30m" format
-  cycleNumber?: number;   // Visit number
+  checkOutTime?: string;
+  duration?: string;
+  enteredGate?: string;
+  exitedGate?: string;
+  status: string;
+}
+
+export interface ZoneTimeEntry {
+  zoneId: string;
+  zoneName: string;
+  totalTime: string;
+  totalMinutes: number;
+  visitCount: number;
+}
+
+export interface AttendeeCheckIn {
+  id: string;
+  eventId: string;
+  registrationId: string;
+  checkInTime: string;
+  checkedInGate?: string;
+  gateName?: string;
+  scannerUserName?: string;
+  guestName: string;
+  guestEmail: string;
+  registrationType: string;
+  isValid: boolean;
+  isDuplicate: boolean;
+  invalidReason?: string;
+  previousCheckInId?: string;
+  // New fields
+  actionType?: string; // "checkin" | "checkout"
+  sessionNumber?: number;
+  zoneId?: string;
+  zoneName?: string;
+  durationInside?: string;
+  timestamp?: string; // UI field
+  isNew?: boolean;    // UI field
 }
 
 export interface CheckInStats {
@@ -382,7 +422,7 @@ class OrganizerApiService {
   /**
    * Check in an attendee - validates wallet QR codes with JWT tokens and performs check-in
    */
-  async checkInAttendee(qrCode: string): Promise<AttendeeCheckIn> {
+  async checkInAttendee(qrCode: string, gateTypeOverride?: string): Promise<AttendeeCheckIn> {
     console.log("🔍 [DEBUG] Step 1: Getting active session...");
 
     // Get active session to get eventId and gate info
@@ -393,6 +433,10 @@ class OrganizerApiService {
     if (!activeSession) {
       throw new Error("No active gate session. Please start a session first.");
     }
+
+    // Determine effective gate type (override takes precedence)
+    const effectiveGateType = gateTypeOverride || activeSession.gateType || "entry";
+    console.log(`🔍 [DEBUG] Effective Gate Type: ${effectiveGateType} (Original: ${activeSession.gateType}, Override: ${gateTypeOverride})`);
 
     console.log("🔍 [DEBUG] Step 3: Starting validation...");
 
@@ -433,7 +477,7 @@ class OrganizerApiService {
     // Check if already checked in
     // ONLY return early if we are at an ENTRY gate. 
     // For EXIT or BOTH gates, being checked in is expected/required for checkout.
-    const isEntryGate = (activeSession.gateType || "entry").toLowerCase() === "entry";
+    const isEntryGate = effectiveGateType.toLowerCase() === "entry";
 
     if (isEntryGate && validationResult.alreadyCheckedIn) {
       console.log("🔍 [DEBUG] Guest already checked in at Entry gate, returning early");
@@ -456,7 +500,7 @@ class OrganizerApiService {
       eventId: activeSession.eventId,
       gateId: activeSession.gateId,
       gateName: activeSession.gateName,
-      gateType: activeSession.gateType || "entry",  // Pass gate type for gate logic
+      gateType: effectiveGateType,  // Use effective gate type for logic
       checkInGate: activeSession.gateName,
       scannerDeviceId: activeSession.sessionId,
       scannerUserName: this.getCurrentUser()?.fullName || "Organizer",
@@ -568,6 +612,36 @@ class OrganizerApiService {
       localStorage.removeItem("organizerUser");
       return null;
     }
+  }
+
+  /**
+   * Get formatted time report for an attendee
+   */
+  async getAttendeeTimeReport(eventId: string, registrationId: string): Promise<AttendeeTimeReport> {
+    const response = await fetch(`${API_BASE_URL}/api/CheckIn/event/${eventId}/attendee/${registrationId}/time-report`, {
+      headers: this.getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch time report");
+    return await response.json();
+  }
+
+  /**
+   * Get occupancy and time summary for event
+   */
+  async getEventTimeSummary(eventId: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/CheckIn/event/${eventId}/stats`, {
+      headers: this.getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch time summary");
+    return await response.json();
+  }
+
+  async getCurrentOccupancy(eventId: string): Promise<any> {
+    const response = await fetch(`${API_BASE_URL}/api/CheckIn/event/${eventId}/current-occupancy`, {
+      headers: this.getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch occupancy");
+    return await response.json();
   }
 }
 

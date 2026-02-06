@@ -29,23 +29,19 @@ export default function ScannerPage() {
       router.push("/organizer/login");
       return;
     }
-
     loadActiveSession();
 
-    // Setup heartbeat every 2 minutes
     heartbeatInterval.current = setInterval(() => {
       organizerApi.sendHeartbeat().catch(console.error);
-    }, 120000); // 2 minutes
+    }, 120000);
 
     return () => {
       if (heartbeatInterval.current) {
         clearInterval(heartbeatInterval.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  // Load statistics and recent check-ins after session is loaded
   useEffect(() => {
     if (session?.eventId) {
       loadStatistics();
@@ -60,7 +56,6 @@ export default function ScannerPage() {
         router.push("/organizer/events");
         return;
       }
-
       const activeSession = await organizerApi.getActiveSession(eventId);
       if (!activeSession) {
         router.push("/organizer/events");
@@ -77,7 +72,6 @@ export default function ScannerPage() {
 
   const loadStatistics = async () => {
     if (!session?.eventId) return;
-
     try {
       const stats = await organizerApi.getCheckInStats(session.eventId);
       setStatistics(stats);
@@ -88,21 +82,15 @@ export default function ScannerPage() {
 
   const loadRecentCheckIns = async () => {
     if (!session?.eventId) return;
-
     try {
       const checkIns = await organizerApi.getEventCheckIns(session.eventId, 20);
-
-      // Store all check-ins (for "All Gates" tab)
       setAllGateCheckIns(checkIns);
-
-      // Filter by current gate (for "This Gate" tab)
       const gateCheckIns = session.gateName
         ? checkIns.filter(c => c.gateName === session.gateName)
         : checkIns;
-
       setRecentCheckIns(gateCheckIns);
       if (gateCheckIns.length > 0) {
-        setLastCheckIn(gateCheckIns[0]); // Most recent
+        setLastCheckIn(gateCheckIns[0]);
       }
     } catch (error) {
       console.error("Failed to load recent check-ins:", error);
@@ -116,82 +104,60 @@ export default function ScannerPage() {
     setDuplicateInfo(null);
 
     try {
-      const checkIn = await organizerApi.checkInAttendee(code);
+      const checkIn = await organizerApi.checkInAttendee(code, session?.gateType);
       setLastCheckIn(checkIn);
 
-      // Show modal for duplicate instead of adding to list
       if (checkIn.isDuplicate) {
-        setDuplicateInfo(checkIn);
-        // Vibrate for warning
-        if (navigator.vibrate) {
-          navigator.vibrate([200, 100, 200]);
+        if (checkIn.invalidReason === 'grace_period') {
+          setError("⚠️ Handled: Scanned just now (Grace Period)");
+          if (navigator.vibrate) navigator.vibrate(100);
+        } else {
+          setDuplicateInfo(checkIn);
+          if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+          }
         }
       } else {
-        // Add to recent check-ins list (LIFO - newest first)
         setRecentCheckIns(prev => {
-          const newCheckIn = {
-            ...checkIn,
-            timestamp: new Date().toISOString(),
-            isNew: true
-          };
+          const newCheckIn = { ...checkIn, timestamp: new Date().toISOString(), isNew: true };
           return [newCheckIn, ...prev].slice(0, 10);
         });
-
-        // Also add to all gates list
         setAllGateCheckIns(prev => {
-          const newCheckIn = {
-            ...checkIn,
-            timestamp: new Date().toISOString(),
-            isNew: true
-          };
+          const newCheckIn = { ...checkIn, timestamp: new Date().toISOString(), isNew: true };
           return [newCheckIn, ...prev].slice(0, 20);
         });
 
-        // Dynamic success message based on action type
         const actionType = checkIn.actionType || 'checkin';
         if (actionType === 'checkout') {
-          const durationText = checkIn.durationInside ? ` Duration: ${checkIn.durationInside}` : '';
-          setSuccess(`✓ ${checkIn.fullName || "Attendee"} checked out!${durationText}`);
+          const durationText = checkIn.durationInside ? ` • Duration: ${checkIn.durationInside}` : '';
+          setSuccess(`Checked Out: ${checkIn.guestName || "Attendee"}${durationText}`);
         } else {
-          setSuccess(`✓ ${checkIn.fullName || "Attendee"} checked in successfully!`);
+          const sessionText = checkIn.sessionNumber && checkIn.sessionNumber > 1 ? ` (Session #${checkIn.sessionNumber})` : '';
+          setSuccess(`Checked In: ${checkIn.guestName || "Attendee"}${sessionText}`);
         }
 
-        // Vibrate for success
         if (navigator.vibrate) {
           navigator.vibrate([100, 50, 100]);
         }
 
-        // Update check-in count
         if (session) {
-          setSession({
-            ...session,
-            checkInCount: session.checkInCount + 1,
-          });
+          setSession({ ...session, checkInCount: session.checkInCount + 1 });
         }
 
-        // Auto-clear success message after 3 seconds
-        setTimeout(() => setSuccess(""), 3000);
-
-        // Remove highlight animation after 2 seconds
+        setTimeout(() => setSuccess(""), 4000);
         setTimeout(() => {
           setRecentCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
           setAllGateCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
         }, 2000);
       }
 
-      // Auto-close camera after successful scan
       setCameraActive(false);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Check-in failed";
+      const message = error instanceof Error ? error.message : "Check-in failed";
       setError(message);
-
-      // Vibrate for error
       if (navigator.vibrate) {
         navigator.vibrate(500);
       }
-
-      // Don't close camera on error - let user try again
     } finally {
       setScanning(false);
       setQrCode("");
@@ -219,7 +185,6 @@ export default function ScannerPage() {
       } else {
         throw new Error("Missing event or session ID");
       }
-      // Clear stored eventId
       localStorage.removeItem("activeEventId");
       router.push("/organizer/events");
     } catch (error) {
@@ -229,10 +194,7 @@ export default function ScannerPage() {
   };
 
   const formatTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return new Date(dateStr).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
   };
 
   const getSessionDuration = () => {
@@ -245,27 +207,30 @@ export default function ScannerPage() {
 
   const getRelativeTime = (timestamp?: string) => {
     if (!timestamp) return "Just now";
-
     const now = new Date();
     const checkInTime = new Date(timestamp);
     const diffMs = now.getTime() - checkInTime.getTime();
     const diffSec = Math.floor(diffMs / 1000);
     const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-
     if (diffSec < 10) return "Just now";
     if (diffSec < 60) return `${diffSec}s ago`;
     if (diffMin < 60) return `${diffMin}m ago`;
-    if (diffHour < 24) return `${diffHour}h ago`;
     return checkInTime.toLocaleDateString();
+  };
+
+  const getGateTypeConfig = () => {
+    const type = session?.gateType?.toLowerCase();
+    if (type === 'entry') return { color: 'from-emerald-500 to-green-600', bg: 'bg-emerald-500/20', text: 'text-emerald-400', label: 'Entry' };
+    if (type === 'exit') return { color: 'from-orange-500 to-red-600', bg: 'bg-orange-500/20', text: 'text-orange-400', label: 'Exit' };
+    return { color: 'from-purple-500 to-indigo-600', bg: 'bg-purple-500/20', text: 'text-purple-400', label: 'Both' };
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading scanner...</p>
+          <div className="w-16 h-16 border-4 border-purple-500/30 rounded-full animate-spin border-t-purple-500 mx-auto"></div>
+          <p className="mt-6 text-purple-200 font-medium">Loading scanner...</p>
         </div>
       </div>
     );
@@ -273,13 +238,10 @@ export default function ScannerPage() {
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-red-600">No active session found</p>
-          <button
-            onClick={() => router.push("/organizer/events")}
-            className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="text-center backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8">
+          <p className="text-red-300 mb-4">No active session found</p>
+          <button onClick={() => router.push("/organizer/events")} className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold">
             Back to Events
           </button>
         </div>
@@ -287,82 +249,52 @@ export default function ScannerPage() {
     );
   }
 
+  const gateConfig = getGateTypeConfig();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
+      {/* Background Effects */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="relative z-10 backdrop-blur-xl bg-white/5 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <button
-                onClick={() => router.back()}
-                className="mr-4 p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
+            <div className="flex items-center gap-4">
+              <button onClick={() => router.back()} className="p-2 text-purple-300 hover:text-white hover:bg-white/10 rounded-xl transition-all">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-xl font-bold text-gray-900">
-                    {session.gateName}
-                  </h1>
-                  {/* Gate Type Badge */}
-                  {session.gateType && (
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full flex items-center gap-1 ${session.gateType === 'entry' ? 'bg-green-100 text-green-800' :
-                      session.gateType === 'exit' ? 'bg-red-100 text-red-800' :
-                        'bg-purple-100 text-purple-800'
-                      }`}>
-                      {session.gateType === 'entry' ? (
-                        <>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                          </svg>
-                          Entry
-                        </>
-                      ) : session.gateType === 'exit' ? (
-                        <>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                          </svg>
-                          Exit
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                          </svg>
-                          Both
-                        </>
-                      )}
-                    </span>
-                  )}
+                <div className="flex items-center gap-3">
+                  <h1 className="text-xl font-bold text-white">{session.gateName}</h1>
+                  <span className={`px-3 py-1 text-xs font-semibold rounded-full ${gateConfig.bg} ${gateConfig.text} border border-current/30`}>
+                    {gateConfig.label}
+                  </span>
                 </div>
-                <p className="text-sm text-gray-600">
-                  Session started at {formatTime(session.sessionStartTime)} •
-                  Duration: {getSessionDuration()}
-                  {session.gateType === 'both' && (
-                    <span className="ml-2 text-indigo-600 font-medium">
-                      • Next scan: {lastCheckIn?.actionType === 'checkin' ? 'Checkout' : 'Check-in'}
-                    </span>
-                  )}
-                </p>
+                <div className="flex items-center gap-4 mt-1">
+                  <span className="text-sm text-purple-200/70">Started {formatTime(session.sessionStartTime)} • {getSessionDuration()}</span>
+                  <button
+                    onClick={() => {
+                      const newType = session.gateType === 'entry' ? 'exit' : 'entry';
+                      setSession({ ...session, gateType: newType });
+                      if (navigator.vibrate) navigator.vibrate(50);
+                    }}
+                    className="text-xs font-medium text-purple-300 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1 rounded-lg border border-white/10 transition-all flex items-center gap-1"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    Switch to {session.gateType === 'entry' ? 'Exit' : 'Entry'}
+                  </button>
+                </div>
               </div>
             </div>
-            <button
-              onClick={handleEndSession}
-              className="px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
+            <button onClick={handleEndSession} className="px-4 py-2 text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/30 rounded-xl hover:bg-red-500/20 transition-all">
               End Session
             </button>
           </div>
@@ -370,362 +302,194 @@ export default function ScannerPage() {
       </header>
 
       {/* Stats Bar */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-center space-x-8">
+      <div className="relative z-10 backdrop-blur-xl bg-white/5 border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-center gap-12">
             <div className="text-center">
-              <p className="text-3xl font-bold text-indigo-600">
-                {session.checkInCount}
-              </p>
-              <p className="text-sm text-gray-600">Check-ins</p>
+              <p className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">{session.checkInCount}</p>
+              <p className="text-sm text-purple-200/60">Check-ins</p>
             </div>
-            <div className="h-12 w-px bg-gray-300"></div>
+            <div className="w-px h-12 bg-white/10"></div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">
-                {session.isActive ? "Active" : "Inactive"}
-              </p>
-              <p className="text-sm text-gray-600">Status</p>
+              <p className="text-4xl font-bold text-emerald-400">{session.isActive ? "●" : "○"}</p>
+              <p className="text-sm text-purple-200/60">{session.isActive ? "Active" : "Inactive"}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="relative z-10 max-w-3xl mx-auto px-4 py-8">
         {/* Success Message */}
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border-2 border-green-500 rounded-lg animate-pulse">
-            <p className="text-lg font-semibold text-green-800 text-center">
-              {success}
+          <div className={`mb-6 p-4 rounded-xl border backdrop-blur-sm animate-pulse ${success.includes('Out') ? 'bg-orange-500/20 border-orange-500/30' : 'bg-emerald-500/20 border-emerald-500/30'
+            }`}>
+            <p className={`text-lg font-semibold text-center ${success.includes('Out') ? 'text-orange-300' : 'text-emerald-300'}`}>
+              ✓ {success}
             </p>
           </div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl backdrop-blur-sm">
+            <p className="text-sm text-red-300 text-center">{error}</p>
           </div>
         )}
 
         {/* Scanner Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-          <div className="text-center mb-6">
-            <div className="w-24 h-24 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-12 h-12 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
-                />
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden mb-6">
+          <div className="p-8 text-center">
+            <div className={`w-24 h-24 mx-auto mb-6 rounded-2xl flex items-center justify-center ${gateConfig.bg} ${cameraActive ? 'animate-pulse' : ''}`}>
+              <svg className={`w-12 h-12 ${gateConfig.text}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Scan QR Code</h2>
-            <p className="text-gray-600 mt-2">
-              Use camera to scan or enter code manually
-            </p>
+            <h2 className="text-2xl font-bold text-white mb-2">Scan QR Code</h2>
+            <p className="text-purple-200/60">Use camera or enter code manually</p>
           </div>
 
-          {/* Camera Toggle */}
-          <div className="mb-6 flex justify-center gap-3">
+          {/* Camera Controls */}
+          <div className="px-8 pb-6 flex justify-center gap-3">
             <button
               onClick={() => setCameraActive(!cameraActive)}
-              className={`px-6 py-3 rounded-lg font-semibold transition ${cameraActive
-                ? "bg-red-600 text-white hover:bg-red-700"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
+              className={`px-6 py-3 rounded-xl font-semibold transition-all ${cameraActive
+                  ? "bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30"
+                  : `bg-gradient-to-r ${gateConfig.color} text-white shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40`
                 }`}
             >
-              {cameraActive ? "📷 Stop Camera" : "📷 Start Camera"}
+              {cameraActive ? "Stop Camera" : "📷 Start Camera"}
             </button>
-
-            {/* QR Code Upload */}
-            <label className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold cursor-pointer hover:bg-green-700 transition">
-              📤 Upload QR
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                disabled={scanning}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-
-                  setScanning(true);
-                  setError("");
-
-                  try {
-                    // Dynamically import Html5Qrcode
-                    const { Html5Qrcode } = await import("html5-qrcode");
-                    const html5QrCode = new Html5Qrcode("qr-file-reader");
-                    const decodedText = await html5QrCode.scanFile(file, false);
-                    await handleCheckIn(decodedText);
-                    e.target.value = ""; // Reset input
-                  } catch (err) {
-                    const errorMsg = err instanceof Error ? err.message : "Failed to read QR code from image";
-                    setError(errorMsg);
-                  } finally {
-                    setScanning(false);
-                  }
-                }}
-              />
+            <label className="px-6 py-3 bg-white/10 text-white border border-white/20 rounded-xl font-semibold cursor-pointer hover:bg-white/20 transition-all">
+              📤 Upload
+              <input type="file" accept="image/*" className="hidden" disabled={scanning} onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setScanning(true);
+                setError("");
+                try {
+                  const { Html5Qrcode } = await import("html5-qrcode");
+                  const html5QrCode = new Html5Qrcode("qr-file-reader");
+                  const decodedText = await html5QrCode.scanFile(file, false);
+                  await handleCheckIn(decodedText);
+                  e.target.value = "";
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Failed to read QR code");
+                } finally {
+                  setScanning(false);
+                }
+              }} />
             </label>
           </div>
 
-          {/* Hidden div for file scanning */}
           <div id="qr-file-reader" style={{ display: "none" }}></div>
 
-          {/* QR Scanner */}
           {cameraActive && (
-            <div className="mb-6">
-              <QRScanner
-                onScan={handleCheckIn}
-                onError={(err) => setError(err)}
-                isActive={cameraActive}
-              />
+            <div className="px-8 pb-6">
+              <div className="rounded-xl overflow-hidden border border-white/20">
+                <QRScanner onScan={handleCheckIn} onError={(err) => setError(err)} isActive={cameraActive} />
+              </div>
             </div>
           )}
 
-          {/* Manual Entry Form */}
-          <div className="border-t pt-6">
-            <p className="text-sm text-gray-600 text-center mb-4">
-              Or enter code manually:
-            </p>
-            <form onSubmit={handleManualEntry} className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  value={qrCode}
-                  onChange={(e) => setQrCode(e.target.value)}
-                  placeholder="Enter QR code..."
-                  disabled={scanning}
-                  className="w-full px-6 py-4 text-lg border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                />
-              </div>
+          {/* Manual Entry */}
+          <div className="px-8 pb-8 border-t border-white/10 pt-6">
+            <form onSubmit={handleManualEntry} className="flex gap-3">
+              <input
+                type="text"
+                value={qrCode}
+                onChange={(e) => setQrCode(e.target.value)}
+                placeholder="Enter code manually..."
+                disabled={scanning}
+                className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-purple-200/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all disabled:opacity-50"
+              />
               <button
                 type="submit"
                 disabled={!qrCode.trim() || scanning}
-                className="w-full bg-indigo-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`px-6 py-3 bg-gradient-to-r ${gateConfig.color} text-white rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {scanning ? (
-                  <span className="flex items-center justify-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-3 h-6 w-6 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    Processing...
-                  </span>
-                ) : (
-                  "Check In Attendee"
-                )}
+                {scanning ? "..." : "Go"}
               </button>
             </form>
           </div>
         </div>
 
-        {/* Last Check-in Info */}
-        {lastCheckIn && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Last Check-in
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Name:</span>
-                <span className="font-medium text-gray-900">
-                  {lastCheckIn.fullName}
-                </span>
-              </div>
-              {lastCheckIn.email && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Email:</span>
-                  <span className="font-medium text-gray-900">
-                    {lastCheckIn.email}
-                  </span>
-                </div>
-              )}
-              {lastCheckIn.ticketType && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Ticket:</span>
-                  <span className="font-medium text-gray-900">
-                    {lastCheckIn.ticketType}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-gray-600">Time:</span>
-                <span className="font-medium text-gray-900">
-                  {formatTime(lastCheckIn.checkInTime)}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Recent Check-ins List with Tabs */}
-        <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Recent Check-ins
-            </h3>
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setCheckInTab("thisGate")}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition ${checkInTab === "thisGate"
-                  ? "bg-white text-indigo-600 shadow"
-                  : "text-gray-600 hover:text-gray-900"
-                  }`}
-              >
+        {/* Recent Check-ins */}
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
+            <div className="flex bg-white/5 rounded-lg p-1">
+              <button onClick={() => setCheckInTab("thisGate")} className={`px-3 py-1 text-sm font-medium rounded-md transition ${checkInTab === "thisGate" ? "bg-white/10 text-white" : "text-purple-200/60 hover:text-white"}`}>
                 This Gate ({recentCheckIns.length})
               </button>
-              <button
-                onClick={() => setCheckInTab("allGates")}
-                className={`px-3 py-1 text-sm font-medium rounded-md transition ${checkInTab === "allGates"
-                  ? "bg-white text-indigo-600 shadow"
-                  : "text-gray-600 hover:text-gray-900"
-                  }`}
-              >
-                All Gates ({allGateCheckIns.length})
+              <button onClick={() => setCheckInTab("allGates")} className={`px-3 py-1 text-sm font-medium rounded-md transition ${checkInTab === "allGates" ? "bg-white/10 text-white" : "text-purple-200/60 hover:text-white"}`}>
+                All ({allGateCheckIns.length})
               </button>
             </div>
           </div>
 
-          {(checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No check-ins yet</p>
-          ) : (
-            <div className="space-y-2">
-              {(checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).map((checkIn, index) => (
-                <div
-                  key={`${checkIn.userId}-${checkIn.timestamp || index}`}
-                  className={`p-4 rounded-lg border-2 transition-all duration-300 ${checkIn.isNew
-                    ? "border-green-500 bg-green-50 shadow-lg"
-                    : "border-gray-200 bg-gray-50"
-                    }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-3 h-3 rounded-full ${checkIn.isNew ? "bg-green-500 animate-pulse" : "bg-gray-400"
-                          }`}
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {checkIn.fullName || "Unknown"}
-                        </p>
-                        {checkIn.email && (
-                          <p className="text-xs text-gray-600">{checkIn.email}</p>
-                        )}
+          <div className="p-4 max-h-80 overflow-y-auto">
+            {(checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).length === 0 ? (
+              <p className="text-center text-purple-200/40 py-8">No check-ins yet</p>
+            ) : (
+              <div className="space-y-2">
+                {(checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).map((checkIn, index) => (
+                  <div
+                    key={`${checkIn.registrationId}-${checkIn.timestamp || index}`}
+                    className={`p-4 rounded-xl border transition-all ${checkIn.isNew
+                        ? "bg-emerald-500/10 border-emerald-500/30"
+                        : "bg-white/5 border-white/10"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${checkIn.actionType === 'checkout' ? 'bg-orange-500/20' : 'bg-emerald-500/20'
+                          }`}>
+                          <span className={`text-lg ${checkIn.actionType === 'checkout' ? 'text-orange-400' : 'text-emerald-400'}`}>
+                            {checkIn.actionType === 'checkout' ? '↑' : '↓'}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-white">{checkIn.guestName || "Guest"}</p>
+                          <p className="text-xs text-purple-200/50">{checkIn.registrationType || 'General'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`px-2 py-1 text-xs font-bold rounded ${checkIn.actionType === 'checkout' ? 'bg-orange-500/20 text-orange-400' : 'bg-emerald-500/20 text-emerald-400'
+                          }`}>
+                          {checkIn.actionType === 'checkout' ? 'OUT' : 'IN'}
+                        </span>
+                        {checkIn.durationInside && <p className="text-xs text-orange-400 mt-1">{checkIn.durationInside}</p>}
+                        <p className="text-xs text-purple-200/40 mt-1">{getRelativeTime(checkIn.timestamp)}</p>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      {/* Action Badge (IN/OUT) */}
-                      <span
-                        className={`px-2 py-1 text-xs font-bold rounded ${checkIn.actionType === 'checkout'
-                          ? 'bg-orange-100 text-orange-800'
-                          : 'bg-green-100 text-green-800'
-                          }`}
-                      >
-                        {checkIn.actionType === 'checkout' ? 'OUT' : 'IN'}
-                      </span>
-                      <span
-                        className={`px-3 py-1 text-xs font-semibold rounded-full ${checkIn.ticketType?.toLowerCase() === "vip"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-blue-100 text-blue-800"
-                          }`}
-                      >
-                        {checkIn.ticketType?.toUpperCase() || "REGULAR"}
-                      </span>
-                      {checkInTab === "allGates" && checkIn.gateName && (
-                        <span className="px-2 py-1 text-xs font-medium rounded bg-gray-200 text-gray-700">
-                          {checkIn.gateName}
-                        </span>
-                      )}
-                      {/* Show duration for checkouts */}
-                      {checkIn.actionType === 'checkout' && checkIn.durationInside && (
-                        <span className="text-xs text-orange-600 font-medium">
-                          {checkIn.durationInside}
-                        </span>
-                      )}
-                      <span className="text-xs text-gray-500">
-                        {getRelativeTime(checkIn.timestamp)}
-                      </span>
-                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
-      {/* Duplicate Alert Modal */}
+      {/* Duplicate Modal */}
       {duplicateInfo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-            {/* Header */}
-            <div className="bg-amber-500 p-6 text-center">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-10 h-10 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="backdrop-blur-xl bg-slate-900/90 border border-amber-500/30 rounded-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-6 text-center">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-white">Already Checked In</h2>
             </div>
-
-            {/* Content */}
             <div className="p-6">
-              <div className="text-center mb-4">
-                <p className="text-xl font-semibold text-gray-900">{duplicateInfo.fullName}</p>
-                <span className={`inline-block mt-2 px-3 py-1 text-sm font-semibold rounded-full ${duplicateInfo.ticketType?.toLowerCase() === "vip"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-blue-100 text-blue-800"
-                  }`}>
-                  {duplicateInfo.ticketType?.toUpperCase() || "REGULAR"}
-                </span>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <p className="text-sm text-gray-700">
-                  This pass was already scanned at{" "}
-                  <strong>{duplicateInfo.checkInTime ? formatTime(duplicateInfo.checkInTime) : "earlier"}</strong>
-                  {duplicateInfo.gateName && (
-                    <> at <strong>{duplicateInfo.gateName}</strong></>
-                  )}
-                  {duplicateInfo.organizerName && (
-                    <> by <strong>{duplicateInfo.organizerName}</strong></>
-                  )}
-                  .
-                </p>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="px-6 pb-6">
-              <button
-                onClick={() => setDuplicateInfo(null)}
-                className="w-full bg-amber-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-amber-600 transition"
-              >
+              <p className="text-xl font-semibold text-white text-center mb-2">{duplicateInfo.guestName}</p>
+              <p className="text-center text-amber-300/70 mb-4">
+                Scanned at {duplicateInfo.checkInTime ? formatTime(duplicateInfo.checkInTime) : "earlier"}
+                {duplicateInfo.gateName && ` at ${duplicateInfo.gateName}`}
+              </p>
+              <button onClick={() => setDuplicateInfo(null)} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 rounded-xl font-semibold">
                 Got it
               </button>
             </div>
@@ -733,13 +497,12 @@ export default function ScannerPage() {
         </div>
       )}
 
-      {/* Confirm Dialog */}
       <ConfirmDialog
         isOpen={showEndSessionDialog}
         title="End Session?"
-        message="Are you sure you want to end this scanning session? All current session data will be saved, but you won't be able to scan more attendees until you start a new session."
+        message="All data will be saved, but you won't be able to scan until you start a new session."
         confirmText="End Session"
-        cancelText="Continue Scanning"
+        cancelText="Continue"
         variant="danger"
         onConfirm={confirmEndSession}
         onCancel={() => setShowEndSessionDialog(false)}
