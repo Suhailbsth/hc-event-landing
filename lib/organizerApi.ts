@@ -431,8 +431,12 @@ class OrganizerApiService {
     }
 
     // Check if already checked in
-    if (validationResult.alreadyCheckedIn) {
-      console.log("🔍 [DEBUG] Guest already checked in, returning early");
+    // ONLY return early if we are at an ENTRY gate. 
+    // For EXIT or BOTH gates, being checked in is expected/required for checkout.
+    const isEntryGate = (activeSession.gateType || "entry").toLowerCase() === "entry";
+
+    if (isEntryGate && validationResult.alreadyCheckedIn) {
+      console.log("🔍 [DEBUG] Guest already checked in at Entry gate, returning early");
       // Return the existing check-in info
       return {
         userId: validationResult.registrationId,
