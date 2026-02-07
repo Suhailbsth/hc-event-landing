@@ -387,18 +387,21 @@ class OrganizerApiService {
         }
 
         return {
-          userId: checkIn.registrationId,
-          fullName: checkIn.guestName,
-          email: checkIn.guestEmail,
-          ticketType: checkIn.registrationType,
+          id: checkIn.id,
+          eventId: checkIn.eventId,
+          registrationId: checkIn.registrationId,
+          guestName: checkIn.guestName,
+          guestEmail: checkIn.guestEmail,
+          registrationType: checkIn.registrationType,
           checkInTime: checkIn.checkInTime,
           gateName: checkIn.gateName || checkIn.checkedInGate,
-          organizerName: checkIn.scannerUserName || "",
+          scannerUserName: checkIn.scannerUserName || "",
+          isValid: checkIn.isValid,
           isDuplicate: checkIn.isDuplicate || false,
           timestamp: checkIn.checkInTime,
           actionType: checkIn.actionType || "checkin",
           durationInside: durationInside,
-          cycleNumber: checkIn.cycleNumber || 1,
+          sessionNumber: checkIn.sessionNumber || 1,
         };
       });
   }
@@ -483,13 +486,16 @@ class OrganizerApiService {
       console.log("🔍 [DEBUG] Guest already checked in at Entry gate, returning early");
       // Return the existing check-in info
       return {
-        userId: validationResult.registrationId,
-        fullName: validationResult.guestName,
-        email: validationResult.guestEmail,
-        ticketType: validationResult.registrationType,
+        id: validationResult.previousCheckInId || "",
+        eventId: activeSession.eventId,
+        registrationId: validationResult.registrationId,
+        guestName: validationResult.guestName,
+        guestEmail: validationResult.guestEmail,
+        registrationType: validationResult.registrationType,
         checkInTime: validationResult.previousCheckInTime,
         gateName: validationResult.previousCheckInGate || activeSession.gateName,
-        organizerName: "",
+        scannerUserName: "",
+        isValid: true,
         isDuplicate: true,
       };
     }
@@ -549,17 +555,19 @@ class OrganizerApiService {
 
     // Return the check-in/checkout info
     return {
-      userId: validationResult.registrationId,
-      fullName: validationResult.guestName,
-      email: validationResult.guestEmail,
-      ticketType: validationResult.registrationType,
+      id: checkInResult.checkIn?.id || "",
+      eventId: activeSession.eventId,
+      registrationId: validationResult.registrationId,
+      guestName: validationResult.guestName,
+      guestEmail: validationResult.guestEmail,
+      registrationType: validationResult.registrationType,
       checkInTime: checkInResult.checkIn?.checkInTime || new Date().toISOString(),
       gateName: activeSession.gateName,
-      organizerName: this.getCurrentUser()?.fullName || "",
+      isValid: true,
       isDuplicate: checkInResult.checkIn?.isDuplicate || false,
       actionType: checkInResult.checkIn?.actionType || "checkin",
       durationInside: durationInside,
-      cycleNumber: checkInResult.checkIn?.cycleNumber || 1,
+      sessionNumber: checkInResult.checkIn?.sessionNumber || 1,
     };
   }
 
