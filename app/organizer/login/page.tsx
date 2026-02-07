@@ -3,14 +3,14 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { organizerApi } from "@/lib/organizerApi";
-import { User, Lock, ArrowRight, Loader2, AlertCircle, LayoutDashboard } from "lucide-react";
+import { User, Lock, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+    <div className="min-h-screen flex items-center justify-center bg-[#f9f9fa]">
       <div className="text-center">
         <Loader2 className="w-10 h-10 text-zinc-400 animate-spin mx-auto" />
-        <p className="mt-4 text-zinc-500 text-sm font-medium">Loading...</p>
+        <p className="mt-4 text-zinc-500 text-sm font-medium font-serif italic">Loading Portal...</p>
       </div>
     </div>
   );
@@ -70,46 +70,43 @@ function OrganizerLoginContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-zinc-950 text-zinc-100 overflow-hidden selection:bg-zinc-700 selection:text-white">
-      {/* Abstract Minimal Background */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-gradient-to-b from-zinc-900/50 to-transparent opacity-40 blur-3xl" />
-      </div>
+    <div className="min-h-screen flex items-center justify-center relative bg-[#f9f9fa] text-zinc-900 overflow-hidden selection:bg-black/10 selection:text-black">
+      {/* Luxurious/Subtle Background */}
+      <div className="absolute inset-0 bg-luxury-gradient opacity-80" />
+      <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-purple-100/30 rounded-full blur-3xl mix-blend-multiply" />
+      <div className="absolute bottom-[-10%] left-[-5%] w-[40%] h-[40%] bg-blue-100/30 rounded-full blur-3xl mix-blend-multiply" />
 
       <div className="relative z-10 w-full max-w-[400px] px-4">
-        {/* Card */}
-        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl p-8">
+        {/* Glass Card */}
+        <div className="backdrop-blur-md bg-white/70 border border-white/50 rounded-2xl shadow-glass-md p-10">
 
           {/* Header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-6 shadow-glow">
-              <LayoutDashboard className="w-6 h-6 text-zinc-200" />
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight text-white mb-2">Organizer Portal</h1>
-            <p className="text-zinc-400 text-sm">Sign in to manage your events</p>
+            <h1 className="text-3xl font-serif font-medium text-zinc-900 mb-2 tracking-tight">Organizer Portal</h1>
+            <p className="text-zinc-500 text-sm font-light">Sign in to manage your events</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
+            <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-300">{error}</p>
+              <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Username Input */}
             <div className="space-y-1.5">
               <label
-                className={`text-xs font-medium transition-colors ${focusedField === 'username' ? 'text-zinc-300' : 'text-zinc-500'
+                className={`text-xs uppercase tracking-wider font-semibold transition-colors ${focusedField === 'username' ? 'text-black' : 'text-zinc-400'
                   }`}
               >
                 Username
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className={`w-4 h-4 transition-colors ${focusedField === 'username' ? 'text-zinc-300' : 'text-zinc-500'
+                  <User className={`w-4 h-4 transition-colors ${focusedField === 'username' ? 'text-black' : 'text-zinc-400'
                     }`} />
                 </div>
                 <input
@@ -120,7 +117,7 @@ function OrganizerLoginContent() {
                   onBlur={() => setFocusedField(null)}
                   required
                   disabled={loading}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all hover:bg-black/30 hover:border-white/15"
+                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all hover:bg-white/80 hover:border-zinc-300"
                   placeholder="Enter your username"
                 />
               </div>
@@ -129,14 +126,14 @@ function OrganizerLoginContent() {
             {/* Password Input */}
             <div className="space-y-1.5">
               <label
-                className={`text-xs font-medium transition-colors ${focusedField === 'password' ? 'text-zinc-300' : 'text-zinc-500'
+                className={`text-xs uppercase tracking-wider font-semibold transition-colors ${focusedField === 'password' ? 'text-black' : 'text-zinc-400'
                   }`}
               >
                 Password
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className={`w-4 h-4 transition-colors ${focusedField === 'password' ? 'text-zinc-300' : 'text-zinc-500'
+                  <Lock className={`w-4 h-4 transition-colors ${focusedField === 'password' ? 'text-black' : 'text-zinc-400'
                     }`} />
                 </div>
                 <input
@@ -147,7 +144,7 @@ function OrganizerLoginContent() {
                   onBlur={() => setFocusedField(null)}
                   required
                   disabled={loading}
-                  className="w-full pl-10 pr-4 py-2.5 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all hover:bg-black/30 hover:border-white/15"
+                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all hover:bg-white/80 hover:border-zinc-300"
                   placeholder="Enter your password"
                 />
               </div>
@@ -157,7 +154,7 @@ function OrganizerLoginContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full group mt-2 flex items-center justify-center gap-2 py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full group mt-4 flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-black text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-zinc-200 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -174,9 +171,9 @@ function OrganizerLoginContent() {
           </form>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-white/5 text-center">
-            <p className="text-xs text-zinc-500">
-              Need assistance? Contact your administrator
+          <div className="mt-8 pt-6 border-t border-zinc-100 text-center">
+            <p className="text-xs text-zinc-400 font-light">
+              Restricted Access &bull; Authorized Personnel Only
             </p>
           </div>
         </div>
