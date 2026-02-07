@@ -3,16 +3,14 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { organizerApi } from "@/lib/organizerApi";
+import { User, Lock, ArrowRight, Loader2, AlertCircle, LayoutDashboard } from "lucide-react";
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-950">
       <div className="text-center">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-purple-500/30 rounded-full animate-spin border-t-purple-500"></div>
-          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent rounded-full animate-ping border-t-purple-400 opacity-20"></div>
-        </div>
-        <p className="mt-6 text-purple-200 font-medium">Loading...</p>
+        <Loader2 className="w-10 h-10 text-zinc-400 animate-spin mx-auto" />
+        <p className="mt-4 text-zinc-500 text-sm font-medium">Loading...</p>
       </div>
     </div>
   );
@@ -72,142 +70,116 @@ function OrganizerLoginContent() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-40"></div>
-        {/* Floating orbs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+    <div className="min-h-screen flex items-center justify-center relative bg-zinc-950 text-zinc-100 overflow-hidden selection:bg-zinc-700 selection:text-white">
+      {/* Abstract Minimal Background */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-gradient-to-b from-zinc-900/50 to-transparent opacity-40 blur-3xl" />
       </div>
 
-      {/* Glass Card */}
-      <div className="relative z-10 w-full max-w-md mx-4">
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8 md:p-10">
-          {/* Logo & Header */}
-          <div className="text-center mb-8">
-            <div className="relative inline-block mb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/30 transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                <svg
-                  className="w-10 h-10 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m9 5.197v-1a6 6 0 00-3-5.197"
-                  />
-                </svg>
-              </div>
-              <div className="absolute -inset-1 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl blur opacity-30 -z-10"></div>
+      <div className="relative z-10 w-full max-w-[400px] px-4">
+        {/* Card */}
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl shadow-2xl p-8">
+
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-6 shadow-glow">
+              <LayoutDashboard className="w-6 h-6 text-zinc-200" />
             </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Organizer Portal</h1>
-            <p className="text-purple-200/80">Sign in to manage event check-ins</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-white mb-2">Organizer Portal</h1>
+            <p className="text-zinc-400 text-sm">Sign in to manage your events</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl backdrop-blur-sm animate-shake">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-red-500/30 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-red-300" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <p className="text-sm text-red-200">{error}</p>
-              </div>
+            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-300">{error}</p>
             </div>
           )}
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username Field */}
-            <div className="relative">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Username Input */}
+            <div className="space-y-1.5">
               <label
-                className={`absolute left-4 transition-all duration-200 pointer-events-none ${focusedField === 'username' || username
-                    ? 'top-2 text-xs text-purple-300'
-                    : 'top-4 text-sm text-purple-200/60'
+                className={`text-xs font-medium transition-colors ${focusedField === 'username' ? 'text-zinc-300' : 'text-zinc-500'
                   }`}
               >
-                Username or Email
+                Username
               </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                onFocus={() => setFocusedField('username')}
-                onBlur={() => setFocusedField(null)}
-                required
-                disabled={loading}
-                className="w-full px-4 pt-6 pb-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 disabled:opacity-50"
-              />
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className={`w-4 h-4 transition-colors ${focusedField === 'username' ? 'text-zinc-300' : 'text-zinc-500'
+                    }`} />
+                </div>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onFocus={() => setFocusedField('username')}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-2.5 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all hover:bg-black/30 hover:border-white/15"
+                  placeholder="Enter your username"
+                />
+              </div>
             </div>
 
-            {/* Password Field */}
-            <div className="relative">
+            {/* Password Input */}
+            <div className="space-y-1.5">
               <label
-                className={`absolute left-4 transition-all duration-200 pointer-events-none ${focusedField === 'password' || password
-                    ? 'top-2 text-xs text-purple-300'
-                    : 'top-4 text-sm text-purple-200/60'
+                className={`text-xs font-medium transition-colors ${focusedField === 'password' ? 'text-zinc-300' : 'text-zinc-500'
                   }`}
               >
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setFocusedField('password')}
-                onBlur={() => setFocusedField(null)}
-                required
-                disabled={loading}
-                className="w-full px-4 pt-6 pb-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200 disabled:opacity-50"
-              />
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className={`w-4 h-4 transition-colors ${focusedField === 'password' ? 'text-zinc-300' : 'text-zinc-500'
+                    }`} />
+                </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField(null)}
+                  required
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-2.5 bg-black/20 border border-white/10 rounded-lg text-sm text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all hover:bg-black/30 hover:border-white/15"
+                  placeholder="Enter your password"
+                />
+              </div>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="relative w-full group overflow-hidden"
+              className="w-full group mt-2 flex items-center justify-center gap-2 py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 rounded-lg text-sm font-medium transition-all focus:outline-none focus:ring-2 focus:ring-zinc-500 focus:ring-offset-2 focus:ring-offset-zinc-950 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-xl transition-all duration-300 group-hover:scale-105"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute inset-0 rounded-xl shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow duration-300"></div>
-              <span className="relative flex items-center justify-center py-4 px-6 text-white font-semibold">
-                {loading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    Sign In
-                    <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </>
-                )}
-              </span>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Signing in...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </>
+              )}
             </button>
           </form>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-white/10 text-center">
-            <p className="text-sm text-purple-200/60">
-              Need help? Contact your event administrator
+          <div className="mt-8 pt-6 border-t border-white/5 text-center">
+            <p className="text-xs text-zinc-500">
+              Need assistance? Contact your administrator
             </p>
           </div>
         </div>
-
-        {/* Bottom decoration */}
-        <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-purple-500/20 blur-3xl"></div>
       </div>
     </div>
   );

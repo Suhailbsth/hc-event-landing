@@ -11,36 +11,12 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        glass: "rgba(255, 255, 255, 0.05)",
+        "glass-border": "rgba(255, 255, 255, 0.1)",
       },
-      animation: {
-        'blob': 'blob 7s infinite',
-        'float-1': 'float 6s ease-in-out infinite',
-        'float-2': 'float 8s ease-in-out infinite 1s',
-        'float-3': 'float 10s ease-in-out infinite 2s',
-        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-      keyframes: {
-        blob: {
-          '0%, 100%': {
-            transform: 'translate(0px, 0px) scale(1)',
-          },
-          '33%': {
-            transform: 'translate(30px, -50px) scale(1.1)',
-          },
-          '66%': {
-            transform: 'translate(-20px, 20px) scale(0.9)',
-          },
-        },
-        float: {
-          '0%, 100%': {
-            transform: 'translateY(0px)',
-            opacity: '0.3',
-          },
-          '50%': {
-            transform: 'translateY(-20px)',
-            opacity: '0.6',
-          },
-        },
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
     },
   },
