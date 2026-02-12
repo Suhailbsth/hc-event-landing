@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  ArrowRightLeft,
   X
 } from "lucide-react";
 
@@ -23,7 +22,6 @@ export default function ScannerPage() {
   const [session, setSession] = useState<GateSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
-  const [qrCode, setQrCode] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
@@ -160,14 +158,6 @@ export default function ScannerPage() {
       if (navigator.vibrate) navigator.vibrate(500);
     } finally {
       setScanning(false);
-      setQrCode("");
-    }
-  };
-
-  const handleManualEntry = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (qrCode.trim()) {
-      handleCheckIn(qrCode.trim());
     }
   };
 
@@ -337,27 +327,10 @@ export default function ScannerPage() {
           <div id="qr-file-reader" className="hidden"></div>
 
           {cameraActive && (
-            <div className="mb-6 rounded-xl overflow-hidden border-2 border-zinc-100">
+            <div className="rounded-xl overflow-hidden border-2 border-zinc-100">
               <QRScanner onScan={handleCheckIn} onError={setError} isActive={cameraActive} />
             </div>
           )}
-
-          <form onSubmit={handleManualEntry} className="relative">
-            <input
-              type="text"
-              value={qrCode}
-              onChange={(e) => setQrCode(e.target.value)}
-              placeholder="Or enter code manually..."
-              className="w-full pl-4 pr-12 py-3 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 focus:border-zinc-900 transition-all placeholder:text-zinc-400"
-            />
-            <button
-              type="submit"
-              disabled={!qrCode.trim() || scanning}
-              className="absolute right-2 top-2 p-1.5 bg-white text-zinc-900 rounded-lg shadow-sm border border-zinc-100 disabled:opacity-50"
-            >
-              <ArrowRightLeft className="w-4 h-4" />
-            </button>
-          </form>
         </div>
 
         {/* Activity Feed */}
@@ -394,18 +367,23 @@ export default function ScannerPage() {
                     }`}
                 >
                   <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium text-zinc-900 text-sm">{checkIn.guestName || "Guest"}</p>
-                      <div className="flex items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${checkIn.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                           }`}>
                           {checkIn.actionType === 'checkout' ? 'OUT' : 'IN'}
                         </span>
+                        {checkInTab === 'allGates' && checkIn.gateName && (
+                          <span className="text-[10px] font-medium text-zinc-500 bg-zinc-100 px-1.5 py-0.5 rounded">
+                            {checkIn.gateName}
+                          </span>
+                        )}
                         <span className="text-xs text-zinc-400">{getRelativeTime(checkIn.timestamp)}</span>
                       </div>
                     </div>
                     {checkIn.actionType === 'checkout' && checkIn.durationInside && (
-                      <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg">
+                      <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg whitespace-nowrap ml-2">
                         {checkIn.durationInside} inside
                       </span>
                     )}
