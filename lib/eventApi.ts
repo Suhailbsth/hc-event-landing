@@ -6,28 +6,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://digital-id
 console.log("EventAPI Using Base URL:", API_BASE_URL);
 
 // For server-side requests in development with self-signed certificates
-// const getFetchOptions = (options?: RequestInit): RequestInit => {
-//   // Only disable SSL verification on server-side in development
-//   if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
-//     try {
-//       // Dynamically require https module to avoid client-side build errors
-//       // eslint-disable-next-line @typescript-eslint/no-var-requires
-//       const https = require('https');
-//       const agent = new https.Agent({
-//         rejectUnauthorized: false,
-//       });
 
-//       return {
-//         ...options,
-//         // @ts-expect-error - agent is not in standard RequestInit but used by node-fetch
-//         agent,
-//       };
-//     } catch (e) {
-//       console.error('Failed to create custom HTTPS agent:', e);
-//     }
-//   }
-//   return options || {};
-// };
 
 export interface EventData {
   id: string;
@@ -147,8 +126,8 @@ export async function fetchEventBySlug(
   options?: RequestInit
 ): Promise<EventData> {
   try {
-    const fetchOptions = getFetchOptions(options);
-    debugger;
+    const fetchOptions = options || {};
+
     const url = `${API_BASE_URL}/api/Event/slug/${slug}`;
     console.log(`[fetchEventBySlug] Requesting: ${url}`);
 
@@ -187,7 +166,7 @@ export async function fetchEventById(
   options?: RequestInit
 ): Promise<EventData> {
   try {
-    const fetchOptions = getFetchOptions(options);
+    const fetchOptions = options || {};
     const response = await fetch(
       `${API_BASE_URL}/api/Event/${eventId}?companyId=${companyId}`,
       {
@@ -252,7 +231,7 @@ export async function fetchAllEvents(
       ? `${API_BASE_URL}/api/Event?companyId=${companyId}&take=100`
       : `${API_BASE_URL}/api/Event?take=100`;
 
-    const fetchOptions = getFetchOptions(options);
+    const fetchOptions = options || {};
     const response = await fetch(url, {
       ...fetchOptions,
       headers: {
