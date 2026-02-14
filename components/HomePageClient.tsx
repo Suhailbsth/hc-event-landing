@@ -116,7 +116,8 @@ export default function HomePageClient({ events }: HomePageClientProps) {
                     .toLowerCase()
                     .replace(/[^a-z0-9]+/g, '-')
                     .replace(/^-|-$/g, '');
-                  const eventUrl = `http://${titleSlug}.uat-events.future-cards.com/events/${event.landingPageSlug}/${lang === 'ar' ? '?lang=ar' : ''}`;
+                  // const eventUrl = `http://${titleSlug}.uat-events.future-cards.com/events/${event.landingPageSlug}/${lang === 'ar' ? '?lang=ar' : ''}`;
+                  const eventUrl = `https://futurecards-events.vercel.app/events/${event.landingPageSlug}/${lang === 'ar' ? '?lang=ar' : ''}`;
                   return (
                     <Link
                       key={event.id}
