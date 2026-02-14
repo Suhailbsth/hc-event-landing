@@ -1,20 +1,33 @@
 // Event Management API Service for Next.js
 // Server and Client compatible
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5237/api';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5237/api';
+//const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5237';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://digital-id-api.azurewebsites.net';
+console.log("EventAPI Using Base URL:", API_BASE_URL);
 
 // For server-side requests in development with self-signed certificates
-const getFetchOptions = (options?: RequestInit): RequestInit => {
-  // Only disable SSL verification on server-side in development
-  if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
-    return {
-      ...options,
-      // @ts-expect-error - Node.js specific option
-      agent: undefined,
-    };
-  }
-  return options || {};
-};
+// const getFetchOptions = (options?: RequestInit): RequestInit => {
+//   // Only disable SSL verification on server-side in development
+//   if (typeof window === 'undefined' && process.env.NODE_ENV === 'development') {
+//     try {
+//       // Dynamically require https module to avoid client-side build errors
+//       // eslint-disable-next-line @typescript-eslint/no-var-requires
+//       const https = require('https');
+//       const agent = new https.Agent({
+//         rejectUnauthorized: false,
+//       });
+
+//       return {
+//         ...options,
+//         // @ts-expect-error - agent is not in standard RequestInit but used by node-fetch
+//         agent,
+//       };
+//     } catch (e) {
+//       console.error('Failed to create custom HTTPS agent:', e);
+//     }
+//   }
+//   return options || {};
+// };
 
 export interface EventData {
   id: string;
@@ -136,8 +149,11 @@ export async function fetchEventBySlug(
   try {
     const fetchOptions = getFetchOptions(options);
     debugger;
+    const url = `${API_BASE_URL}/api/Event/slug/${slug}`;
+    console.log(`[fetchEventBySlug] Requesting: ${url}`);
+
     const response = await fetch(
-      `${API_BASE_URL}/api/Event/slug/${slug}`,
+      url,
       {
         ...fetchOptions,
         headers: {
@@ -147,7 +163,11 @@ export async function fetchEventBySlug(
       }
     );
 
+    console.log(`[fetchEventBySlug] Response Status: ${response.status}`);
     if (!response.ok) {
+      console.error(`[fetchEventBySlug] Failed: ${response.status} ${response.statusText}`);
+      const text = await response.text();
+      console.error(`[fetchEventBySlug] Response Body: ${text}`);
       throw new Error(`Event not found: ${response.statusText}`);
     }
 

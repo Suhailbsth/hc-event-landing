@@ -1,6 +1,7 @@
 // Organizer API Service for Next.js
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:5237';
+//const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:5237';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://digital-id-api.azurewebsites.net';
 export interface InviteOrganizerRequest {
   email: string;
   fullName?: string;
