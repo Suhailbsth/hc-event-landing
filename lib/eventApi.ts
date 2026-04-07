@@ -52,6 +52,26 @@ export interface EventData {
     title: string;
     description?: string;
   }>;
+  sessions?: Array<{
+    id?: string;
+    title?: string;
+    description?: string;
+    sessionDate?: string;
+    startTime?: string;
+    endTime?: string;
+    track?: string;
+    location?: string;
+    order?: number;
+  }>;
+  speakers?: Array<{
+    id?: string;
+    name?: string;
+    title?: string;
+    company?: string;
+    bio?: string;
+    photoUrl?: string;
+    order?: number;
+  }>;
 
   // Statistics
   totalRegistrations: number;
@@ -76,6 +96,10 @@ export interface EventData {
   logoUrl?: string;
   primaryColor?: string;
   secondaryColor?: string;
+
+  // Location Coordinates (for future map integration)
+  latitude?: number;
+  longitude?: number;
 
   // Meta
   createdAt: string;

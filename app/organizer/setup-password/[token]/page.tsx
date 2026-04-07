@@ -223,7 +223,7 @@ export default function SetupPasswordPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Password Field */}
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2 text-center">
                             New Password
                         </label>
                         <input
@@ -232,7 +232,7 @@ export default function SetupPasswordPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900 placeholder:text-center"
                             placeholder="Enter your password"
                             disabled={submitting}
                         />
@@ -287,7 +287,7 @@ export default function SetupPasswordPage() {
 
                     {/* Confirm Password Field */}
                     <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2 text-center">
                             Confirm Password
                         </label>
                         <input
@@ -296,7 +296,7 @@ export default function SetupPasswordPage() {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900 placeholder:text-center"
                             placeholder="Confirm your password"
                             disabled={submitting}
                         />

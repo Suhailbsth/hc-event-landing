@@ -1,8 +1,11 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { fetchEventBySlug } from '@/lib/eventApi';
-import { generateEventJsonLd } from '@/lib/utils';
+import { generateEventJsonLd, buildEventWebsiteUrl } from '@/lib/utils';
+import { eventPageTranslations } from '@/lib/translations';
 import EventPageClient from '@/components/EventPageClient';
+import EventMap from '@/components/EventMap';
+import EventFooter from '@/components/EventFooter';
 
 interface EventPageProps {
   params: Promise<{ slug: string }>;
@@ -29,12 +32,7 @@ export async function generateMetadata({
         ? event.descriptionAr
         : event.description || event.shortDescription;
 
-    // Generate title slug for subdomain
-    const titleSlug = event.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-    const eventUrl = `http://${titleSlug}.uat-events.future-cards.com/events/${resolvedParams.slug}/`;
+    const eventUrl = buildEventWebsiteUrl(event.title, resolvedParams.slug);
 
     return {
       title: `${title} - Future Cards Events`,
@@ -106,6 +104,8 @@ export default async function EventPage({
   }
 
   const lang = resolvedSearchParams.lang || 'en';
+  const isArabic = lang === 'ar';
+  const t = eventPageTranslations[lang as keyof typeof eventPageTranslations];
   const jsonLd = generateEventJsonLd(event);
 
   return (
@@ -116,69 +116,72 @@ export default async function EventPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <main className="min-h-screen">
+      <main className="w-full flex flex-col bg-white">
         <EventPageClient event={event} />
 
-        {/* Event Description Section */}
-        <section className="py-16 px-4 max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12">
-            {/* Event Details */}
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  {lang === 'ar' && event.titleAr ? 'حول الفعالية' : 'About the Event'}
-                </h2>
-                <div
-                  className="prose max-w-none text-gray-700"
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      (lang === 'ar' && event.descriptionAr
-                        ? event.descriptionAr
-                        : event.description || event.shortDescription) || '',
-                  }}
-                />
-              </div>
+        {/* Event Description Section - Improved Styling */}
+        <section className="w-full py-20 px-4 bg-gradient-to-b from-white to-gray-50">
+          <div className="max-w-6xl mx-auto">
+            {/* About Event */}
+            <div className="mb-16">
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                {t.aboutEvent}
+              </h2>
+              <div
+                className="prose prose-lg max-w-none text-gray-700 leading-relaxed bg-white p-8 rounded-lg shadow-sm border border-gray-100"
+                dangerouslySetInnerHTML={{
+                  __html:
+                    (isArabic && event.descriptionAr
+                      ? event.descriptionAr
+                      : event.description || event.shortDescription) || '',
+                }}
+              />
+            </div>
 
+            {/* Two Column Layout */}
+            <div className="grid lg:grid-cols-2 gap-12">
               {/* Event Highlights */}
               {event.highlights && event.highlights.length > 0 && (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {lang === 'ar' ? 'أبرز الأحداث' : 'Event Highlights'}
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                    {t.eventHighlights}
                   </h3>
-                  <ul className="space-y-2">
+                  <div className="space-y-3">
                     {event.highlights.map((highlight: string, index: number) => (
-                      <li
+                      <div
                         key={index}
-                        className="flex items-start gap-2 text-gray-700"
+                        className={`flex items-start gap-4 p-4 bg-white rounded-lg border border-gray-100 hover:border-blue-300 transition-colors ${isArabic ? 'flex-row-reverse' : ''}`}
                       >
-                        <span className="text-green-600 mt-1">✓</span>
-                        <span>{highlight}</span>
-                      </li>
+                        <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-green-100 rounded-full text-green-600 font-bold text-sm">
+                          ✓
+                        </span>
+                        <span className="text-gray-700">{highlight}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
 
               {/* Agenda */}
               {event.agenda && event.agenda.length > 0 && (
                 <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    {lang === 'ar' ? 'جدول الأعمال' : 'Agenda'}
+                  <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                    {t.agenda}
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {event.agenda.map((item, index: number) => (
                       <div
                         key={index}
-                        className="border-l-2 border-blue-600 pl-4 py-2"
+                        className={`p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow ${isArabic ? 'border-r-4 border-blue-500' : 'border-l-4 border-blue-500'}`}
                       >
-                        <div className="text-sm text-gray-500 font-medium">
+                        <div className="text-sm font-semibold text-blue-600 mb-2">
                           {item.time}
                         </div>
-                        <div className="text-gray-900 font-medium">
+                        <div className="text-gray-900 font-semibold mb-2">
                           {item.title}
                         </div>
                         {item.description && (
-                          <div className="text-sm text-gray-600 mt-1">
+                          <div className="text-sm text-gray-600">
                             {item.description}
                           </div>
                         )}
@@ -188,8 +191,29 @@ export default async function EventPage({
                 </div>
               )}
             </div>
-
           </div>
+        </section>
+
+        {/* Event Map & Venue Location Section */}
+        {(event.latitude || event.longitude) && (
+          <section className="w-full bg-white py-20">
+            <div className="max-w-6xl mx-auto px-4">
+              <h2 className="text-4xl font-bold text-gray-900 mb-12 text-center">
+                {t.venueLocation}
+              </h2>
+              <EventMap 
+                latitude={event.latitude} 
+                longitude={event.longitude}
+                venue={isArabic && event.arabicVenue ? event.arabicVenue : event.venue}
+                location={isArabic && event.arabicLocation ? event.arabicLocation : event.location}
+              />
+            </div>
+          </section>
+        )}
+
+        {/* Footer */}
+        <section className="w-full">
+          <EventFooter />
         </section>
       </main>
     </>

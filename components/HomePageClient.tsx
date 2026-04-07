@@ -5,6 +5,7 @@ import { Calendar, MapPin, Users, ArrowRight, Globe } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { EventData } from '@/lib/eventApi';
+import { buildEventWebsiteUrl } from '@/lib/utils';
 
 interface HomePageClientProps {
   events: EventData[];
@@ -111,13 +112,8 @@ export default function HomePageClient({ events }: HomePageClientProps) {
             ) : (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {events.map((event) => {
-                  // Generate title slug for subdomain
-                  const titleSlug = event.title
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, '-')
-                    .replace(/^-|-$/g, '');
-                  // const eventUrl = `http://${titleSlug}.uat-events.future-cards.com/events/${event.landingPageSlug}/${lang === 'ar' ? '?lang=ar' : ''}`;
-                  const eventUrl = `https://futurecards-events.vercel.app/events/${event.landingPageSlug}/${lang === 'ar' ? '?lang=ar' : ''}`;
+                  const baseUrl = buildEventWebsiteUrl(event.title, event.landingPageSlug);
+                  const eventUrl = lang === 'ar' ? `${baseUrl}?lang=ar` : baseUrl;
                   return (
                     <Link
                       key={event.id}

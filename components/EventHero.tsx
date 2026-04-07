@@ -105,31 +105,31 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               </div>
             )}
 
-            {/* Title with enhanced animation */}
-            <h1 className={`text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up ${isArabic ? 'text-right font-arabic' : ''}`}>
+            {/* Title with enhanced animation - RTL Support */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up">
               {title}
             </h1>
 
-            {/* Short Description with better contrast */}
+            {/* Short Description with better contrast and RTL support */}
             {shortDesc && (
-              <p className={`text-xl sm:text-2xl text-white/95 mb-10 max-w-2xl drop-shadow-lg leading-relaxed ${isArabic ? 'text-right' : ''}`}>
+              <p className="text-xl sm:text-2xl text-white/95 mb-10 max-w-2xl drop-shadow-lg leading-relaxed">
                 {shortDesc}
               </p>
             )}
 
             {/* Premium Event Details Cards */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10" dir="ltr">
               {/* Date Card */}
               <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
-                <div className="flex items-center gap-3 w-full">
+                <div className={`flex items-center gap-3 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
                   <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                     <Calendar className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold">
+                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-left">
                       {isArabic ? 'التاريخ' : 'Date'}
                     </div>
-                    <div className="text-white font-bold text-sm leading-tight">
+                    <div className="text-white font-bold text-sm leading-tight text-left">
                       {dateRange}
                     </div>
                   </div>
@@ -139,17 +139,22 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               {/* Time Card */}
               {(event.startTime || event.endTime) && (
                 <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
-                  <div className="flex items-center gap-3 w-full">
+                  <div className={`flex items-center gap-3 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                       <Clock className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold">
+                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-left">
                         {isArabic ? 'الوقت' : 'Time'}
                       </div>
-                      <div className="text-white font-bold text-sm leading-tight">
+                      <div className="text-white font-bold text-sm leading-tight text-left">
                         {startTimeFormatted}
-                        {endTimeFormatted && <><br className="leading-tight"/>{endTimeFormatted}</>}
+                        {endTimeFormatted && (
+                          <>
+                            <span className="text-white/80 mx-1">-</span>
+                            {endTimeFormatted}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -159,19 +164,19 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               {/* Location Card */}
               {(venue || location) && (
                 <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
-                  <div className="flex items-center gap-3 w-full">
+                  <div className={`flex items-center gap-3 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                       <MapPin className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold">
+                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-left">
                         {t('location')}
                       </div>
-                      <div className="text-white font-bold text-sm leading-tight line-clamp-2">
+                      <div className="text-white font-bold text-sm leading-tight line-clamp-2 text-left">
                         {venue || location}
                       </div>
                       {event.city && (
-                        <div className="text-white/70 text-[10px] mt-1 truncate">
+                        <div className="text-white/70 text-[10px] mt-1 truncate text-left">
                           {event.city}, {event.country}
                         </div>
                       )}
@@ -182,21 +187,21 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
 
               {/* Capacity Card */}
               <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
-                <div className="flex items-center gap-3 w-full">
+                <div className={`flex items-center gap-3 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
                   <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                     <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold">
+                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-left">
                       {isArabic ? 'المقاعد' : 'Seats'}
                     </div>
-                    <div className="text-white font-bold text-xl leading-tight mb-2">
+                    <div className="text-white font-bold text-xl leading-tight mb-2 text-left">
                       {remainingCapacity}<span className="text-xs text-white/70 font-normal">/{event.capacity}</span>
                     </div>
-                    {/* Modern Progress Bar */}
-                    <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
+                    {/* Modern Progress Bar - Thicker for better visibility */}
+                    <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden shadow-inner">
                       <div 
-                        className={`h-1.5 rounded-full transition-all duration-700 ${
+                        className={`h-2.5 rounded-full transition-all duration-700 shadow-lg ${
                           capacityPercentage > 80 ? 'bg-gradient-to-r from-red-400 to-red-500' :
                           capacityPercentage > 50 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
                           'bg-gradient-to-r from-green-400 to-emerald-500'
@@ -245,31 +250,31 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               </div>
             )}
 
-            {/* Stats Section */}
-            <div className="grid grid-cols-3 gap-6 max-w-2xl">
-              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+            {/* Stats Section - Improved Grid with RTL support */}
+            <div className="grid grid-cols-3 gap-6 max-w-2xl" dir="ltr">
+              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
                 <div className="text-4xl font-bold text-white mb-2">
-                  12
+                  {event.speakers?.length ?? 0}
                 </div>
-                <div className="text-white/80 text-sm font-medium">
+                <div className="text-white/90 text-sm font-semibold tracking-wide">
                   {isArabic ? 'متحدثون' : 'Speakers'}
                 </div>
               </div>
               
-              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
                 <div className="text-4xl font-bold text-white mb-2">
-                  {event.agenda?.length || 8}
+                  {event.sessions?.length ?? 0}
                 </div>
-                <div className="text-white/80 text-sm font-medium">
+                <div className="text-white/90 text-sm font-semibold tracking-wide">
                   {isArabic ? 'جلسات' : 'Sessions'}
                 </div>
               </div>
               
-              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
                 <div className="text-4xl font-bold text-white mb-2">
                   {event.totalRegistrations}
                 </div>
-                <div className="text-white/80 text-sm font-medium">
+                <div className="text-white/90 text-sm font-semibold tracking-wide">
                   {isArabic ? 'مسجلون' : 'Registered'}
                 </div>
               </div>

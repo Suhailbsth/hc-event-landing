@@ -85,16 +85,38 @@ export function generateEventJsonLd(event: EventData) {
         price: '0',
         priceCurrency: event.currency,
         availability: 'https://schema.org/InStock',
-        // url: `http://${event.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.uat-events.future-cards.com/events/${event.landingPageSlug}/`,
-        url: `https://futurecards-events.vercel.app/events/${event.landingPageSlug}/`,
+        url: buildEventWebsiteUrl(event.title, event.landingPageSlug),
       }
       : {
         '@type': 'Offer',
         price: event.regularPrice.toString(),
         priceCurrency: event.currency,
         availability: 'https://schema.org/InStock',
-        // url: `http://${event.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}.uat-events.future-cards.com/events/${event.landingPageSlug}/`,
-        url: `https://futurecards-events.vercel.app/events/${event.landingPageSlug}/`,
+        url: buildEventWebsiteUrl(event.title, event.landingPageSlug),
       },
   };
+}
+
+/**
+ * Build event landing page URL with dynamic subdomain
+ * Reads protocol and domain from environment variables
+ */
+export function buildEventWebsiteUrl(
+  eventTitle: string,
+  landingPageSlug?: string
+): string {
+  const protocol = process.env.NEXT_PUBLIC_EVENT_LANDING_PROTOCOL || 'https';
+  const domain = process.env.NEXT_PUBLIC_EVENT_LANDING_DOMAIN || 'uat-events.future-cards.com';
+  
+  // Sanitize event title
+  const sanitizedTitle = eventTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  
+  if (landingPageSlug) {
+    return `${protocol}://${sanitizedTitle}.${domain}/events/${landingPageSlug}/`;
+  }
+  
+  return `${protocol}://${sanitizedTitle}.${domain}/`;
 }
