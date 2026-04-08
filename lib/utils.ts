@@ -98,25 +98,29 @@ export function generateEventJsonLd(event: EventData) {
 }
 
 /**
- * Build event landing page URL with dynamic subdomain
- * Reads protocol and domain from environment variables
+ * Build event landing page URL by appending event route segments to a single base URL.
+ * Uses a single configured host instead of dynamic title-based subdomains.
  */
 export function buildEventWebsiteUrl(
   eventTitle: string,
   landingPageSlug?: string
 ): string {
-  const protocol = process.env.NEXT_PUBLIC_EVENT_LANDING_PROTOCOL || 'https';
-  const domain = process.env.NEXT_PUBLIC_EVENT_LANDING_DOMAIN || 'uat-events.future-cards.com';
-  
-  // Sanitize event title
-  const sanitizedTitle = eventTitle
+const rawBaseUrl = process.env.NEXT_PUBLIC_EVENT_LANDING_BASE_URL;
+if (!rawBaseUrl || !rawBaseUrl.trim()) {
+  throw new Error('Missing required env: NEXT_PUBLIC_EVENT_LANDING_BASE_URL');
+}
+  const baseUrl = rawBaseUrl.trim().replace(/\/+$/, '');
+
+  const fallbackSlug = eventTitle
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-  
-  if (landingPageSlug) {
-    return `${protocol}://${sanitizedTitle}.${domain}/events/${landingPageSlug}/`;
+
+  const finalSlug = (landingPageSlug?.trim() || fallbackSlug).trim();
+
+  if (!finalSlug) {
+    return `${baseUrl}/`;
   }
-  
-  return `${protocol}://${sanitizedTitle}.${domain}/`;
+
+  return `${baseUrl}/events/${finalSlug}/`;
 }
