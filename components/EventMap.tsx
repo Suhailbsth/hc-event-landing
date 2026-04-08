@@ -158,7 +158,11 @@ export default function EventMap({ latitude, longitude, venue, location }: Event
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
-                  onClick={() => window.open(mapsUrl, '_blank')}
+                  onClick={() => {
+                    if (mapsUrl) {
+                      window.open(mapsUrl, '_blank');
+                    }
+                  }}
                   className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors"
                 >
                   Get Directions
