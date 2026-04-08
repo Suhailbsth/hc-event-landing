@@ -100,15 +100,38 @@ export function generateEventJsonLd(event: EventData) {
 /**
  * Build event landing page URL by appending event route segments to a single base URL.
  * Uses a single configured host instead of dynamic title-based subdomains.
+ * 
+ * @param eventTitle - The title of the event (used as fallback slug)
+ * @param landingPageSlug - The slug for the landing page (preferred over title-based slug)
+ * @returns The full URL for the event landing page
  */
 export function buildEventWebsiteUrl(
   eventTitle: string,
   landingPageSlug?: string
 ): string {
-const rawBaseUrl = process.env.NEXT_PUBLIC_EVENT_LANDING_BASE_URL;
-if (!rawBaseUrl || !rawBaseUrl.trim()) {
-  throw new Error('Missing required env: NEXT_PUBLIC_EVENT_LANDING_BASE_URL');
-}
+  // Get base URL from environment, with graceful fallback for development/preview
+  const rawBaseUrl = process.env.NEXT_PUBLIC_EVENT_LANDING_BASE_URL;
+  
+  if (!rawBaseUrl || !rawBaseUrl.trim()) {
+    // Fallback for development/preview environments
+    const fallbackBase = typeof window !== 'undefined' 
+      ? window.location.origin 
+      : 'https://uat-events.future-cards.com';
+    
+    console.warn(
+      'NEXT_PUBLIC_EVENT_LANDING_BASE_URL is not set. Using fallback:',
+      fallbackBase
+    );
+    
+    const baseUrl = fallbackBase.trim().replace(/\/+$/, '');
+    const finalSlug = (landingPageSlug?.trim() || eventTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')).trim();
+
+    return !finalSlug ? `${baseUrl}/` : `${baseUrl}/events/${finalSlug}/`;
+  }
+
   const baseUrl = rawBaseUrl.trim().replace(/\/+$/, '');
 
   const fallbackSlug = eventTitle
