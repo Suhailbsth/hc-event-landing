@@ -2,14 +2,6 @@
   "buildCommand": "npm run build",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "env": {
-    "NEXT_PUBLIC_EVENT_LANDING_BASE_URL": {
-      "description": "Base URL for event landing pages. Should be the domain without trailing slash.",
-      "development": "http://localhost:3001",
-      "preview": "@preview_next_public_event_landing_base_url",
-      "production": "@production_next_public_event_landing_base_url"
-    }
-  },
   "git": {
     "deploymentEnabled": true,
     "autoAlias": true
