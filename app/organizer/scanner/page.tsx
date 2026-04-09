@@ -32,6 +32,9 @@ export default function ScannerPage() {
   const [duplicateInfo, setDuplicateInfo] = useState<AttendeeCheckIn | null>(null);
   const [checkInTab, setCheckInTab] = useState<"thisGate" | "allGates">("thisGate");
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
+  const scanInProgressRef = useRef(false);
+  const lastScanRef = useRef<{ code: string; timestamp: number } | null>(null);
+  const SCAN_DEDUPE_WINDOW_MS = 1200;
 
   useEffect(() => {
     if (!organizerApi.isAuthenticated()) {
@@ -104,13 +107,33 @@ export default function ScannerPage() {
   };
 
   const handleCheckIn = async (code: string) => {
+    const normalizedCode = code.trim();
+    if (!normalizedCode) return;
+
+    const now = Date.now();
+    if (scanInProgressRef.current) return;
+
+    if (
+      lastScanRef.current &&
+      lastScanRef.current.code === normalizedCode &&
+      now - lastScanRef.current.timestamp < SCAN_DEDUPE_WINDOW_MS
+    ) {
+      return;
+    }
+
+    scanInProgressRef.current = true;
+    lastScanRef.current = { code: normalizedCode, timestamp: now };
+
+    // Stop camera immediately to prevent repeat decode callbacks while processing.
+    setCameraActive(false);
+
     setScanning(true);
     setError("");
     setSuccess("");
     setDuplicateInfo(null);
 
     try {
-      const checkIn = await organizerApi.checkInAttendee(code, session?.gateType);
+      const checkIn = await organizerApi.checkInAttendee(normalizedCode, session?.gateType);
 
       if (checkIn.isDuplicate) {
         if (checkIn.invalidReason === 'grace_period') {
@@ -151,13 +174,13 @@ export default function ScannerPage() {
         }, 2000);
       }
 
-      setCameraActive(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Check-in failed";
       setError(message);
       if (navigator.vibrate) navigator.vibrate(500);
     } finally {
       setScanning(false);
+      scanInProgressRef.current = false;
     }
   };
 

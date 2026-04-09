@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 
 interface QRScannerProps {
-  onScan: (decodedText: string) => void;
+  onScan: (decodedText: string) => void | Promise<void>;
   onError?: (error: string) => void;
   isActive: boolean;
 }
@@ -19,6 +19,8 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scannerIdRef = useRef("qr-reader");
+  const scanLockRef = useRef(false);
+  const scanUnlockTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Get available cameras
@@ -51,6 +53,10 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
       if (scannerRef.current) {
         scannerRef.current.stop().catch(console.error);
       }
+
+      if (scanUnlockTimeoutRef.current) {
+        clearTimeout(scanUnlockTimeoutRef.current);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -62,6 +68,11 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
       if (scannerRef.current) {
         scannerRef.current.stop().catch(console.error);
         setScanning(false);
+      }
+
+      scanLockRef.current = false;
+      if (scanUnlockTimeoutRef.current) {
+        clearTimeout(scanUnlockTimeoutRef.current);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,13 +107,19 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
           // Removed fixed aspectRatio: 1.0 to prevent stretching distortion
         },
         (decodedText) => {
-          // Success callback
-          onScan(decodedText);
+          // Guard against rapid repeated decode callbacks for the same frame.
+          if (scanLockRef.current) return;
 
-          // Vibrate on successful scan (if supported)
-          if (navigator.vibrate) {
-            navigator.vibrate(200);
-          }
+          scanLockRef.current = true;
+          void Promise.resolve(onScan(decodedText)).finally(() => {
+            if (scanUnlockTimeoutRef.current) {
+              clearTimeout(scanUnlockTimeoutRef.current);
+            }
+
+            scanUnlockTimeoutRef.current = setTimeout(() => {
+              scanLockRef.current = false;
+            }, 900);
+          });
         },
         (errorMessage) => {
           // Silent callback for frame scanning failures.

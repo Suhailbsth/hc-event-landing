@@ -124,6 +124,7 @@ function DownloadPassContent() {
         } catch (error) {
             console.error("Error:", error);
             alert('Failed to generate Apple Wallet pass. Please try again.');
+        } finally {
             setWalletLoading(null);
         }
     };
