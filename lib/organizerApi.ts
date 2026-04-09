@@ -63,6 +63,10 @@ export interface DetailedEventGate {
   gateId: string;
   gateName: string;
   gateType: string;
+  gateScope?: string;
+  zoneId?: string;
+  zoneName?: string;
+  parentZoneId?: string;
   location: string;
   capacity: number;
   isActive: boolean;
@@ -75,6 +79,10 @@ export interface GateSession {
   gateId: string;
   gateName: string;
   gateType?: string;  // "entry", "exit", "both"
+  gateScope?: string;
+  zoneId?: string;
+  zoneName?: string;
+  parentZoneId?: string;
   sessionStartTime: string;
   checkInCount: number;
   isActive: boolean;
