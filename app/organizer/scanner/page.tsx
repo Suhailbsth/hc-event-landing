@@ -421,6 +421,14 @@ export default function ScannerPage() {
                       </p>
                     </div>
 
+                    {latestScan.previousSessionCheckedOut && (
+                      <p className={`mt-2 text-xs ${latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}`}>
+                        <span className="font-semibold">Session switched:</span>{" "}
+                        {latestScan.previousSessionZoneName || "Previous session"} closed automatically
+                        {latestScan.previousSessionDuration ? ` (${latestScan.previousSessionDuration})` : ""}
+                      </p>
+                    )}
+
                     <button
                       onClick={() => setLatestScan(null)}
                       className={`mt-3 w-full py-2 rounded-lg text-sm font-semibold transition-colors ${latestScan.actionType === 'checkout' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'
@@ -628,6 +636,15 @@ export default function ScannerPage() {
                 <div className="flex items-start justify-between gap-3">
                   <span className="text-zinc-500">Duration</span>
                   <span className="text-zinc-900 text-right">{selectedCheckIn.durationInside}</span>
+                </div>
+              )}
+              {selectedCheckIn.previousSessionCheckedOut && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-zinc-500">Session Switch</span>
+                  <span className="text-zinc-900 text-right">
+                    {selectedCheckIn.previousSessionZoneName || "Previous session"} closed
+                    {selectedCheckIn.previousSessionDuration ? ` (${selectedCheckIn.previousSessionDuration})` : ""}
+                  </span>
                 </div>
               )}
               {selectedCheckIn.scannerUserName && (

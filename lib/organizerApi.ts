@@ -140,6 +140,12 @@ export interface AttendeeCheckIn {
   zoneId?: string;
   zoneName?: string;
   durationInside?: string;
+  previousSessionCheckedOut?: boolean;
+  previousSessionZoneName?: string;
+  previousSessionNumber?: number;
+  previousSessionCheckOutTime?: string;
+  previousSessionDuration?: string;
+  sessionTransitionReason?: string;
   timestamp?: string; // UI field
   isNew?: boolean;    // UI field
 }
@@ -577,6 +583,12 @@ class OrganizerApiService {
       actionType: checkInResult.checkIn?.actionType || "checkin",
       durationInside: durationInside,
       sessionNumber: checkInResult.checkIn?.sessionNumber || 1,
+      previousSessionCheckedOut: checkInResult.checkIn?.previousSessionCheckedOut || false,
+      previousSessionZoneName: checkInResult.checkIn?.previousSessionZoneName,
+      previousSessionNumber: checkInResult.checkIn?.previousSessionNumber,
+      previousSessionCheckOutTime: checkInResult.checkIn?.previousSessionCheckOutTime,
+      previousSessionDuration: checkInResult.checkIn?.previousSessionDuration,
+      sessionTransitionReason: checkInResult.checkIn?.sessionTransitionReason,
     };
   }
 
