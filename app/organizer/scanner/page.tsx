@@ -31,6 +31,8 @@ export default function ScannerPage() {
   const [duplicateInfo, setDuplicateInfo] = useState<AttendeeCheckIn | null>(null);
   const [selectedCheckIn, setSelectedCheckIn] = useState<AttendeeCheckIn | null>(null);
   const [checkInTab, setCheckInTab] = useState<"thisGate" | "allGates">("thisGate");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [passFilter, setPassFilter] = useState<"all" | "speaker" | "exhibitor" | "vip" | "regular">("all");
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
   const scanInProgressRef = useRef(false);
   const lastScanRef = useRef<{ code: string; timestamp: number } | null>(null);
@@ -291,6 +293,31 @@ export default function ScannerPage() {
     return checkIn.gateName || checkIn.zoneName || "Unknown";
   };
 
+  const activeCheckIns = checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns;
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const filteredCheckIns = activeCheckIns.filter(checkIn => {
+    const category = getAttendeeCategory(checkIn.registrationType).toLowerCase();
+    const categoryMatch =
+      passFilter === "all" ||
+      (passFilter === "speaker" && category === "speaker") ||
+      (passFilter === "exhibitor" && category === "exhibitor") ||
+      (passFilter === "vip" && category === "vip") ||
+      (passFilter === "regular" && category === "regular attendee");
+
+    if (!categoryMatch) return false;
+    if (!normalizedSearch) return true;
+
+    const guestName = (checkIn.guestName || "").toLowerCase();
+    const guestEmail = (checkIn.guestEmail || "").toLowerCase();
+    const registrationId = (checkIn.registrationId || "").toLowerCase();
+
+    return (
+      guestName.includes(normalizedSearch) ||
+      guestEmail.includes(normalizedSearch) ||
+      registrationId.includes(normalizedSearch)
+    );
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f9f9fa]">
@@ -358,61 +385,53 @@ export default function ScannerPage() {
             <p className="text-sm font-medium text-red-700">{error}</p>
           </div>
         )}
-        {latestScan && (
-          <div className={`p-4 rounded-xl border shadow-sm animate-in slide-in-from-top-2 ${latestScan.actionType === 'checkout' ? 'bg-amber-50 border-amber-100' : 'bg-green-50 border-green-100'
-            }`}>
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className={`w-5 h-5 mt-0.5 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-green-600'}`} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className={`text-sm font-semibold truncate ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-green-900'}`}>
-                    {latestScan.guestName || "Attendee"}
-                  </p>
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${latestScan.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
-                    {latestScan.actionType === 'checkout' ? 'OUT' : 'IN'}
-                  </span>
-                </div>
-
-                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                  <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
-                    <span className="font-semibold">Pass:</span> {getAttendeeCategory(latestScan.registrationType)}
-                  </p>
-                  <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
-                    <span className="font-semibold">Location:</span> {getLocationText(latestScan)}
-                  </p>
-                  <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
-                    <span className="font-semibold">Time:</span> {formatDateTime(getScanTimestamp(latestScan))}
-                  </p>
-                  <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
-                    <span className="font-semibold">Entry:</span> {getEntryTimeText(latestScan)}
-                  </p>
-                  {latestScan.durationInside && (
-                    <p className="text-amber-700 sm:col-span-2">
-                      <span className="font-semibold">Duration:</span> {latestScan.durationInside}
-                    </p>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => setLatestScan(null)}
-                  className={`mt-3 w-full py-2 rounded-lg text-sm font-semibold transition-colors ${latestScan.actionType === 'checkout' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'
-                    }`}
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Scanner Card */}
         <div className="bg-white rounded-2xl shadow-glass-md border border-zinc-100 p-6">
-          <div className="text-center mb-6">
-            <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-zinc-50 ${cameraActive ? 'animate-pulse ring-4 ring-zinc-100' : ''}`}>
-              <Camera className="w-8 h-8 text-zinc-400" />
+          <div className="relative mb-6 min-h-[144px]">
+            <div className={`text-center transition-opacity duration-150 ${latestScan ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
+              <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-zinc-50 ${cameraActive ? 'animate-pulse ring-4 ring-zinc-100' : ''}`}>
+                <Camera className="w-8 h-8 text-zinc-400" />
+              </div>
+              <h2 className="text-lg font-medium text-zinc-900">Scan Ticket</h2>
+              <p className="text-sm text-zinc-400">Point camera at QR code</p>
             </div>
-            <h2 className="text-lg font-medium text-zinc-900">Scan Ticket</h2>
-            <p className="text-sm text-zinc-400">Point camera at QR code</p>
+
+            {latestScan && (
+              <div className={`absolute inset-0 p-4 rounded-xl border shadow-sm animate-in slide-in-from-top-2 ${latestScan.actionType === 'checkout' ? 'bg-amber-50 border-amber-100' : 'bg-green-50 border-green-100'
+                }`}>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className={`w-5 h-5 mt-0.5 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-green-600'}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className={`text-sm font-semibold truncate ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-green-900'}`}>
+                        {latestScan.guestName || "Attendee"}
+                      </p>
+                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${latestScan.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                        {latestScan.actionType === 'checkout' ? 'OUT' : 'IN'}
+                      </span>
+                    </div>
+
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                      <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
+                        <span className="font-semibold">Pass:</span> {getAttendeeCategory(latestScan.registrationType)}
+                      </p>
+                      <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
+                        <span className="font-semibold">Entry:</span> {getEntryTimeText(latestScan)}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => setLatestScan(null)}
+                      className={`mt-3 w-full py-2 rounded-lg text-sm font-semibold transition-colors ${latestScan.actionType === 'checkout' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'
+                        }`}
+                    >
+                      OK
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -479,14 +498,50 @@ export default function ScannerPage() {
             </div>
           </div>
 
+          <div className="mb-4 space-y-3">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by name, email, or ID"
+              className="w-full px-3 py-2.5 text-sm bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-300"
+            />
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "all", label: "All" },
+                { key: "speaker", label: "Speaker" },
+                { key: "exhibitor", label: "Exhibitor" },
+                { key: "vip", label: "VIP" },
+                { key: "regular", label: "Regular" },
+              ].map(filter => (
+                <button
+                  key={filter.key}
+                  type="button"
+                  onClick={() => setPassFilter(filter.key as "all" | "speaker" | "exhibitor" | "vip" | "regular")}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-colors ${passFilter === filter.key
+                    ? "bg-zinc-900 text-white border-zinc-900"
+                    : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300"
+                    }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-3">
-            {(checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).length === 0 ? (
+            {activeCheckIns.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-2xl border border-zinc-100 border-dashed">
                 <Clock className="w-8 h-8 text-zinc-200 mx-auto mb-2" />
                 <p className="text-sm text-zinc-400">No activity yet</p>
               </div>
+            ) : filteredCheckIns.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-2xl border border-zinc-100 border-dashed">
+                <Clock className="w-8 h-8 text-zinc-200 mx-auto mb-2" />
+                <p className="text-sm text-zinc-400">No attendees match your search/filter</p>
+              </div>
             ) : (
-              (checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).map((checkIn, index) => (
+              filteredCheckIns.map((checkIn, index) => (
                 <button
                   type="button"
                   onClick={() => setSelectedCheckIn(checkIn)}
