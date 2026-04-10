@@ -443,7 +443,7 @@ export default function ScannerPage() {
                 }`}
             >
               <Camera className="w-4 h-4" />
-              {cameraActive ? "Stop" : "Camera"}
+              {cameraActive ? "Stop" : latestScan ? "Scan Another" : "Camera"}
             </button>
             <label className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium bg-zinc-50 text-zinc-700 hover:bg-zinc-100 cursor-pointer transition-colors">
               <Upload className="w-4 h-4" />
