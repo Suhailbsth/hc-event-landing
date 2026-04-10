@@ -10,7 +10,6 @@ import {
   Camera,
   Upload,
   LogOut,
-  SwitchCamera,
   CheckCircle2,
   AlertTriangle,
   Clock,
@@ -23,13 +22,14 @@ export default function ScannerPage() {
   const [loading, setLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [latestScan, setLatestScan] = useState<AttendeeCheckIn | null>(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [recentCheckIns, setRecentCheckIns] = useState<AttendeeCheckIn[]>([]);
   const [allGateCheckIns, setAllGateCheckIns] = useState<AttendeeCheckIn[]>([]);
   const [showEndSessionDialog, setShowEndSessionDialog] = useState(false);
   const [statistics, setStatistics] = useState<CheckInStats | null>(null);
   const [duplicateInfo, setDuplicateInfo] = useState<AttendeeCheckIn | null>(null);
+  const [selectedCheckIn, setSelectedCheckIn] = useState<AttendeeCheckIn | null>(null);
   const [checkInTab, setCheckInTab] = useState<"thisGate" | "allGates">("thisGate");
   const heartbeatInterval = useRef<NodeJS.Timeout | null>(null);
   const scanInProgressRef = useRef(false);
@@ -129,7 +129,7 @@ export default function ScannerPage() {
 
     setScanning(true);
     setError("");
-    setSuccess("");
+    setLatestScan(null);
     setDuplicateInfo(null);
 
     try {
@@ -144,22 +144,15 @@ export default function ScannerPage() {
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
         }
       } else {
-        setRecentCheckIns(prev => {
-          const newCheckIn = { ...checkIn, timestamp: new Date().toISOString(), isNew: true };
-          return [newCheckIn, ...prev].slice(0, 10);
-        });
-        setAllGateCheckIns(prev => {
-          const newCheckIn = { ...checkIn, timestamp: new Date().toISOString(), isNew: true };
-          return [newCheckIn, ...prev].slice(0, 20);
-        });
+        const newCheckIn = {
+          ...checkIn,
+          timestamp: new Date().toISOString(),
+          isNew: true,
+        };
 
-        const actionType = checkIn.actionType || 'checkin';
-        if (actionType === 'checkout') {
-          const durationText = checkIn.durationInside ? ` • ${checkIn.durationInside}` : '';
-          setSuccess(`Checked Out: ${checkIn.guestName || "Attendee"}${durationText}`);
-        } else {
-          setSuccess(`Checked In: ${checkIn.guestName || "Attendee"}`);
-        }
+        setRecentCheckIns(prev => [newCheckIn, ...prev].slice(0, 10));
+        setAllGateCheckIns(prev => [newCheckIn, ...prev].slice(0, 20));
+        setLatestScan(newCheckIn);
 
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
@@ -167,7 +160,6 @@ export default function ScannerPage() {
           setSession({ ...session, checkInCount: session.checkInCount + 1 });
         }
 
-        setTimeout(() => setSuccess(""), 4000);
         setTimeout(() => {
           setRecentCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
           setAllGateCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
@@ -225,6 +217,32 @@ export default function ScannerPage() {
     const diffMin = Math.floor(diffSec / 60);
     if (diffMin < 60) return `${diffMin}m ago`;
     return checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getScanTimestamp = (checkIn: AttendeeCheckIn) => checkIn.timestamp || checkIn.checkInTime;
+
+  const formatDateTime = (dateStr?: string) => {
+    if (!dateStr) return "Unknown";
+    return new Date(dateStr).toLocaleString("en-US", {
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const toLabelCase = (value?: string) => {
+    if (!value) return "N/A";
+    return value
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, char => char.toUpperCase());
+  };
+
+  const getLocationText = (checkIn: AttendeeCheckIn) => {
+    if (checkIn.gateName && checkIn.zoneName) {
+      return `${checkIn.gateName} • ${checkIn.zoneName}`;
+    }
+    return checkIn.gateName || checkIn.zoneName || "Unknown";
   };
 
   if (loading) {
@@ -294,11 +312,50 @@ export default function ScannerPage() {
             <p className="text-sm font-medium text-red-700">{error}</p>
           </div>
         )}
-        {success && (
-          <div className={`p-4 rounded-xl border flex items-center gap-3 animate-in slide-in-from-top-2 shadow-sm ${success.includes('Out') ? 'bg-amber-50 border-amber-100' : 'bg-green-50 border-green-100'
+        {latestScan && (
+          <div className={`p-4 rounded-xl border shadow-sm animate-in slide-in-from-top-2 ${latestScan.actionType === 'checkout' ? 'bg-amber-50 border-amber-100' : 'bg-green-50 border-green-100'
             }`}>
-            <CheckCircle2 className={`w-5 h-5 ${success.includes('Out') ? 'text-amber-500' : 'text-green-500'}`} />
-            <p className={`text-sm font-medium ${success.includes('Out') ? 'text-amber-800' : 'text-green-800'}`}>{success}</p>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className={`w-5 h-5 mt-0.5 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-green-600'}`} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className={`text-sm font-semibold truncate ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-green-900'}`}>
+                    {latestScan.guestName || "Attendee"}
+                  </p>
+                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${latestScan.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                    {latestScan.actionType === 'checkout' ? 'OUT' : 'IN'}
+                  </span>
+                </div>
+
+                <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                  <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
+                    <span className="font-semibold">Pass:</span> {toLabelCase(latestScan.registrationType)}
+                  </p>
+                  <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
+                    <span className="font-semibold">Location:</span> {getLocationText(latestScan)}
+                  </p>
+                  <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
+                    <span className="font-semibold">Time:</span> {formatDateTime(getScanTimestamp(latestScan))}
+                  </p>
+                  <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
+                    <span className="font-semibold">When:</span> {getRelativeTime(getScanTimestamp(latestScan))}
+                  </p>
+                  {latestScan.durationInside && (
+                    <p className="text-amber-700 sm:col-span-2">
+                      <span className="font-semibold">Duration:</span> {latestScan.durationInside}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setLatestScan(null)}
+                  className={`mt-3 w-full py-2 rounded-lg text-sm font-semibold transition-colors ${latestScan.actionType === 'checkout' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'
+                    }`}
+                >
+                  OK
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -384,9 +441,11 @@ export default function ScannerPage() {
               </div>
             ) : (
               (checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns).map((checkIn, index) => (
-                <div
+                <button
+                  type="button"
+                  onClick={() => setSelectedCheckIn(checkIn)}
                   key={`${checkIn.registrationId}-${index}`}
-                  className={`p-4 bg-white rounded-xl border transition-all ${checkIn.isNew ? "border-green-200 bg-green-50" : "border-zinc-100"
+                  className={`w-full p-4 bg-white rounded-xl border transition-all text-left ${checkIn.isNew ? "border-green-200 bg-green-50" : "border-zinc-100"
                     }`}
                 >
                   <div className="flex justify-between items-start">
@@ -411,12 +470,90 @@ export default function ScannerPage() {
                       </span>
                     )}
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
         </div>
       </main>
+
+      {selectedCheckIn && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedCheckIn(null);
+            }
+          }}
+        >
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-zinc-100 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-900">{selectedCheckIn.guestName || "Guest"}</h3>
+                <p className="text-xs text-zinc-500 mt-1">{toLabelCase(selectedCheckIn.registrationType)}</p>
+              </div>
+              <button
+                onClick={() => setSelectedCheckIn(null)}
+                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-zinc-500">Action</span>
+                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${selectedCheckIn.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                  {selectedCheckIn.actionType === 'checkout' ? 'OUT' : 'IN'}
+                </span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-zinc-500">Email</span>
+                <span className="text-zinc-900 text-right break-all">{selectedCheckIn.guestEmail || "N/A"}</span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-zinc-500">Gate / Zone</span>
+                <span className="text-zinc-900 text-right">{getLocationText(selectedCheckIn)}</span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-zinc-500">Scanned At</span>
+                <span className="text-zinc-900 text-right">{formatDateTime(getScanTimestamp(selectedCheckIn))}</span>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-zinc-500">Relative Time</span>
+                <span className="text-zinc-900 text-right">{getRelativeTime(getScanTimestamp(selectedCheckIn))}</span>
+              </div>
+              {selectedCheckIn.durationInside && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-zinc-500">Duration</span>
+                  <span className="text-zinc-900 text-right">{selectedCheckIn.durationInside}</span>
+                </div>
+              )}
+              {selectedCheckIn.scannerUserName && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-zinc-500">Scanner</span>
+                  <span className="text-zinc-900 text-right">{selectedCheckIn.scannerUserName}</span>
+                </div>
+              )}
+              {selectedCheckIn.invalidReason && (
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-zinc-500">Reason</span>
+                  <span className="text-zinc-900 text-right">{toLabelCase(selectedCheckIn.invalidReason)}</span>
+                </div>
+              )}
+            </div>
+
+            <div className="p-5 border-t border-zinc-100">
+              <button
+                onClick={() => setSelectedCheckIn(null)}
+                className="w-full py-3 bg-zinc-900 text-white rounded-xl font-medium hover:bg-black transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Duplicate Overlay */}
       {duplicateInfo && (
