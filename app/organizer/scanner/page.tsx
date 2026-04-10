@@ -238,6 +238,52 @@ export default function ScannerPage() {
       .replace(/\b\w/g, char => char.toUpperCase());
   };
 
+  const getAttendeeCategory = (registrationType?: string) => {
+    const normalized = (registrationType || "").toLowerCase();
+
+    if (normalized.includes("vip")) {
+      return "VIP";
+    }
+    if (normalized.includes("speaker") || normalized.includes("keynote")) {
+      return "Speaker";
+    }
+    if (normalized.includes("exhibitor")) {
+      return "Exhibitor";
+    }
+
+    return "Regular Attendee";
+  };
+
+  const parseDurationToMs = (duration?: string) => {
+    if (!duration) return null;
+
+    const hours = Number((duration.match(/(\d+)\s*h/i) || [])[1] || 0);
+    const minutes = Number((duration.match(/(\d+)\s*m/i) || [])[1] || 0);
+    const seconds = Number((duration.match(/(\d+)\s*s/i) || [])[1] || 0);
+
+    if (!hours && !minutes && !seconds) return null;
+
+    return ((hours * 60 * 60) + (minutes * 60) + seconds) * 1000;
+  };
+
+  const getEntryTimeText = (checkIn: AttendeeCheckIn) => {
+    const scanTimestamp = getScanTimestamp(checkIn);
+    const scanDate = new Date(scanTimestamp);
+
+    if (Number.isNaN(scanDate.getTime())) {
+      return "Unknown";
+    }
+
+    if (checkIn.actionType === "checkout" && checkIn.durationInside) {
+      const durationMs = parseDurationToMs(checkIn.durationInside);
+      if (durationMs !== null) {
+        return formatDateTime(new Date(scanDate.getTime() - durationMs).toISOString());
+      }
+    }
+
+    return formatDateTime(scanTimestamp);
+  };
+
   const getLocationText = (checkIn: AttendeeCheckIn) => {
     if (checkIn.gateName && checkIn.zoneName) {
       return `${checkIn.gateName} • ${checkIn.zoneName}`;
@@ -329,7 +375,7 @@ export default function ScannerPage() {
 
                 <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
                   <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
-                    <span className="font-semibold">Pass:</span> {toLabelCase(latestScan.registrationType)}
+                    <span className="font-semibold">Pass:</span> {getAttendeeCategory(latestScan.registrationType)}
                   </p>
                   <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
                     <span className="font-semibold">Location:</span> {getLocationText(latestScan)}
@@ -338,7 +384,7 @@ export default function ScannerPage() {
                     <span className="font-semibold">Time:</span> {formatDateTime(getScanTimestamp(latestScan))}
                   </p>
                   <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
-                    <span className="font-semibold">When:</span> {getRelativeTime(getScanTimestamp(latestScan))}
+                    <span className="font-semibold">Entry:</span> {getEntryTimeText(latestScan)}
                   </p>
                   {latestScan.durationInside && (
                     <p className="text-amber-700 sm:col-span-2">
@@ -490,7 +536,7 @@ export default function ScannerPage() {
             <div className="p-5 border-b border-zinc-100 flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-lg font-semibold text-zinc-900">{selectedCheckIn.guestName || "Guest"}</h3>
-                <p className="text-xs text-zinc-500 mt-1">{toLabelCase(selectedCheckIn.registrationType)}</p>
+                <p className="text-xs text-zinc-500 mt-1">{getAttendeeCategory(selectedCheckIn.registrationType)}</p>
               </div>
               <button
                 onClick={() => setSelectedCheckIn(null)}
@@ -520,8 +566,8 @@ export default function ScannerPage() {
                 <span className="text-zinc-900 text-right">{formatDateTime(getScanTimestamp(selectedCheckIn))}</span>
               </div>
               <div className="flex items-start justify-between gap-3">
-                <span className="text-zinc-500">Relative Time</span>
-                <span className="text-zinc-900 text-right">{getRelativeTime(getScanTimestamp(selectedCheckIn))}</span>
+                <span className="text-zinc-500">Entry Time</span>
+                <span className="text-zinc-900 text-right">{getEntryTimeText(selectedCheckIn)}</span>
               </div>
               {selectedCheckIn.durationInside && (
                 <div className="flex items-start justify-between gap-3">
