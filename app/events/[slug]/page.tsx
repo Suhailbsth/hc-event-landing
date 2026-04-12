@@ -124,12 +124,12 @@ export default async function EventPage({
           <div className="max-w-6xl mx-auto">
             {/* About Event */}
             <div className="mb-16">
-              <h2 dir="auto" className="text-4xl font-bold text-gray-900 mb-6">
+              <h2 dir="auto" className="text-4xl font-bold text-gray-900 mb-6 dynamic-content">
                 {t.aboutEvent}
               </h2>
               <div
                 dir="auto"
-                className="prose prose-lg max-w-none text-gray-700 leading-relaxed bg-white p-8 rounded-lg shadow-sm border border-gray-100"
+                className="prose prose-lg max-w-none text-gray-700 leading-relaxed bg-white p-8 rounded-lg shadow-sm border border-gray-100 dynamic-content"
                 dangerouslySetInnerHTML={{
                   __html:
                     (isArabic && event.descriptionAr
@@ -144,7 +144,7 @@ export default async function EventPage({
               {/* Event Highlights */}
               {event.highlights && event.highlights.length > 0 && (
                 <div>
-                  <h3 dir="auto" className="text-2xl font-bold text-gray-900 mb-6">
+                  <h3 dir="auto" className="text-2xl font-bold text-gray-900 mb-6 dynamic-content">
                     {t.eventHighlights}
                   </h3>
                   <div className="space-y-3">
@@ -166,7 +166,7 @@ export default async function EventPage({
               {/* Agenda */}
               {event.agenda && event.agenda.length > 0 && (
                 <div>
-                  <h3 dir="auto" className="text-2xl font-bold text-gray-900 mb-6">
+                  <h3 dir="auto" className="text-2xl font-bold text-gray-900 mb-6 dynamic-content">
                     {t.agenda}
                   </h3>
                   <div className="space-y-4">
@@ -199,7 +199,7 @@ export default async function EventPage({
         {(event.latitude || event.longitude) && (
           <section className="w-full bg-white py-20">
             <div className="max-w-6xl mx-auto px-4">
-              <h2 dir="auto" className="text-4xl font-bold text-gray-900 mb-12 text-center">
+              <h2 dir="auto" className="text-4xl font-bold text-gray-900 mb-12 text-start dynamic-content">
                 {t.venueLocation}
               </h2>
               <EventMap 

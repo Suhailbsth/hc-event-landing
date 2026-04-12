@@ -106,13 +106,13 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
             )}
 
             {/* Title with enhanced animation - RTL Support */}
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up">
+            <h1 dir="auto" className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up dynamic-content">
               {title}
             </h1>
 
             {/* Short Description with better contrast and RTL support */}
             {shortDesc && (
-              <p className="text-xl sm:text-2xl text-white/95 mb-10 max-w-2xl drop-shadow-lg leading-relaxed">
+              <p dir="auto" className="text-xl sm:text-2xl text-white/95 mb-10 max-w-2xl drop-shadow-lg leading-relaxed dynamic-content">
                 {shortDesc}
               </p>
             )}

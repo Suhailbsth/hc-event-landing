@@ -141,7 +141,7 @@ export default function GateSelectionPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 dir="auto" className="text-xl font-serif font-medium text-zinc-900 tracking-tight">{event.eventTitle}</h1>
+            <h1 dir="auto" className="text-xl font-serif font-medium text-zinc-900 tracking-tight dynamic-content">{event.eventTitle}</h1>
             <p className="text-xs text-zinc-500 font-light">Select a gate to start scanning</p>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function GateSelectionPage() {
                           {typeConfig.icon}
                         </div>
                         <div>
-                          <h3 dir="auto" className="text-lg font-serif font-medium text-zinc-900">{gate.gateName}</h3>
+                          <h3 dir="auto" className="text-lg font-serif font-medium text-zinc-900 dynamic-content">{gate.gateName}</h3>
                           <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">{typeConfig.label}</span>
                         </div>
                       </div>
@@ -199,7 +199,7 @@ export default function GateSelectionPage() {
 
                     {/* Gate Details */}
                     <div className="space-y-4 mb-8">
-                      <div dir="auto" className="flex items-center gap-2.5 text-sm text-zinc-500">
+                      <div dir="auto" className="flex items-center gap-2.5 text-sm text-zinc-500 dynamic-content">
                         <MapPin className="w-4 h-4 text-zinc-400" />
                         <span className="font-light">{gate.location || 'Location not set'}</span>
                       </div>

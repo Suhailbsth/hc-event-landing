@@ -341,7 +341,7 @@ export default function ScannerPage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 dir="auto" className="text-lg font-serif font-bold text-zinc-900 leading-none">{session.gateName}</h1>
+              <h1 dir="auto" className="text-lg font-serif font-bold text-zinc-900 leading-none dynamic-content">{session.gateName}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${session.gateType === 'entry' ? 'bg-emerald-100 text-emerald-700' :
                     session.gateType === 'exit' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'
@@ -404,7 +404,7 @@ export default function ScannerPage() {
                   <CheckCircle2 className={`w-5 h-5 mt-0.5 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-green-600'}`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p dir="auto" className={`text-sm font-semibold truncate ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-green-900'}`}>
+                      <p dir="auto" className={`text-sm font-semibold truncate dynamic-content ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-green-900'}`}>
                         {latestScan.guestName || "Attendee"}
                       </p>
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${latestScan.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
@@ -560,7 +560,7 @@ export default function ScannerPage() {
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <p dir="auto" className="font-medium text-zinc-900 text-sm">{checkIn.guestName || "Guest"}</p>
+                      <p dir="auto" className="font-medium text-zinc-900 text-sm dynamic-content">{checkIn.guestName || "Guest"}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${checkIn.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                           }`}>
@@ -599,7 +599,7 @@ export default function ScannerPage() {
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-zinc-100 flex items-start justify-between gap-3">
               <div>
-                <h3 dir="auto" className="text-lg font-semibold text-zinc-900">{selectedCheckIn.guestName || "Guest"}</h3>
+                <h3 dir="auto" className="text-lg font-semibold text-zinc-900 dynamic-content">{selectedCheckIn.guestName || "Guest"}</h3>
                 <p className="text-xs text-zinc-500 mt-1">{getAttendeeCategory(selectedCheckIn.registrationType)}</p>
               </div>
               <button

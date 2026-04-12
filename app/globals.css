@@ -77,9 +77,18 @@ body {
 }
 
 /* 
+  Robust handling for dynamic content that could be either Arabic or English.
+  unicode-bidi: plaintext ensures the browser detects the direction per paragraph.
+*/
+.dynamic-content {
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+
+/* 
   Ensures that text alignment follows the "start" of the current direction.
-  This allows dir="auto" on child elements to correctly align LTR text to the left 
-  even inside an RTL page.
+  This allows dir="auto" or unicode-bidi: plaintext on child elements to correctly 
+  align LTR text to the left even inside an RTL page.
 */
 [dir="rtl"] h1, 
 [dir="rtl"] h2, 
@@ -99,6 +108,7 @@ body {
 
 [dir="rtl"] .prose p {
   text-align: start;
+  unicode-bidi: plaintext;
 }
 
 [dir="rtl"] .prose ul,
