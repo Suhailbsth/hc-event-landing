@@ -1,3 +1,5 @@
+"use client";
+
 import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { organizerApi } from "@/lib/organizerApi";
