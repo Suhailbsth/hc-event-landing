@@ -29,12 +29,12 @@ export default function EventMap({ latitude, longitude, venue, location }: Event
                 <MapPin className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 dir="auto" className="text-2xl sm:text-3xl font-bold text-white dynamic-content">{venue || 'Event Venue'}</h4>
+                <h4 dir="auto" className="text-2xl sm:text-3xl font-bold text-white text-start dynamic-content">{venue || 'Event Venue'}</h4>
               </div>
             </div>
-            <p dir="auto" className="text-blue-100 text-base ms-15 dynamic-content">{location || 'Location details'}</p>
+            <p dir="auto" className="text-blue-100 text-base ps-15 text-start dynamic-content">{location || 'Location details'}</p>
             {latitude && longitude && (
-              <p dir="auto" className="text-blue-200 text-sm mt-2 ms-15 dynamic-content">
+              <p dir="auto" className="text-blue-200 text-sm mt-2 ps-15 text-start dynamic-content">
                 📍 {latitude.toFixed(4)}, {longitude.toFixed(4)}
               </p>
             )}
@@ -93,8 +93,8 @@ export default function EventMap({ latitude, longitude, venue, location }: Event
                 <MapPin className="w-5 h-5 text-blue-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <h5 dir="auto" className="font-bold text-gray-900 mb-1 text-sm dynamic-content">Getting There</h5>
-                <p dir="auto" className="text-gray-600 text-xs leading-relaxed dynamic-content">
+                <h5 dir="auto" className="font-bold text-gray-900 mb-1 text-sm text-start dynamic-content">Getting There</h5>
+                <p dir="auto" className="text-gray-600 text-xs leading-relaxed text-start dynamic-content">
                   Public transit, parking, and rideshare options available nearby
                 </p>
               </div>
@@ -107,7 +107,7 @@ export default function EventMap({ latitude, longitude, venue, location }: Event
               <div className="w-10 h-10 flex items-center justify-center bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors flex-shrink-0">
                 <Clock className="w-5 h-5 text-green-600" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 text-start">
                 <h5 dir="auto" className="font-bold text-gray-900 mb-1 text-sm dynamic-content">Arrive Early</h5>
                 <p dir="auto" className="text-gray-600 text-xs leading-relaxed dynamic-content">
                   Plan to arrive 15-20 minutes early for smooth check-in
@@ -122,7 +122,7 @@ export default function EventMap({ latitude, longitude, venue, location }: Event
               <div className="w-10 h-10 flex items-center justify-center bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors flex-shrink-0">
                 <DollarSign className="w-5 h-5 text-purple-600" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 text-start">
                 <h5 dir="auto" className="font-bold text-gray-900 mb-1 text-sm dynamic-content">Parking</h5>
                 <p dir="auto" className="text-gray-600 text-xs leading-relaxed dynamic-content">
                   Free parking available. Reserved spaces for accessible parking
@@ -137,7 +137,7 @@ export default function EventMap({ latitude, longitude, venue, location }: Event
               <div className="w-10 h-10 flex items-center justify-center bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors flex-shrink-0">
                 <Users className="w-5 h-5 text-orange-600" />
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 text-start">
                 <h5 dir="auto" className="font-bold text-gray-900 mb-1 text-sm dynamic-content">Accessibility</h5>
                 <p dir="auto" className="text-gray-600 text-xs leading-relaxed dynamic-content">
                   ADA compliant. Contact us for special accommodations
@@ -151,7 +151,7 @@ export default function EventMap({ latitude, longitude, venue, location }: Event
         <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
-            <div>
+            <div className="text-start">
               <h5 dir="auto" className="font-bold text-gray-900 mb-2 dynamic-content">Need Directions?</h5>
               <p dir="auto" className="text-gray-600 text-sm mb-4 dynamic-content">
                 Click "Open in Maps" above to get turn-by-turn directions from your current location.

@@ -50,7 +50,7 @@ export default function AnalyticsPage() {
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
                 <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Live Analytics</h1>
+                    <h1 dir="auto" className="text-2xl font-bold text-gray-900 text-start dynamic-content">Live Analytics</h1>
                     <button
                         onClick={() => router.back()}
                         className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
@@ -68,21 +68,21 @@ export default function AnalyticsPage() {
                 {/* Key Metrics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">Total Check-ins</h3>
+                        <h3 dir="auto" className="text-sm font-medium text-gray-500 mb-1 text-start dynamic-content">Total Check-ins</h3>
                         <p className="text-3xl font-bold text-indigo-600">
                             {occupancy?.stats?.totalCheckIns || 0}
                         </p>
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">Total Check-outs</h3>
+                        <h3 dir="auto" className="text-sm font-medium text-gray-500 mb-1 text-start dynamic-content">Total Check-outs</h3>
                         <p className="text-3xl font-bold text-orange-600">
                             {occupancy?.stats?.totalCheckOuts || 0}
                         </p>
                     </div>
 
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">Current Occupancy</h3>
+                        <h3 dir="auto" className="text-sm font-medium text-gray-500 mb-1 text-start dynamic-content">Current Occupancy</h3>
                         <p className="text-3xl font-bold text-green-600">
                             {(occupancy?.stats?.totalCheckIns || 0) - (occupancy?.stats?.totalCheckOuts || 0)}
                         </p>
@@ -94,13 +94,13 @@ export default function AnalyticsPage() {
                 {occupancy?.stats?.checkInsByGate && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
                         <div className="px-6 py-4 border-b border-gray-100">
-                            <h3 className="font-semibold text-gray-900">Activity by Gate</h3>
+                            <h3 dir="auto" className="font-semibold text-gray-900 text-start dynamic-content">Activity by Gate</h3>
                         </div>
                         <div className="p-6">
                             <div className="space-y-4">
                                 {Object.entries(occupancy.stats.checkInsByGate).map(([gate, count]: [string, any]) => (
                                     <div key={gate} className="flex items-center justify-between">
-                                        <span className="text-gray-700">{gate}</span>
+                                        <span dir="auto" className="text-gray-700 text-start dynamic-content">{gate}</span>
                                         <span className="font-mono bg-gray-100 px-2 py-1 rounded text-sm text-gray-600">{count} scans</span>
                                     </div>
                                 ))}

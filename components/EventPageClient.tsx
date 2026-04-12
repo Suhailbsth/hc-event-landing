@@ -39,7 +39,7 @@ export default function EventPageClient({ event }: EventPageClientProps) {
   return (
     <>
       {/* Top Navigation Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/40 to-transparent backdrop-blur-md">
+      <div className="fixed top-0 start-0 end-0 z-50 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/40 to-transparent backdrop-blur-md">
         {/* Left side - Organizer Login */}
         <Link
           href={`/organizer/login?returnTo=${event.id}&eventTitle=${encodeURIComponent(event.title)}`}
@@ -92,7 +92,7 @@ export default function EventPageClient({ event }: EventPageClientProps) {
         <section id="registration" className="py-16 bg-gray-50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mx-auto">
-              <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+              <h2 dir="auto" className="text-3xl font-bold text-gray-900 mb-8 text-start dynamic-content">
                 {t('registerForEvent')}
               </h2>
               <RegistrationForm event={event} />

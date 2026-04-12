@@ -13,32 +13,32 @@ export default function NotFound() {
         </div>
 
         {/* Title */}
-        <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+        <h1 className="text-6xl font-bold text-gray-900 mb-4 text-start">404</h1>
         
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+        <h2 dir="auto" className="text-2xl font-semibold text-gray-800 mb-4 text-start dynamic-content">
           Event Not Found
         </h2>
 
-        <p className="text-gray-600 mb-8">
+        <p dir="auto" className="text-gray-600 mb-8 text-start dynamic-content">
           We couldn&apos;t find the event you&apos;re looking for. It may have been removed, 
           or the link might be incorrect.
         </p>
 
         {/* Suggestions */}
-        <div className="bg-white rounded-lg p-6 shadow-sm mb-8 text-left">
-          <h3 className="font-semibold text-gray-900 mb-3">What you can do:</h3>
+        <div className="bg-white rounded-lg p-6 shadow-sm mb-8 text-start dynamic-content">
+          <h3 dir="auto" className="font-semibold text-gray-900 mb-3 dynamic-content">What you can do:</h3>
           <ul className="space-y-2 text-gray-700">
             <li className="flex items-start gap-2">
               <span className="text-blue-600 mt-1">✓</span>
-              <span>Check the event link and try again</span>
+              <span dir="auto">Check the event link and try again</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600 mt-1">✓</span>
-              <span>Contact the event organizer for the correct link</span>
+              <span dir="auto">Contact the event organizer for the correct link</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-blue-600 mt-1">✓</span>
-              <span>Browse our upcoming events</span>
+              <span dir="auto">Browse our upcoming events</span>
             </li>
           </ul>
         </div>

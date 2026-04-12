@@ -2,6 +2,8 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { organizerApi, OrganizerEvent } from "@/lib/organizerApi";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { formatDateRange } from "@/lib/utils";
 import {
   Calendar,
   MapPin,
@@ -27,6 +29,8 @@ function LoadingFallback() {
 function OrganizerEventsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { language } = useLanguage();
+  const isArabic = language === 'ar';
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -60,28 +64,6 @@ function OrganizerEventsContent() {
   const handleLogout = () => {
     organizerApi.logout();
     router.push("/organizer/login");
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const formatDateRange = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    if (start.toDateString() === end.toDateString()) {
-      return formatDate(startDate);
-    }
-
-    const startMonth = start.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const endMonth = end.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-    return `${startMonth} - ${endMonth}`;
   };
 
   const getBackgroundStyle = (event: OrganizerEvent) => {
@@ -215,7 +197,7 @@ function OrganizerEventsContent() {
                     {/* Location */}
                     {event.location && (
                       <div dir="auto" className="flex items-center text-zinc-500 text-xs font-medium tracking-wide uppercase dynamic-content">
-                        <MapPin className="w-3.5 h-3.5 mr-1.5" />
+                        <MapPin className="w-3.5 h-3.5 me-1.5" />
                         <span className="truncate">{event.location}</span>
                       </div>
                     )}
@@ -226,9 +208,9 @@ function OrganizerEventsContent() {
                 <div className="p-8 bg-white border-t border-zinc-50 space-y-5">
                   <div className="space-y-3">
                     {/* Date */}
-                    <div dir="auto" className="flex items-center text-sm text-zinc-500">
-                      <Calendar className="w-4 h-4 mr-3 text-zinc-300" />
-                      <span className="font-light">{formatDateRange(event.startDate, event.endDate)}</span>
+                    <div className="flex items-center text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-auto">
+                      <Calendar className="w-3 h-3 me-2" />
+                      <span>{formatDateRange(event.startDate, event.endDate, isArabic ? 'ar' : 'en')}</span>
                     </div>
 
                     {/* Gates */}

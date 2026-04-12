@@ -116,11 +116,11 @@ export default function ConfirmDialog({
             </div>
 
             {/* Content */}
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <div className="text-start dynamic-content">
+              <h3 dir="auto" className="text-lg font-semibold text-gray-900 mb-2 dynamic-content">
                 {title}
               </h3>
-              <p className="text-sm text-gray-600 mb-6">
+              <p dir="auto" className="text-sm text-gray-600 mb-6 dynamic-content">
                 {message}
               </p>
             </div>

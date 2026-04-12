@@ -243,13 +243,13 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
       {/* Error Message */}
       {error && (
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-800">{error}</p>
+          <p dir="auto" className="text-sm text-red-800 text-start dynamic-content">{error}</p>
         </div>
       )}
 
       {/* Instructions */}
       <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-sm text-blue-800 text-center">
+        <p dir="auto" className="text-sm text-blue-800 text-start dynamic-content">
           📱 Point camera at QR code or barcode
         </p>
       </div>

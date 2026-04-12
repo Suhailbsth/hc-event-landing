@@ -152,11 +152,11 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
       </div>
 
       {/* Title */}
-      <h2 className={`text-2xl font-bold text-gray-900 mb-3 text-center ${isArabic ? 'text-right' : ''}`}>
+      <h2 dir="auto" className="text-2xl font-bold text-gray-900 mb-3 text-start dynamic-content">
         {isArabic ? 'تم التسجيل بنجاح!' : 'Registration Successful!'}
       </h2>
 
-      <p className={`text-gray-600 text-center mb-8 ${isArabic ? 'text-right' : ''}`}>
+      <p dir="auto" className="text-gray-600 text-start mb-8 dynamic-content">
         {isArabic
           ? 'شكراً لتسجيلك في الفعالية. لقد تم إرسال تفاصيل التسجيل إلى بريدك الإلكتروني.'
           : 'Thank you for registering! Your registration details have been sent to your email.'}
@@ -206,7 +206,7 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
       {/* QR Code */}
       {regData.qrCodeUrl && (
         <div className="bg-white border-2 border-gray-200 rounded-lg p-6 mb-6">
-          <h3 className={`text-lg font-semibold text-gray-900 mb-4 text-center ${isArabic ? 'text-right' : ''}`}>
+        <h3 dir="auto" className="text-lg font-semibold text-gray-900 mb-4 text-start dynamic-content">
             {isArabic ? 'رمز QR للدخول' : 'Your Entry QR Code'}
           </h3>
 
@@ -222,7 +222,7 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
             </div>
           </div>
 
-          <p className={`text-sm text-gray-600 text-center mb-4 ${isArabic ? 'text-right' : ''}`}>
+          <p dir="auto" className="text-sm text-gray-600 text-start mb-4 dynamic-content">
             {isArabic
               ? 'أحضر رمز QR هذا معك إلى الفعالية للدخول السريع'
               : 'Bring this QR code with you to the event for quick entry'}
@@ -240,8 +240,8 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
 
       {/* Digital Wallet Passes */}
       <div className="mb-6 space-y-3">
-        <h3 className={`text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-          <Smartphone className="w-5 h-5" />
+        <h3 dir="auto" className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2 text-start dynamic-content">
+          <Smartphone className="w-5 h-5 flex-shrink-0" />
           {isArabic ? 'إضافة إلى المحفظة الرقمية' : 'Add to Digital Wallet'}
         </h3>
 
@@ -305,8 +305,8 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
 
       {/* Next Steps */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 space-y-3">
-        <h4 className={`font-semibold text-blue-900 flex items-center gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
-          <Calendar className="w-5 h-5" />
+        <h4 dir="auto" className="font-semibold text-blue-900 flex items-center gap-2 text-start dynamic-content">
+          <Calendar className="w-5 h-5 flex-shrink-0" />
           {isArabic ? 'الخطوات التالية' : 'Next Steps'}
         </h4>
 

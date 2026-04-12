@@ -151,12 +151,12 @@ export default async function EventPage({
                     {event.highlights.map((highlight: string, index: number) => (
                       <div
                         key={index}
-                        className={`flex items-start gap-4 p-4 bg-white rounded-lg border border-gray-100 hover:border-blue-300 transition-colors ${isArabic ? 'flex-row-reverse' : ''}`}
+                        className="flex items-start gap-4 p-4 bg-white rounded-lg border border-gray-100 hover:border-blue-300 transition-colors text-start"
                       >
                         <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-green-100 rounded-full text-green-600 font-bold text-sm">
                           ✓
                         </span>
-                        <span className="text-gray-700">{highlight}</span>
+                        <span dir="auto" className="text-gray-700 dynamic-content">{highlight}</span>
                       </div>
                     ))}
                   </div>
@@ -173,16 +173,16 @@ export default async function EventPage({
                     {event.agenda.map((item, index: number) => (
                       <div
                         key={index}
-                        className={`p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow ${isArabic ? 'border-r-4 border-blue-500' : 'border-l-4 border-blue-500'}`}
+                        className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border-s-4 border-blue-500 text-start"
                       >
-                        <div className="text-sm font-semibold text-blue-600 mb-2">
+                        <div dir="auto" className="text-sm font-semibold text-blue-600 mb-2 dynamic-content">
                           {item.time}
                         </div>
-                        <div className="text-gray-900 font-semibold mb-2">
+                        <div dir="auto" className="text-gray-900 font-semibold mb-2 dynamic-content">
                           {item.title}
                         </div>
                         {item.description && (
-                          <div className="text-sm text-gray-600">
+                          <div dir="auto" className="text-sm text-gray-600 dynamic-content">
                             {item.description}
                           </div>
                         )}

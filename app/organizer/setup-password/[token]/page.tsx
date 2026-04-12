@@ -126,7 +126,7 @@ export default function SetupPasswordPage() {
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto" />
-                    <p className="mt-4 text-lg text-gray-600">Verifying your invitation...</p>
+                    <p dir="auto" className="mt-4 text-lg text-gray-600 dynamic-content">Verifying your invitation...</p>
                 </div>
             </div>
         );
@@ -192,13 +192,13 @@ export default function SetupPasswordPage() {
                             />
                         </svg>
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">Set Up Your Account</h1>
-
+                    <h1 dir="auto" className="text-2xl font-bold text-gray-900 dynamic-content">Set Up Your Account</h1>
+ 
                     {tokenInfo && (
                         <>
-                            <p className="text-gray-600 mt-2">You&apos;ve been invited to organize:</p>
-                            <p className="text-lg font-semibold text-indigo-600 mt-1">{tokenInfo.eventTitle}</p>
-                            <p className="text-sm text-gray-500 mt-2">Email: {tokenInfo.email}</p>
+                            <p dir="auto" className="text-gray-600 mt-2 dynamic-content">You&apos;ve been invited to organize:</p>
+                            <p dir="auto" className="text-lg font-semibold text-indigo-600 mt-1 dynamic-content">{tokenInfo.eventTitle}</p>
+                            <p dir="auto" className="text-sm text-gray-500 mt-2 dynamic-content">Email: {tokenInfo.email}</p>
                         </>
                     )}
                 </div>
@@ -223,7 +223,7 @@ export default function SetupPasswordPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Password Field */}
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2 text-center">
+                        <label dir="auto" htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2 text-start dynamic-content">
                             New Password
                         </label>
                         <input
@@ -233,7 +233,7 @@ export default function SetupPasswordPage() {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             dir="auto"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900 placeholder:text-center"
+                            className="w-full ps-4 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900 placeholder:text-start"
                             placeholder="Enter your password"
                             disabled={submitting}
                         />
@@ -242,7 +242,7 @@ export default function SetupPasswordPage() {
                     {/* Password Strength Indicators */}
                     <div className="space-y-2 text-sm">
                         <div className={`flex items-center ${hasMinLength ? "text-green-600" : "text-gray-400"}`}>
-                            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 me-2" fill="currentColor" viewBox="0 0 20 20">
                                 {hasMinLength ? (
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 ) : (
@@ -253,7 +253,7 @@ export default function SetupPasswordPage() {
                         </div>
 
                         <div className={`flex items-center ${hasUppercase ? "text-green-600" : "text-gray-400"}`}>
-                            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 me-2" fill="currentColor" viewBox="0 0 20 20">
                                 {hasUppercase ? (
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 ) : (
@@ -264,7 +264,7 @@ export default function SetupPasswordPage() {
                         </div>
 
                         <div className={`flex items-center ${hasLowercase ? "text-green-600" : "text-gray-400"}`}>
-                            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 me-2" fill="currentColor" viewBox="0 0 20 20">
                                 {hasLowercase ? (
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 ) : (
@@ -275,7 +275,7 @@ export default function SetupPasswordPage() {
                         </div>
 
                         <div className={`flex items-center ${hasNumber ? "text-green-600" : "text-gray-400"}`}>
-                            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 me-2" fill="currentColor" viewBox="0 0 20 20">
                                 {hasNumber ? (
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 ) : (
@@ -288,7 +288,7 @@ export default function SetupPasswordPage() {
 
                     {/* Confirm Password Field */}
                     <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2 text-center">
+                        <label dir="auto" htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2 text-start dynamic-content">
                             Confirm Password
                         </label>
                         <input
@@ -298,7 +298,7 @@ export default function SetupPasswordPage() {
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                             dir="auto"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900 placeholder:text-center"
+                            className="w-full ps-4 pe-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-gray-900 placeholder:text-start"
                             placeholder="Confirm your password"
                             disabled={submitting}
                         />
@@ -307,7 +307,7 @@ export default function SetupPasswordPage() {
                     {/* Password Match Indicator */}
                     {confirmPassword && (
                         <div className={`flex items-center text-sm ${passwordsMatch ? "text-green-600" : "text-red-600"}`}>
-                            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-4 h-4 me-2" fill="currentColor" viewBox="0 0 20 20">
                                 {passwordsMatch ? (
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 ) : (

@@ -64,7 +64,7 @@ export default function HomePageClient({ events }: HomePageClientProps) {
         {/* Header */}
         <header className="px-6 py-8">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-r from-purple-400 to-blue-400 rounded-xl flex items-center justify-center shadow-2xl">
                 <Calendar className="w-6 h-6 text-white" />
               </div>
@@ -84,15 +84,15 @@ export default function HomePageClient({ events }: HomePageClientProps) {
         </header>
 
         {/* Hero Section */}
-        <section className={`px-6 py-16 text-center ${isArabic ? 'rtl' : 'ltr'}`}>
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+        <section className={`px-6 py-16 text-start ${isArabic ? 'rtl' : 'ltr'}`}>
+          <div className="max-w-4xl mx-auto dynamic-content">
+            <h1 dir="auto" className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight dynamic-content">
               {t.title1}
               <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
                 {t.title2}
               </span>
             </h1>
-            <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+            <p dir="auto" className="text-xl text-white/80 mb-8 max-w-2xl mx-auto dynamic-content">
               {t.subtitle}
             </p>
           </div>
@@ -135,11 +135,11 @@ export default function HomePageClient({ events }: HomePageClientProps) {
 
                             {/* Status Badge */}
                             {event.registrationOpen ? (
-                              <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                              <div className="absolute top-4 end-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                                 {t.openReg}
                               </div>
                             ) : (
-                              <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                              <div className="absolute top-4 end-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                                 {t.closedReg}
                               </div>
                             )}
@@ -147,13 +147,13 @@ export default function HomePageClient({ events }: HomePageClientProps) {
                         )}
 
                         {/* Event Details */}
-                        <div className="p-6">
-                          <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors">
+                        <div className="p-6 text-start">
+                          <h3 dir="auto" className="text-2xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors dynamic-content">
                             {event.title}
                           </h3>
-
+ 
                           {event.shortDescription && (
-                            <p className="text-white/70 mb-4 line-clamp-2">
+                            <p dir="auto" className="text-white/70 mb-4 line-clamp-2 dynamic-content">
                               {event.shortDescription}
                             </p>
                           )}
@@ -161,7 +161,7 @@ export default function HomePageClient({ events }: HomePageClientProps) {
                           <div className="space-y-2 mb-4">
                             {/* Date */}
                             <div className="flex items-center text-white/80 text-sm">
-                              <Calendar className="w-4 h-4 mr-2" />
+                              <Calendar className="w-4 h-4 me-2" />
                               <span>
                                 {new Date(event.startDate).toLocaleDateString(isArabic ? 'ar-AE' : 'en-US', {
                                   month: 'long',
@@ -202,7 +202,7 @@ export default function HomePageClient({ events }: HomePageClientProps) {
                           {/* CTA Button */}
                           <div className="flex items-center text-purple-300 font-semibold group-hover:text-white transition-colors">
                             <span>{t.viewDetails}</span>
-                            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-2 transition-transform" />
+                            <ArrowRight className="w-5 h-5 ms-2 group-hover:translate-x-2 transition-transform rtl:rotate-180" />
                           </div>
                         </div>
                       </div>

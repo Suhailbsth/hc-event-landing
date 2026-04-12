@@ -172,82 +172,65 @@ export default function GateSelectionPage() {
               const typeConfig = getGateTypeConfig(gate.gateType);
 
               return (
-                <div
-                  key={gate.gateId}
-                  className={`group relative bg-white border border-zinc-100 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-glass-md hover:-translate-y-1 ${!gate.isActive ? "opacity-60 grayscale" : ""
-                    }`}
-                >
-                  <div className="p-6">
-                    {/* Gate Header */}
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${typeConfig.bgColor}`}>
-                          {typeConfig.icon}
-                        </div>
-                        <div>
-                          <h3 dir="auto" className="text-lg font-serif font-medium text-zinc-900 dynamic-content">{gate.gateName}</h3>
-                          <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">{typeConfig.label}</span>
-                        </div>
-                      </div>
-                      <span className={`px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${gate.isActive
-                          ? "bg-green-50 text-green-600 border-green-100"
-                          : "bg-zinc-100 text-zinc-500 border-zinc-200"
-                        }`}>
-                        {gate.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </div>
-
-                    {/* Gate Details */}
-                    <div className="space-y-4 mb-8">
-                      <div dir="auto" className="flex items-center gap-2.5 text-sm text-zinc-500 dynamic-content">
-                        <MapPin className="w-4 h-4 text-zinc-400" />
-                        <span className="font-light">{gate.location || 'Location not set'}</span>
-                      </div>
-
-                      {/* Capacity Bar */}
-                      <div>
-                        <div className="flex justify-between text-xs text-zinc-400 mb-1.5 uppercase tracking-wider font-medium">
-                          <span>Capacity</span>
-                          <span>{gate.capacity || '∞'}</span>
-                        </div>
-                        <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-zinc-900 rounded-full w-[30%]" />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Current Organizer */}
-                    {gate.currentOrganizer && (
-                      <div className="mb-6 p-3 bg-zinc-50 border border-zinc-100 rounded-xl flex items-center gap-3">
-                        <div className="w-8 h-8 bg-zinc-200 rounded-full flex items-center justify-center text-zinc-600">
-                          <Users className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wide text-zinc-400 font-semibold">Assigned to</p>
-                          <p dir="auto" className="text-xs text-zinc-700 font-medium truncate max-w-[150px]">{gate.currentOrganizer}</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Select Button */}
-                    <button
-                      onClick={() => handleGateSelect(gate.gateId)}
-                      disabled={!gate.isActive || starting === gate.gateId}
-                      className={`w-full py-3 rounded-xl text-sm font-medium transition-all ${starting === gate.gateId
-                          ? "bg-zinc-100 text-zinc-400 cursor-wait"
-                          : "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-zinc-200 hover:shadow-xl"
-                        } disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed`}
-                    >
-                      {starting === gate.gateId ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Starting Session...</span>
-                        </span>
-                      ) : (
-                        "Start Scanning"
-                      )}
-                    </button>
+                <div key={gate.gateId} className={`group relative bg-white rounded-2xl p-6 border border-zinc-100 hover:border-black transition-all hover:shadow-xl hover:-translate-y-1 ${!gate.isActive ? "opacity-60 grayscale" : ""}`}>
+                  <div className={`p-3 rounded-xl bg-zinc-50 w-fit mb-6 group-hover:bg-zinc-100 transition-colors ps-4 pe-4`}>
+                    {typeConfig.icon}
                   </div>
+                  <div>
+                    <h3 dir="auto" className="text-lg font-serif font-medium text-zinc-900 dynamic-content">{gate.gateName}</h3>
+                    <span className="text-xs font-medium text-zinc-500 uppercase tracking-wide">{typeConfig.label}</span>
+                  </div>
+
+                  {/* Gate Details */}
+                  <div className="space-y-4 mb-8 mt-6">
+                    <div dir="auto" className="flex items-center gap-2.5 text-sm text-zinc-500 dynamic-content">
+                      <MapPin className="w-4 h-4 text-zinc-400 me-2.5" />
+                      <span className="font-light">{gate.location || 'Location not set'}</span>
+                    </div>
+
+                    {/* Capacity Bar */}
+                    <div>
+                      <div className="flex justify-between text-xs text-zinc-400 mb-1.5 uppercase tracking-wider font-medium">
+                        <span>Capacity</span>
+                        <span>{gate.capacity || '∞'}</span>
+                      </div>
+                      <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-zinc-900 rounded-full w-[30%]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Current Organizer */}
+                  {gate.currentOrganizer && (
+                    <div className="mb-6 p-3 bg-zinc-50 border border-zinc-100 rounded-xl flex items-center gap-3">
+                      <div className="w-8 h-8 bg-zinc-200 rounded-full flex items-center justify-center text-zinc-600">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-zinc-400 font-semibold">Assigned to</p>
+                        <p dir="auto" className="text-xs text-zinc-700 font-medium truncate max-w-[150px]">{gate.currentOrganizer}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Select Button */}
+                  <button
+                    onClick={() => handleGateSelect(gate.gateId)}
+                    disabled={!gate.isActive || starting === gate.gateId}
+                    className={`w-full py-3 rounded-xl text-sm font-medium transition-all ${starting === gate.gateId
+                        ? "bg-zinc-100 text-zinc-400 cursor-wait"
+                        : "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-zinc-200 hover:shadow-xl"
+                      } disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed`}
+                  >
+                    {starting === gate.gateId ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Starting Session...</span>
+                      </span>
+                    ) : (
+                      "Start Scanning"
+                    )}
+                  </button>
                 </div>
               );
             })}

@@ -81,11 +81,11 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
         <div className="absolute w-2 h-2 bg-white/20 rounded-full animate-float-2" style={{top: '30%', left: '70%'}} />
 
         {/* Enhanced Gradient Orbs with Blob Animation */}
-        <div className="absolute top-20 -left-20 w-72 h-72 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" />
-        <div className="absolute top-40 -right-20 w-72 h-72 bg-gradient-to-l from-yellow-500 to-red-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" />
-        <div className="absolute -bottom-20 left-20 w-72 h-72 bg-gradient-to-t from-green-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" />
-        <div className="absolute bottom-40 right-40 w-72 h-72 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-blob animation-delay-6000" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-8000" />
+        <div className="absolute top-20 -start-20 w-72 h-72 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" />
+        <div className="absolute top-40 -end-20 w-72 h-72 bg-gradient-to-l from-yellow-500 to-red-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" />
+        <div className="absolute -bottom-20 start-20 w-72 h-72 bg-gradient-to-t from-green-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" />
+        <div className="absolute bottom-40 end-40 w-72 h-72 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-blob animation-delay-6000" />
+        <div className="absolute top-1/2 start-1/2 -ms-[192px] -mt-[192px] w-96 h-96 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-8000" />
       </div>
 
       {/* Content */}
@@ -106,13 +106,13 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
             )}
 
             {/* Title with enhanced animation - RTL Support */}
-            <h1 dir="auto" className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up dynamic-content">
+            <h1 dir="auto" className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up text-start dynamic-content">
               {title}
             </h1>
 
             {/* Short Description with better contrast and RTL support */}
             {shortDesc && (
-              <p dir="auto" className="text-xl sm:text-2xl text-white/95 mb-10 max-w-2xl drop-shadow-lg leading-relaxed dynamic-content">
+              <p dir="auto" className="text-xl sm:text-2xl text-white/95 mb-10 max-w-2xl drop-shadow-lg leading-relaxed text-start dynamic-content">
                 {shortDesc}
               </p>
             )}
@@ -125,14 +125,14 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
                   <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                     <Calendar className="w-5 h-5 text-white" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-left">
-                      {isArabic ? 'التاريخ' : 'Date'}
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
+                        {isArabic ? 'التاريخ' : 'Date'}
+                      </div>
+                      <div className="text-white font-bold text-sm leading-tight text-start dynamic-content">
+                        {dateRange}
+                      </div>
                     </div>
-                    <div className="text-white font-bold text-sm leading-tight text-left">
-                      {dateRange}
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -144,10 +144,10 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
                       <Clock className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-left">
+                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
                         {isArabic ? 'الوقت' : 'Time'}
                       </div>
-                      <div className="text-white font-bold text-sm leading-tight text-left">
+                      <div className="text-white font-bold text-sm leading-tight text-start dynamic-content">
                         {startTimeFormatted}
                         {endTimeFormatted && (
                           <>
@@ -169,14 +169,14 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
                       <MapPin className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-left">
+                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
                         {t('location')}
                       </div>
-                      <div className="text-white font-bold text-sm leading-tight line-clamp-2 text-left">
+                      <div className="text-white font-bold text-sm leading-tight line-clamp-2 text-start dynamic-content">
                         {venue || location}
                       </div>
                       {event.city && (
-                        <div className="text-white/70 text-[10px] mt-1 truncate text-left">
+                        <div className="text-white/70 text-[10px] mt-1 truncate text-start dynamic-content">
                           {event.city}, {event.country}
                         </div>
                       )}
@@ -191,13 +191,13 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
                   <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                     <Users className="w-5 h-5 text-white" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-left">
-                      {isArabic ? 'المقاعد' : 'Seats'}
-                    </div>
-                    <div className="text-white font-bold text-xl leading-tight mb-2 text-left">
-                      {remainingCapacity}<span className="text-xs text-white/70 font-normal">/{event.capacity}</span>
-                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
+                        {isArabic ? 'المقاعد' : 'Seats'}
+                      </div>
+                      <div className="text-white font-bold text-xl leading-tight mb-2 text-start dynamic-content">
+                        {remainingCapacity}<span className="text-xs text-white/70 font-normal">/{event.capacity}</span>
+                      </div>
                     {/* Modern Progress Bar - Thicker for better visibility */}
                     <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden shadow-inner">
                       <div 

@@ -1,6 +1,4 @@
-"use client";
-
-import { Suspense, useState } from "react";
+import React, { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { organizerApi } from "@/lib/organizerApi";
 import { User, Lock, ArrowRight, Loader2, AlertCircle } from "lucide-react";
@@ -81,9 +79,9 @@ function OrganizerLoginContent() {
         <div className="backdrop-blur-md bg-white/70 border border-white/50 rounded-2xl shadow-glass-md p-10">
 
           {/* Header */}
-          <div className="text-center mb-10">
-            <h1 className="text-3xl font-serif font-medium text-zinc-900 mb-2 tracking-tight">Organizer Portal</h1>
-            <p className="text-zinc-500 text-sm font-light">Sign in to manage your events</p>
+          <div className="mb-10 text-start dynamic-content">
+            <h1 dir="auto" className="text-3xl font-serif font-medium text-zinc-900 mb-2 tracking-tight dynamic-content">Organizer Portal</h1>
+            <p dir="auto" className="text-zinc-500 text-sm font-light dynamic-content">Sign in to manage your events</p>
           </div>
 
           {/* Error Message */}
@@ -99,15 +97,18 @@ function OrganizerLoginContent() {
             {/* Username Input */}
             <div className="space-y-1.5">
               <label
-                className={`text-xs uppercase tracking-wider font-semibold transition-colors ${focusedField === 'username' ? 'text-black' : 'text-zinc-400'
-                  }`}
+                dir="auto"
+                className={`text-xs uppercase tracking-wider font-semibold transition-colors dynamic-content ${
+                  focusedField === 'username' ? 'text-black' : 'text-zinc-400'
+                }`}
               >
                 Username
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className={`w-4 h-4 transition-colors ${focusedField === 'username' ? 'text-black' : 'text-zinc-400'
-                    }`} />
+                <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
+                  <User className={`w-4 h-4 transition-colors ${
+                    focusedField === 'username' ? 'text-black' : 'text-zinc-400'
+                  }`} />
                 </div>
                 <input
                   type="text"
@@ -118,7 +119,7 @@ function OrganizerLoginContent() {
                   required
                   disabled={loading}
                   dir="auto"
-                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all hover:bg-white/80 hover:border-zinc-300"
+                  className="w-full ps-10 pe-4 py-3 bg-white/50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all hover:bg-white/80 hover:border-zinc-300"
                   placeholder="Enter your username"
                 />
               </div>
@@ -127,15 +128,18 @@ function OrganizerLoginContent() {
             {/* Password Input */}
             <div className="space-y-1.5">
               <label
-                className={`text-xs uppercase tracking-wider font-semibold transition-colors ${focusedField === 'password' ? 'text-black' : 'text-zinc-400'
-                  }`}
+                dir="auto"
+                className={`text-xs uppercase tracking-wider font-semibold transition-colors dynamic-content ${
+                  focusedField === 'password' ? 'text-black' : 'text-zinc-400'
+                }`}
               >
                 Password
               </label>
               <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className={`w-4 h-4 transition-colors ${focusedField === 'password' ? 'text-black' : 'text-zinc-400'
-                    }`} />
+                <div className="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
+                  <Lock className={`w-4 h-4 transition-colors ${
+                    focusedField === 'password' ? 'text-black' : 'text-zinc-400'
+                  }`} />
                 </div>
                 <input
                   type="password"
@@ -146,7 +150,7 @@ function OrganizerLoginContent() {
                   required
                   disabled={loading}
                   dir="auto"
-                  className="w-full pl-10 pr-4 py-3 bg-white/50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all hover:bg-white/80 hover:border-zinc-300"
+                  className="w-full ps-10 pe-4 py-3 bg-white/50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all hover:bg-white/80 hover:border-zinc-300"
                   placeholder="Enter your password"
                 />
               </div>

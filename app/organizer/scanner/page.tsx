@@ -13,7 +13,10 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  X
+  X,
+  Search,
+  Users,
+  ChevronDown
 } from "lucide-react";
 
 export default function ScannerPage() {
@@ -507,14 +510,17 @@ export default function ScannerPage() {
           </div>
 
           <div className="mb-4 space-y-3">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              dir="auto"
-              placeholder="Search by name, email, or ID"
-              className="w-full px-3 py-2.5 text-sm bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-300"
-            />
+            <div className="relative">
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <input
+                type="text"
+                placeholder="Search attendee by name..."
+                className="w-full ps-9 pe-4 py-2 text-sm bg-zinc-100 border-none rounded-xl focus:ring-1 focus:ring-black placeholder-zinc-400"
+                value={searchQuery}
+                dir="auto"
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
             <div className="flex flex-wrap gap-2">
               {[
                 { key: "all", label: "All" },

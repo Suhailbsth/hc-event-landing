@@ -26,26 +26,26 @@ export default function Error({
         </div>
 
         {/* Error Message */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+        <h1 dir="auto" className="text-3xl font-bold text-gray-900 mb-4 text-start dynamic-content">
           Oops! Something went wrong
         </h1>
         
-        <p className="text-gray-600 mb-8">
+        <p dir="auto" className="text-gray-600 mb-8 text-start dynamic-content">
           We couldn&apos;t load the event details. This might be because:
         </p>
 
-        <ul className="text-left text-gray-700 mb-8 space-y-2 bg-white rounded-lg p-6 shadow-sm">
+        <ul className="text-start text-gray-700 mb-8 space-y-2 bg-white rounded-lg p-6 shadow-sm dynamic-content">
           <li className="flex items-start gap-2">
             <span className="text-red-600 mt-1">•</span>
-            <span>The event doesn&apos;t exist or has been removed</span>
+            <span dir="auto">The event doesn&apos;t exist or has been removed</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-red-600 mt-1">•</span>
-            <span>The event link is incorrect</span>
+            <span dir="auto">The event link is incorrect</span>
           </li>
           <li className="flex items-start gap-2">
             <span className="text-red-600 mt-1">•</span>
-            <span>There&apos;s a temporary connection issue</span>
+            <span dir="auto">There&apos;s a temporary connection issue</span>
           </li>
         </ul>
 
@@ -70,7 +70,7 @@ export default function Error({
 
         {/* Error Details (Development) */}
         {process.env.NODE_ENV === 'development' && (
-          <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
+          <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg text-start">
             <p className="text-xs font-mono text-red-800 break-all">
               {error.message}
             </p>
