@@ -118,7 +118,7 @@ function OrganizerEventsContent() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-xl font-serif font-medium text-zinc-900 tracking-tight">My Events</h1>
+              <h1 dir="auto" className="text-xl font-serif font-medium text-zinc-900 tracking-tight">My Events</h1>
               <p className="text-xs text-zinc-500 hidden sm:block font-light">
                 Select an event to manage
               </p>
@@ -208,13 +208,13 @@ function OrganizerEventsContent() {
                     )}
 
                     {/* Title */}
-                    <h3 className="text-2xl font-serif font-medium text-zinc-900 leading-tight mb-2 group-hover:text-black transition-colors">
+                    <h3 dir="auto" className="text-2xl font-serif font-medium text-zinc-900 leading-tight mb-2 group-hover:text-black transition-colors">
                       {event.eventTitle}
                     </h3>
 
                     {/* Location */}
                     {event.location && (
-                      <div className="flex items-center text-zinc-500 text-xs font-medium tracking-wide uppercase">
+                      <div dir="auto" className="flex items-center text-zinc-500 text-xs font-medium tracking-wide uppercase">
                         <MapPin className="w-3.5 h-3.5 mr-1.5" />
                         <span className="truncate">{event.location}</span>
                       </div>
@@ -226,7 +226,7 @@ function OrganizerEventsContent() {
                 <div className="p-8 bg-white border-t border-zinc-50 space-y-5">
                   <div className="space-y-3">
                     {/* Date */}
-                    <div className="flex items-center text-sm text-zinc-500">
+                    <div dir="auto" className="flex items-center text-sm text-zinc-500">
                       <Calendar className="w-4 h-4 mr-3 text-zinc-300" />
                       <span className="font-light">{formatDateRange(event.startDate, event.endDate)}</span>
                     </div>

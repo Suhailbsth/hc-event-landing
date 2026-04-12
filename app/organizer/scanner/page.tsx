@@ -341,7 +341,7 @@ export default function ScannerPage() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-lg font-serif font-bold text-zinc-900 leading-none">{session.gateName}</h1>
+              <h1 dir="auto" className="text-lg font-serif font-bold text-zinc-900 leading-none">{session.gateName}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${session.gateType === 'entry' ? 'bg-emerald-100 text-emerald-700' :
                     session.gateType === 'exit' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'
@@ -404,7 +404,7 @@ export default function ScannerPage() {
                   <CheckCircle2 className={`w-5 h-5 mt-0.5 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-green-600'}`} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-sm font-semibold truncate ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-green-900'}`}>
+                      <p dir="auto" className={`text-sm font-semibold truncate ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-green-900'}`}>
                         {latestScan.guestName || "Attendee"}
                       </p>
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${latestScan.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
@@ -511,6 +511,7 @@ export default function ScannerPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              dir="auto"
               placeholder="Search by name, email, or ID"
               className="w-full px-3 py-2.5 text-sm bg-white border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-zinc-300"
             />
@@ -554,12 +555,12 @@ export default function ScannerPage() {
                   type="button"
                   onClick={() => setSelectedCheckIn(checkIn)}
                   key={`${checkIn.registrationId}-${index}`}
-                  className={`w-full p-4 bg-white rounded-xl border transition-all text-left ${checkIn.isNew ? "border-green-200 bg-green-50" : "border-zinc-100"
+                  className={`w-full p-4 bg-white rounded-xl border transition-all text-left ${checkInTab === "thisGate" && checkIn.isNew ? "border-green-200 bg-green-50" : "border-zinc-100"
                     }`}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <p className="font-medium text-zinc-900 text-sm">{checkIn.guestName || "Guest"}</p>
+                      <p dir="auto" className="font-medium text-zinc-900 text-sm">{checkIn.guestName || "Guest"}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${checkIn.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                           }`}>
@@ -598,7 +599,7 @@ export default function ScannerPage() {
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-zinc-100 flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-lg font-semibold text-zinc-900">{selectedCheckIn.guestName || "Guest"}</h3>
+                <h3 dir="auto" className="text-lg font-semibold text-zinc-900">{selectedCheckIn.guestName || "Guest"}</h3>
                 <p className="text-xs text-zinc-500 mt-1">{getAttendeeCategory(selectedCheckIn.registrationType)}</p>
               </div>
               <button
@@ -682,7 +683,7 @@ export default function ScannerPage() {
               <h3 className="text-xl font-serif font-bold text-white">Already Checked In</h3>
             </div>
             <div className="p-6">
-              <p className="text-center font-medium text-zinc-900 text-lg mb-1">{duplicateInfo.guestName}</p>
+              <p dir="auto" className="text-center font-medium text-zinc-900 text-lg mb-1">{duplicateInfo.guestName}</p>
               <p className="text-center text-zinc-500 text-sm mb-6">
                 Scanned at {duplicateInfo.checkInTime ? formatTime(duplicateInfo.checkInTime) : "earlier"}
                 {duplicateInfo.gateName && ` at ${duplicateInfo.gateName}`}

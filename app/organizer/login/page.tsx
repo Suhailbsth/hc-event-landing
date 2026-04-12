@@ -117,6 +117,7 @@ function OrganizerLoginContent() {
                   onBlur={() => setFocusedField(null)}
                   required
                   disabled={loading}
+                  dir="auto"
                   className="w-full pl-10 pr-4 py-3 bg-white/50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all hover:bg-white/80 hover:border-zinc-300"
                   placeholder="Enter your username"
                 />
@@ -144,6 +145,7 @@ function OrganizerLoginContent() {
                   onBlur={() => setFocusedField(null)}
                   required
                   disabled={loading}
+                  dir="auto"
                   className="w-full pl-10 pr-4 py-3 bg-white/50 border border-zinc-200 rounded-lg text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all hover:bg-white/80 hover:border-zinc-300"
                   placeholder="Enter your password"
                 />
