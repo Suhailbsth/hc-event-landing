@@ -70,7 +70,7 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error generating Apple Wallet pass:', error);
-      alert('Failed to generate Apple Wallet pass. Please try again.');
+      alert(isArabic ? 'فشل إنشاء بطاقة Apple Wallet. يرجى المحاولة مرة أخرى.' : 'Failed to generate Apple Wallet pass. Please try again.');
     } finally {
       setWalletLoading(null);
     }
@@ -94,7 +94,7 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
       }
     } catch (error) {
       console.error('Error generating Google Wallet pass:', error);
-      alert('Failed to generate Google Wallet pass. Please try again.');
+      alert(isArabic ? 'فشل إنشاء بطاقة Google Wallet. يرجى المحاولة مرة أخرى.' : 'Failed to generate Google Wallet pass. Please try again.');
     } finally {
       setWalletLoading(null);
     }
@@ -118,7 +118,7 @@ export default function SuccessMessage({ registration, event }: SuccessMessagePr
       }
     } catch (error) {
       console.error('Error generating Samsung Wallet pass:', error);
-      alert('Failed to generate Samsung Wallet pass. Please try again.');
+      alert(isArabic ? 'فشل إنشاء بطاقة Samsung Wallet. يرجى المحاولة مرة أخرى.' : 'Failed to generate Samsung Wallet pass. Please try again.');
     } finally {
       setWalletLoading(null);
     }

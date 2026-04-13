@@ -10,13 +10,11 @@ export default function HtmlDirectionProvider() {
 
   useEffect(() => {
     const html = document.documentElement;
-    const isOrganizerRoute = pathname?.startsWith('/organizer');
-    const isArabic = !isOrganizerRoute && language === 'ar';
-    const direction = isArabic ? 'rtl' : 'ltr';
+    const isEventRoute = pathname?.startsWith('/events/');
 
-    html.dir = direction;
-    html.lang = isArabic ? 'ar-AE' : 'en-US';
-    document.body.style.direction = direction;
+    html.dir = 'ltr';
+    html.lang = isEventRoute && language === 'ar' ? 'ar-AE' : 'en-US';
+    document.body.style.direction = 'ltr';
   }, [language, pathname]);
 
   return null;

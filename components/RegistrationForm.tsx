@@ -72,7 +72,11 @@ export default function RegistrationForm({ event }: RegistrationFormProps) {
       const response = await registerForEvent(request);
       setSuccess(response);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Registration failed. Please try again.';
+      const errorMessage = err instanceof Error
+        ? err.message
+        : isArabic
+          ? 'فشل التسجيل. يرجى المحاولة مرة أخرى.'
+          : 'Registration failed. Please try again.';
       setError(errorMessage);
     } finally {
       setIsSubmitting(false);

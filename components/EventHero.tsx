@@ -5,6 +5,7 @@ import { Calendar, MapPin, Clock, Users } from 'lucide-react';
 import { EventData } from '@/lib/eventApi';
 import { formatDateRange, formatTime } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { eventPageTranslations } from '@/lib/translations';
 
 interface EventHeroProps {
   event: EventData;
@@ -14,18 +15,15 @@ interface EventHeroProps {
 
 export default function EventHero({ event, onRegisterClick, hideRegisterButton = false }: EventHeroProps) {
   const { language, t } = useLanguage();
-  
-  // Use backgroundImageUrl (from API) or fallback to bannerImageUrl for backward compatibility
-  const backgroundImage = event.backgroundImageUrl || event.bannerImageUrl;
-  
-  // Use the event's useBackgroundAsHero setting to determine background mode (configuration-based, no user toggle)
-  const showImageBackground = event.useBackgroundAsHero && backgroundImage;
-  
+  const copy = eventPageTranslations[language];
   const isArabic = language === 'ar';
-  
+
+  const backgroundImage = event.backgroundImageUrl || event.bannerImageUrl;
+  const showImageBackground = event.useBackgroundAsHero && backgroundImage;
+
   const title = isArabic && event.arabicTitle ? event.arabicTitle : event.title;
-  const shortDesc = isArabic && event.arabicShortDescription 
-    ? event.arabicShortDescription 
+  const shortDesc = isArabic && event.arabicShortDescription
+    ? event.arabicShortDescription
     : event.shortDescription;
   const venue = isArabic && event.arabicVenue ? event.arabicVenue : event.venue;
   const location = isArabic && event.arabicLocation ? event.arabicLocation : event.location;
@@ -39,21 +37,18 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
 
   return (
     <section className="relative w-full min-h-screen overflow-hidden">
-      {/* Dynamic Animated Background */}
       <div className="absolute inset-0">
-        {/* Gradient Background */}
-        <div 
+        <div
           className={`absolute inset-0 transition-opacity duration-1000 ${
             showImageBackground ? 'opacity-0' : 'opacity-100'
           }`}
-          style={{ 
-            background: `linear-gradient(135deg, ${event.primaryColor || '#1e3a8a'} 0%, ${event.secondaryColor || '#3b82f6'} 100%)` 
+          style={{
+            background: `linear-gradient(135deg, ${event.primaryColor || '#1e3a8a'} 0%, ${event.secondaryColor || '#3b82f6'} 100%)`,
           }}
         />
-        
-        {/* Image Background */}
+
         {backgroundImage && (
-          <div 
+          <div
             className={`absolute inset-0 transition-opacity duration-1000 ${
               showImageBackground ? 'opacity-100' : 'opacity-0'
             }`}
@@ -70,17 +65,14 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
           </div>
         )}
 
-        {/* Subtle Gradient Overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/30" />
 
-        {/* Floating Particles */}
-        <div className="absolute w-2 h-2 bg-white/20 rounded-full animate-float-1" style={{top: '20%', left: '10%'}} />
-        <div className="absolute w-3 h-3 bg-white/15 rounded-full animate-float-2" style={{top: '60%', left: '20%'}} />
-        <div className="absolute w-2 h-2 bg-white/25 rounded-full animate-float-3" style={{top: '40%', right: '15%'}} />
-        <div className="absolute w-3 h-3 bg-white/10 rounded-full animate-float-1" style={{top: '70%', right: '25%'}} />
-        <div className="absolute w-2 h-2 bg-white/20 rounded-full animate-float-2" style={{top: '30%', left: '70%'}} />
+        <div className="absolute w-2 h-2 bg-white/20 rounded-full animate-float-1" style={{ top: '20%', left: '10%' }} />
+        <div className="absolute w-3 h-3 bg-white/15 rounded-full animate-float-2" style={{ top: '60%', left: '20%' }} />
+        <div className="absolute w-2 h-2 bg-white/25 rounded-full animate-float-3" style={{ top: '40%', right: '15%' }} />
+        <div className="absolute w-3 h-3 bg-white/10 rounded-full animate-float-1" style={{ top: '70%', right: '25%' }} />
+        <div className="absolute w-2 h-2 bg-white/20 rounded-full animate-float-2" style={{ top: '30%', left: '70%' }} />
 
-        {/* Enhanced Gradient Orbs with Blob Animation */}
         <div className="absolute top-20 -start-20 w-72 h-72 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" />
         <div className="absolute top-40 -end-20 w-72 h-72 bg-gradient-to-l from-yellow-500 to-red-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" />
         <div className="absolute -bottom-20 start-20 w-72 h-72 bg-gradient-to-t from-green-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" />
@@ -88,11 +80,9 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
         <div className="absolute top-1/2 start-1/2 -ms-[192px] -mt-[192px] w-96 h-96 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-8000" />
       </div>
 
-      {/* Content */}
       <div className="relative min-h-screen flex items-center py-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl">
-            {/* Event Logo */}
             {event.logoUrl && (
               <div className="mb-6 animate-float-1">
                 <Image
@@ -105,47 +95,42 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               </div>
             )}
 
-            {/* Title with enhanced animation - RTL Support */}
             <h1 dir="auto" className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up text-start dynamic-content">
               {title}
             </h1>
 
-            {/* Short Description with better contrast and RTL support */}
             {shortDesc && (
               <p dir="auto" className="text-xl sm:text-2xl text-white/95 mb-10 max-w-2xl drop-shadow-lg leading-relaxed text-start dynamic-content">
                 {shortDesc}
               </p>
             )}
 
-            {/* Premium Event Details Cards */}
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10" dir="ltr">
-              {/* Date Card */}
               <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
-                <div className={`flex items-center gap-3 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <div className="flex items-center gap-3 w-full">
                   <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                     <Calendar className="w-5 h-5 text-white" />
                   </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
-                        {isArabic ? 'التاريخ' : 'Date'}
-                      </div>
-                      <div className="text-white font-bold text-sm leading-tight text-start dynamic-content">
-                        {dateRange}
-                      </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
+                      {copy.date}
                     </div>
+                    <div className="text-white font-bold text-sm leading-tight text-start dynamic-content">
+                      {dateRange}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Time Card */}
               {(event.startTime || event.endTime) && (
                 <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
-                  <div className={`flex items-center gap-3 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
+                  <div className="flex items-center gap-3 w-full">
                     <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                       <Clock className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
-                        {isArabic ? 'الوقت' : 'Time'}
+                        {copy.time}
                       </div>
                       <div className="text-white font-bold text-sm leading-tight text-start dynamic-content">
                         {startTimeFormatted}
@@ -161,16 +146,15 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
                 </div>
               )}
 
-              {/* Location Card */}
               {(venue || location) && (
                 <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
-                  <div className={`flex items-center gap-3 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
+                  <div className="flex items-center gap-3 w-full">
                     <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                       <MapPin className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
-                        {t('location')}
+                        {copy.location}
                       </div>
                       <div className="text-white font-bold text-sm leading-tight line-clamp-2 text-start dynamic-content">
                         {venue || location}
@@ -185,26 +169,26 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
                 </div>
               )}
 
-              {/* Capacity Card */}
               <div className="group relative bg-white/10 backdrop-blur-xl rounded-2xl p-5 border border-white/20 hover:border-white/40 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full min-h-[120px] flex items-center">
-                <div className={`flex items-center gap-3 w-full ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <div className="flex items-center gap-3 w-full">
                   <div className="flex-shrink-0 w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center group-hover:bg-white/25 transition-colors">
                     <Users className="w-5 h-5 text-white" />
                   </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
-                        {isArabic ? 'المقاعد' : 'Seats'}
-                      </div>
-                      <div className="text-white font-bold text-xl leading-tight mb-2 text-start dynamic-content">
-                        {remainingCapacity}<span className="text-xs text-white/70 font-normal">/{event.capacity}</span>
-                      </div>
-                    {/* Modern Progress Bar - Thicker for better visibility */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white/70 text-[10px] uppercase tracking-[0.15em] mb-1.5 font-semibold text-start">
+                      {copy.seats}
+                    </div>
+                    <div className="text-white font-bold text-xl leading-tight mb-2 text-start dynamic-content">
+                      {remainingCapacity}<span className="text-xs text-white/70 font-normal">/{event.capacity}</span>
+                    </div>
                     <div className="w-full bg-white/20 rounded-full h-2.5 overflow-hidden shadow-inner">
-                      <div 
+                      <div
                         className={`h-2.5 rounded-full transition-all duration-700 shadow-lg ${
-                          capacityPercentage > 80 ? 'bg-gradient-to-r from-red-400 to-red-500' :
-                          capacityPercentage > 50 ? 'bg-gradient-to-r from-yellow-400 to-orange-500' :
-                          'bg-gradient-to-r from-green-400 to-emerald-500'
+                          capacityPercentage > 80
+                            ? 'bg-gradient-to-r from-red-400 to-red-500'
+                            : capacityPercentage > 50
+                              ? 'bg-gradient-to-r from-yellow-400 to-orange-500'
+                              : 'bg-gradient-to-r from-green-400 to-emerald-500'
                         }`}
                         style={{ width: `${Math.min(capacityPercentage, 100)}%` }}
                       />
@@ -214,13 +198,12 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               </div>
             </div>
 
-            {/* Enhanced CTA Section - Price & Register Button */}
             {!hideRegisterButton && (
               <div className="flex flex-wrap items-center gap-6">
                 {!event.isFree && (
                   <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-lg rounded-2xl px-8 py-5 border-2 border-white/30 shadow-xl hover:bg-white/25 transition-all duration-300">
                     <span className="text-white/90 text-sm font-semibold uppercase tracking-wider">
-                      {isArabic ? 'السعر' : 'Price'}
+                      {copy.price}
                     </span>
                     <div className="flex items-baseline gap-1">
                       <span className="text-white text-4xl font-bold tracking-tight">
@@ -250,32 +233,31 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               </div>
             )}
 
-            {/* Stats Section - Improved Grid with RTL support */}
             <div className="grid grid-cols-3 gap-6 max-w-2xl" dir="ltr">
               <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
                 <div className="text-4xl font-bold text-white mb-2">
                   {event.speakers?.length ?? 0}
                 </div>
                 <div className="text-white/90 text-sm font-semibold tracking-wide">
-                  {isArabic ? 'متحدثون' : 'Speakers'}
+                  {copy.speakers}
                 </div>
               </div>
-              
+
               <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
                 <div className="text-4xl font-bold text-white mb-2">
                   {event.sessions?.length ?? 0}
                 </div>
                 <div className="text-white/90 text-sm font-semibold tracking-wide">
-                  {isArabic ? 'جلسات' : 'Sessions'}
+                  {copy.sessions}
                 </div>
               </div>
-              
+
               <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
                 <div className="text-4xl font-bold text-white mb-2">
                   {event.totalRegistrations}
                 </div>
                 <div className="text-white/90 text-sm font-semibold tracking-wide">
-                  {isArabic ? 'مسجلون' : 'Registered'}
+                  {copy.registered}
                 </div>
               </div>
             </div>

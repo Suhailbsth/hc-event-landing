@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Language = 'en' | 'ar';
+export type Language = "en" | "ar";
 
 interface LanguageContextType {
   language: Language;
@@ -13,14 +13,10 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Static translations
 const translations = {
   en: {
-    // Navigation
     register: "Register Now",
     backToEvents: "Back to Events",
-    
-    // Event Details
     date: "Date",
     time: "Time",
     location: "Location",
@@ -28,13 +24,9 @@ const translations = {
     capacity: "Capacity",
     price: "Price",
     free: "Free",
-    
-    // Sections
     aboutEvent: "About Event",
     eventHighlights: "Event Highlights",
     agenda: "Event Agenda",
-    
-    // Registration
     registerForEvent: "Register for this Event",
     firstName: "First Name",
     lastName: "Last Name",
@@ -47,30 +39,21 @@ const translations = {
     vipTicket: "VIP Ticket",
     submit: "Submit Registration",
     submitting: "Submitting...",
-    
-    // Messages
     registrationSuccess: "Registration Successful!",
     registrationError: "Registration failed. Please try again.",
     requiredField: "This field is required",
     invalidEmail: "Please enter a valid email",
-    
-    // Event Status
     spotsLeft: "spots left",
     soldOut: "Sold Out",
     registrationClosed: "Registration Closed",
     registrationOpen: "Registration Open",
-    
-    // Footer
     contactUs: "Contact Us",
     followUs: "Follow Us",
-    organizedBy: "Organized by"
+    organizedBy: "Organized by",
   },
   ar: {
-    // Navigation
     register: "سجل الآن",
     backToEvents: "العودة للفعاليات",
-    
-    // Event Details
     date: "التاريخ",
     time: "الوقت",
     location: "الموقع",
@@ -78,13 +61,9 @@ const translations = {
     capacity: "السعة",
     price: "السعر",
     free: "مجاني",
-    
-    // Sections
     aboutEvent: "عن الفعالية",
     eventHighlights: "أبرز النقاط",
     agenda: "جدول الأعمال",
-    
-    // Registration
     registerForEvent: "التسجيل في الفعالية",
     firstName: "الاسم الأول",
     lastName: "اسم العائلة",
@@ -97,45 +76,54 @@ const translations = {
     vipTicket: "تذكرة VIP",
     submit: "إرسال التسجيل",
     submitting: "جاري الإرسال...",
-    
-    // Messages
     registrationSuccess: "تم التسجيل بنجاح!",
     registrationError: "فشل التسجيل. يرجى المحاولة مرة أخرى.",
     requiredField: "هذا الحقل مطلوب",
     invalidEmail: "يرجى إدخال بريد إلكتروني صحيح",
-    
-    // Event Status
     spotsLeft: "مقعد متبقي",
     soldOut: "نفذت التذاكر",
     registrationClosed: "التسجيل مغلق",
     registrationOpen: "التسجيل مفتوح",
-    
-    // Footer
     contactUs: "اتصل بنا",
     followUs: "تابعنا",
-    organizedBy: "ينظمها"
-  }
-};
+    organizedBy: "ينظمها",
+  },
+} as const;
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+export function LanguageProvider({
+  children,
+  initialLanguage = "en",
+}: {
+  children: React.ReactNode;
+  initialLanguage?: Language;
+}) {
+  const [language, setLanguageState] = useState<Language>(initialLanguage);
 
-  // Load language from localStorage on mount
   useEffect(() => {
-    const savedLang = localStorage.getItem('eventLang') as Language;
-    if (savedLang && (savedLang === 'en' || savedLang === 'ar')) {
+    const cookieMatch = document.cookie.match(/(?:^|;\s*)eventLang=(en|ar)(?:;|$)/);
+    const cookieLang = cookieMatch?.[1] as Language | undefined;
+    const storedLang = localStorage.getItem("eventLang");
+    const savedLang = (storedLang === "en" || storedLang === "ar" ? storedLang : cookieLang) as
+      | Language
+      | undefined;
+
+    if (savedLang && savedLang !== language) {
       setLanguageState(savedLang);
     }
-  }, []);
+
+    if (savedLang) {
+      localStorage.setItem("eventLang", savedLang);
+    }
+  }, [language]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('eventLang', lang);
+    localStorage.setItem("eventLang", lang);
+    document.cookie = `eventLang=${lang}; path=/; max-age=31536000; samesite=lax`;
   };
 
   const toggleLanguage = () => {
-    const newLang = language === 'en' ? 'ar' : 'en';
-    setLanguage(newLang);
+    setLanguage(language === "en" ? "ar" : "en");
   };
 
   const t = (key: string): string => {
@@ -152,7 +140,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    throw new Error("useLanguage must be used within a LanguageProvider");
   }
   return context;
 }

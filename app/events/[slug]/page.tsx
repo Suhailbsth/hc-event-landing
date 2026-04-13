@@ -2,19 +2,13 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { fetchEventBySlug } from '@/lib/eventApi';
 import { generateEventJsonLd, buildEventWebsiteUrl } from '@/lib/utils';
-import { eventPageTranslations } from '@/lib/translations';
 import EventPageClient from '@/components/EventPageClient';
-import EventMap from '@/components/EventMap';
-import EventFooter from '@/components/EventFooter';
 
 interface EventPageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ lang?: string }>;
 }
 
-/**
- * Generate SEO metadata for the event page
- */
 export async function generateMetadata({
   params,
   searchParams,
@@ -26,17 +20,18 @@ export async function generateMetadata({
     const lang = resolvedSearchParams.lang || 'en';
     const isArabic = lang === 'ar';
 
-    const title = isArabic && event.titleAr ? event.titleAr : event.title;
-    const description =
-      isArabic && event.descriptionAr
-        ? event.descriptionAr
-        : event.description || event.shortDescription;
+    const title = isArabic
+      ? event.arabicTitle || event.titleAr || event.title
+      : event.title;
+    const description = isArabic
+      ? event.arabicDescription || event.descriptionAr || event.description || event.shortDescription
+      : event.description || event.shortDescription;
 
     const eventUrl = buildEventWebsiteUrl(event.title, resolvedParams.slug);
 
     return {
       title: `${title} - Future Cards Events`,
-      description: description,
+      description,
       keywords: [
         title,
         event.venue || '',
@@ -47,27 +42,27 @@ export async function generateMetadata({
         'digital pass',
       ].filter(Boolean),
       openGraph: {
-        title: title,
-        description: description,
+        title,
+        description,
         url: eventUrl,
         siteName: 'Future Cards Events',
         images: event.bannerImageUrl
           ? [
-            {
-              url: event.bannerImageUrl,
-              width: 1200,
-              height: 630,
-              alt: title,
-            },
-          ]
+              {
+                url: event.bannerImageUrl,
+                width: 1200,
+                height: 630,
+                alt: title,
+              },
+            ]
           : [],
         locale: isArabic ? 'ar_AE' : 'en_US',
         type: 'website',
       },
       twitter: {
         card: 'summary_large_image',
-        title: title,
-        description: description,
+        title,
+        description,
         images: event.bannerImageUrl ? [event.bannerImageUrl] : [],
       },
       alternates: {
@@ -78,7 +73,7 @@ export async function generateMetadata({
         },
       },
     };
-  } catch (error) {
+  } catch {
     return {
       title: 'Event Not Found - Future Cards',
       description: 'The requested event could not be found.',
@@ -86,31 +81,20 @@ export async function generateMetadata({
   }
 }
 
-/**
- * Event landing page with server-side rendering
- */
-export default async function EventPage({
-  params,
-  searchParams,
-}: EventPageProps) {
+export default async function EventPage({ params }: EventPageProps) {
   const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
   let event;
 
   try {
     event = await fetchEventBySlug(resolvedParams.slug);
-  } catch (error) {
+  } catch {
     notFound();
   }
 
-  const lang = resolvedSearchParams.lang || 'en';
-  const isArabic = lang === 'ar';
-  const t = eventPageTranslations[lang as keyof typeof eventPageTranslations];
   const jsonLd = generateEventJsonLd(event);
 
   return (
     <>
-      {/* JSON-LD structured data for Google */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -118,104 +102,6 @@ export default async function EventPage({
 
       <main className="w-full flex flex-col bg-white">
         <EventPageClient event={event} />
-
-        {/* Event Description Section - Improved Styling */}
-        <section className="w-full py-20 px-4 bg-gradient-to-b from-white to-gray-50">
-          <div className="max-w-6xl mx-auto">
-            {/* About Event */}
-            <div className="mb-16">
-              <h2 dir="auto" className="text-4xl font-bold text-gray-900 mb-6 dynamic-content">
-                {t.aboutEvent}
-              </h2>
-              <div
-                dir="auto"
-                className="prose prose-lg max-w-none text-gray-700 leading-relaxed bg-white p-8 rounded-lg shadow-sm border border-gray-100 dynamic-content"
-                dangerouslySetInnerHTML={{
-                  __html:
-                    (isArabic && event.descriptionAr
-                      ? event.descriptionAr
-                      : event.description || event.shortDescription) || '',
-                }}
-              />
-            </div>
-
-            {/* Two Column Layout */}
-            <div className="grid lg:grid-cols-2 gap-12">
-              {/* Event Highlights */}
-              {event.highlights && event.highlights.length > 0 && (
-                <div>
-                  <h3 dir="auto" className="text-2xl font-bold text-gray-900 mb-6 dynamic-content">
-                    {t.eventHighlights}
-                  </h3>
-                  <div className="space-y-3">
-                    {event.highlights.map((highlight: string, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-start gap-4 p-4 bg-white rounded-lg border border-gray-100 hover:border-blue-300 transition-colors text-start"
-                      >
-                        <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-green-100 rounded-full text-green-600 font-bold text-sm">
-                          ✓
-                        </span>
-                        <span dir="auto" className="text-gray-700 dynamic-content">{highlight}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Agenda */}
-              {event.agenda && event.agenda.length > 0 && (
-                <div>
-                  <h3 dir="auto" className="text-2xl font-bold text-gray-900 mb-6 dynamic-content">
-                    {t.agenda}
-                  </h3>
-                  <div className="space-y-4">
-                    {event.agenda.map((item, index: number) => (
-                      <div
-                        key={index}
-                        className="p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow border-s-4 border-blue-500 text-start"
-                      >
-                        <div dir="auto" className="text-sm font-semibold text-blue-600 mb-2 dynamic-content">
-                          {item.time}
-                        </div>
-                        <div dir="auto" className="text-gray-900 font-semibold mb-2 dynamic-content">
-                          {item.title}
-                        </div>
-                        {item.description && (
-                          <div dir="auto" className="text-sm text-gray-600 dynamic-content">
-                            {item.description}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Event Map & Venue Location Section */}
-        {(event.latitude || event.longitude) && (
-          <section className="w-full bg-white py-20">
-            <div className="max-w-6xl mx-auto px-4">
-              <h2 dir="auto" className="text-4xl font-bold text-gray-900 mb-12 text-start dynamic-content">
-                {t.venueLocation}
-              </h2>
-              <EventMap 
-                latitude={event.latitude} 
-                longitude={event.longitude}
-                venue={isArabic && event.arabicVenue ? event.arabicVenue : event.venue}
-                location={isArabic && event.arabicLocation ? event.arabicLocation : event.location}
-              />
-            </div>
-          </section>
-        )}
-
-        {/* Footer */}
-        <section className="w-full">
-          <EventFooter />
-        </section>
       </main>
     </>
   );
