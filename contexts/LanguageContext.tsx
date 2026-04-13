@@ -125,20 +125,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const savedLang = localStorage.getItem('eventLang') as Language;
     if (savedLang && (savedLang === 'en' || savedLang === 'ar')) {
       setLanguageState(savedLang);
-      applyDirection(savedLang);
     }
   }, []);
-
-  const applyDirection = (lang: Language) => {
-    const html = document.documentElement;
-    html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-    html.setAttribute('lang', lang);
-  };
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('eventLang', lang);
-    applyDirection(lang);
   };
 
   const toggleLanguage = () => {

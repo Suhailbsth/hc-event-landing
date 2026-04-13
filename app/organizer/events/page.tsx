@@ -2,7 +2,6 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { organizerApi, OrganizerEvent } from "@/lib/organizerApi";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDateRange } from "@/lib/utils";
 import {
   Calendar,
@@ -29,8 +28,6 @@ function LoadingFallback() {
 function OrganizerEventsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { language } = useLanguage();
-  const isArabic = language === 'ar';
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -210,7 +207,7 @@ function OrganizerEventsContent() {
                     {/* Date */}
                     <div className="flex items-center text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-auto">
                       <Calendar className="w-3 h-3 me-2" />
-                      <span>{formatDateRange(event.startDate, event.endDate, isArabic ? 'ar' : 'en')}</span>
+                      <span>{formatDateRange(event.startDate, event.endDate, 'en-US')}</span>
                     </div>
 
                     {/* Gates */}
