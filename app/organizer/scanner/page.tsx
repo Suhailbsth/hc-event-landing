@@ -390,75 +390,94 @@ export default function ScannerPage() {
         )}
 
         {/* Scanner Card */}
-        <div className="bg-white rounded-2xl shadow-glass-md border border-zinc-100 p-6">
-          <div className="relative mb-6 min-h-[144px]">
-            <div className={`text-center transition-opacity duration-150 ${latestScan ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
-              <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-zinc-50 ${cameraActive ? 'animate-pulse ring-4 ring-zinc-100' : ''}`}>
-                <Camera className="w-8 h-8 text-zinc-400" />
+        <div className="bg-white rounded-2xl shadow-glass-md border border-zinc-100 p-4 sm:p-6 overflow-hidden">
+          <div className="relative mb-4 flex items-center justify-between px-1">
+             <div className="flex items-center gap-2">
+                <Camera className={`w-5 h-5 ${cameraActive ? 'text-indigo-600' : 'text-zinc-400'}`} />
+                <h2 className="text-base font-bold text-zinc-900">Entrance Scanner</h2>
+             </div>
+             {cameraActive && (
+               <div className="flex items-center gap-1">
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                  </span>
+                  <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-tight">Active</span>
+               </div>
+             )}
+          </div>
+
+          <div className="relative mb-4 min-h-[120px]">
+            {!cameraActive && !latestScan && (
+              <div className="text-center py-8 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                <p className="text-sm text-zinc-500 font-medium">Camera is currently inactive</p>
+                <p className="text-[10px] text-zinc-400 mt-1 uppercase tracking-wider">Tap start to begin scanning</p>
               </div>
-              <h2 className="text-lg font-medium text-zinc-900">Scan Ticket</h2>
-              <p className="text-sm text-zinc-400">Point camera at QR code</p>
-            </div>
+            )}
 
             {latestScan && (
-              <div className={`absolute inset-0 p-4 rounded-xl border shadow-sm animate-in slide-in-from-top-2 ${latestScan.actionType === 'checkout' ? 'bg-amber-50 border-amber-100' : 'bg-green-50 border-green-100'
-                }`}>
+              <div className={`absolute inset-0 z-10 p-4 rounded-xl border shadow-sm animate-in slide-in-from-top-2 flex flex-col justify-between ${
+                latestScan.actionType === 'checkout' ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'
+              }`}>
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className={`w-5 h-5 mt-0.5 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-green-600'}`} />
+                  <div className={`p-2 rounded-full ${latestScan.actionType === 'checkout' ? 'bg-amber-100' : 'bg-emerald-100'}`}>
+                    <CheckCircle2 className={`w-5 h-5 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-emerald-600'}`} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p dir="auto" className={`text-sm font-semibold truncate dynamic-content ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-green-900'}`}>
+                      <p dir="auto" className={`text-base font-bold truncate dynamic-content ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-emerald-900'}`}>
                         {latestScan.guestName || "Attendee"}
                       </p>
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${latestScan.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
+                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${latestScan.actionType === 'checkout' ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'}`}>
                         {latestScan.actionType === 'checkout' ? 'OUT' : 'IN'}
                       </span>
                     </div>
 
-                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                      <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
-                        <span className="font-semibold">Pass:</span> {getAttendeeCategory(latestScan.registrationType)}
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                      <p className={latestScan.actionType === 'checkout' ? 'text-amber-700/80' : 'text-emerald-700/80'}>
+                        <span className="font-bold">Pass:</span> {getAttendeeCategory(latestScan.registrationType)}
                       </p>
-                      <p className={latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}>
-                        <span className="font-semibold">Entry:</span> {getEntryTimeText(latestScan)}
+                      <p className={latestScan.actionType === 'checkout' ? 'text-amber-700/80' : 'text-emerald-700/80'}>
+                        <span className="font-bold">Entry:</span> {getEntryTimeText(latestScan)}
                       </p>
                     </div>
-
-                    {latestScan.previousSessionCheckedOut && (
-                      <p className={`mt-2 text-xs ${latestScan.actionType === 'checkout' ? 'text-amber-700' : 'text-green-700'}`}>
-                        <span className="font-semibold">Session switched:</span>{" "}
-                        {latestScan.previousSessionZoneName || "Previous session"} closed automatically
-                        {latestScan.previousSessionDuration ? ` (${latestScan.previousSessionDuration})` : ""}
-                      </p>
-                    )}
-
-                    <button
-                      onClick={() => setLatestScan(null)}
-                      className={`mt-3 w-full py-2 rounded-lg text-sm font-semibold transition-colors ${latestScan.actionType === 'checkout' ? 'bg-amber-600 hover:bg-amber-700 text-white' : 'bg-green-600 hover:bg-green-700 text-white'
-                        }`}
-                    >
-                      OK
-                    </button>
                   </div>
                 </div>
+
+                <button
+                  onClick={() => setLatestScan(null)}
+                  className={`mt-4 w-full py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95 ${
+                    latestScan.actionType === 'checkout' 
+                      ? 'bg-amber-600 hover:bg-amber-700 text-white' 
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  }`}
+                >
+                  Confirm & Next
+                </button>
+              </div>
+            )}
+
+            {cameraActive && (
+              <div className="rounded-xl overflow-hidden shadow-inner ring-1 ring-zinc-100">
+                <QRScanner onScan={handleCheckIn} onError={setError} isActive={cameraActive} />
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setCameraActive(!cameraActive)}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium transition-all ${cameraActive
-                  ? "bg-red-50 text-red-600 hover:bg-red-100"
-                  : "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-zinc-200"
+              className={`flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${cameraActive
+                  ? "bg-red-50 text-red-600 hover:bg-red-100 ring-1 ring-red-200"
+                  : "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-zinc-200 ring-1 ring-black"
                 }`}
             >
               <Camera className="w-4 h-4" />
-              {cameraActive ? "Stop" : latestScan ? "Scan Another" : "Camera"}
+              {cameraActive ? "Stop Camera" : "Start Scanner"}
             </button>
-            <label className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium bg-zinc-50 text-zinc-700 hover:bg-zinc-100 cursor-pointer transition-colors">
+            <label className="flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 cursor-pointer transition-all active:scale-95 shadow-sm">
               <Upload className="w-4 h-4" />
-              Upload
+              Upload Image
               <input type="file" accept="image/*" className="hidden" disabled={scanning} onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
@@ -481,12 +500,6 @@ export default function ScannerPage() {
           </div>
 
           <div id="qr-file-reader" className="hidden"></div>
-
-          {cameraActive && (
-            <div className="rounded-xl overflow-hidden border-2 border-zinc-100">
-              <QRScanner onScan={handleCheckIn} onError={setError} isActive={cameraActive} />
-            </div>
-          )}
         </div>
 
         {/* Activity Feed */}
