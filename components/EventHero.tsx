@@ -84,7 +84,7 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl">
             {event.logoUrl && (
-              <div className="mb-6 animate-float-1">
+              <div className="mb-10 animate-float-1">
                 <Image
                   src={event.logoUrl}
                   alt="Event Logo"
@@ -95,7 +95,7 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               </div>
             )}
 
-            <h1 dir="auto" className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl leading-tight animate-fade-in-up text-start dynamic-content">
+            <h1 dir="auto" className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-8 drop-shadow-2xl leading-tight animate-fade-in-up text-start dynamic-content">
               {title}
             </h1>
 

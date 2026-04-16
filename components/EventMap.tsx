@@ -25,7 +25,7 @@ export default function EventMap({ latitude, longitude, title, subtitle }: Event
 
   return (
     <div className="rounded-xl overflow-hidden shadow-lg bg-white border border-gray-200">
-      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 p-6 sm:p-8">
+      <div className="bg-gradient-to-r from-gray-800 via-gray-900 to-black p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6">
           <div className="flex-1 text-start">
             <div className="flex items-center gap-3 mb-3">
@@ -37,12 +37,12 @@ export default function EventMap({ latitude, longitude, title, subtitle }: Event
               </h4>
             </div>
             {subtitle && (
-              <p dir="auto" className="text-blue-100 text-base dynamic-content mb-2">
+              <p dir="auto" className="text-gray-300 text-base dynamic-content mb-2">
                 {subtitle}
               </p>
             )}
             {latitude && longitude && (
-              <div className="flex items-center gap-2 text-blue-200/80 text-xs font-mono bg-black/10 w-fit px-2 py-1 rounded">
+              <div className="flex items-center gap-2 text-gray-400/80 text-xs font-mono bg-black/20 w-fit px-2 py-1 rounded">
                 <Info className="w-3 h-3" />
                 <span>{latitude.toFixed(6)}, {longitude.toFixed(6)}</span>
               </div>
@@ -55,7 +55,7 @@ export default function EventMap({ latitude, longitude, title, subtitle }: Event
                 href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-white text-blue-600 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95"
+                className="px-6 py-3 bg-white text-gray-900 rounded-xl font-bold text-sm hover:bg-gray-100 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95"
               >
                 <ExternalLink className="w-4 h-4" />
                 {copy.openInMaps}
@@ -69,7 +69,7 @@ export default function EventMap({ latitude, longitude, title, subtitle }: Event
                     alert('Coordinates copied to clipboard');
                   }
                 }}
-                className="px-6 py-3 bg-blue-500/40 text-white border border-white/20 backdrop-blur-md rounded-xl font-bold text-sm hover:bg-blue-500/60 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95"
+                className="px-6 py-3 bg-gray-700/60 text-white border border-gray-400/20 backdrop-blur-md rounded-xl font-bold text-sm hover:bg-gray-700/80 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95"
               >
                 <MapPin className="w-4 h-4" />
                 {copy.shareCoords}
@@ -149,28 +149,28 @@ export default function EventMap({ latitude, longitude, title, subtitle }: Event
           </div>
         </div>
 
-        <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
+        <div className="mt-8 p-6 bg-gray-50 border border-gray-200 rounded-xl">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-1" />
+            <Info className="w-5 h-5 text-gray-600 flex-shrink-0 mt-1" />
             <div className="text-start">
               <h5 dir="auto" className="font-bold text-gray-900 mb-2 dynamic-content">{copy.needDirections}</h5>
               <p dir="auto" className="text-gray-600 text-sm mb-4 dynamic-content">
                 {copy.needDirectionsDesc}
               </p>
-              <div className="flex flex-col sm:flex-row gap-3" dir="ltr">
+              <div className="flex flex-col sm:flex-row gap-4" dir="ltr">
                 <button
                   onClick={() => {
                     if (mapsUrl) {
                       window.open(mapsUrl, '_blank');
                     }
                   }}
-                  className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition-colors"
+                  className="flex-1 px-6 py-3 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-all duration-200 shadow-lg active:scale-95"
                 >
                   {copy.getDirections}
                 </button>
                 <a
                   href="mailto:support@future-cards.com"
-                  className="flex-1 sm:flex-none px-4 py-2 bg-white text-blue-600 border-2 border-blue-600 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-colors"
+                  className="flex-1 px-6 py-3 bg-white text-gray-900 border-2 border-gray-900 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all duration-200 flex items-center justify-center shadow-md active:scale-95"
                 >
                   {copy.contactSupport}
                 </a>
