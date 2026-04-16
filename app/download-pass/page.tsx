@@ -105,26 +105,17 @@ function DownloadPassContent() {
             setWalletLoading('apple');
             const { endpoint, params } = getWalletEndpoint('apple');
 
-            const response = await fetch(
-                `${endpoint}?${params}`,
-                { method: 'POST' }
-            );
-            if (!response.ok) {
-                throw new Error("Failed to generate pass");
-            }
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `event-pass-${tokenData.registrationId}.pkpass`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            // iOS Safari STRICTLY requires a standard navigation GET request for .pkpass files
+            // Using fetch() to get a blob and simulate an <a> click will NOT trigger the native Wallet prompt.
+            window.location.href = `${endpoint}?${params}`;
+            
+            // Give the browser a second to trigger the download prompt before removing loading state
+            setTimeout(() => {
+                setWalletLoading(null);
+            }, 2000);
         } catch (error) {
             console.error("Error:", error);
             alert('Failed to generate Apple Wallet pass. Please try again.');
-        } finally {
             setWalletLoading(null);
         }
     };
