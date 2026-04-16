@@ -298,11 +298,18 @@ function DownloadPassContent() {
                 </div>
 
                 {/* Help Text */}
-                <p className="text-xs text-gray-500 text-center">
-                    Choose your preferred digital wallet to save your event pass.
-                    <br />
-                    Questions? Contact the event organizer.
-                </p>
+                <div className="mt-8">
+                    <p className="text-xs text-gray-500 text-center mb-4">
+                        Choose your preferred digital wallet to save your event pass.
+                        <br /><br />
+                        <strong>Note for Apple users:</strong> To add this pass to Wallet, open this page on your iPhone or iPod touch.
+                        <br /><br />
+                        Questions? Contact the event organizer.
+                    </p>
+                    <p className="text-[10px] text-gray-400 text-center border-t border-gray-100 pt-4">
+                        Apple, Apple Wallet, Apple Watch, iPhone, and iPod touch are trademarks of Apple Inc., registered in the U.S. and other countries.
+                    </p>
+                </div>
             </div>
         </div>
     );

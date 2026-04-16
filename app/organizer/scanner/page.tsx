@@ -340,11 +340,11 @@ export default function ScannerPage() {
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-zinc-200 shadow-sm">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-2 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-full transition-colors">
+            <button onClick={() => router.back()} className="p-2 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-full transition-colors shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div>
-              <h1 dir="auto" className="text-lg font-serif font-bold text-zinc-900 leading-none dynamic-content">{session.gateName}</h1>
+            <div className="min-w-0">
+              <h1 dir="auto" className="text-lg font-serif font-bold text-zinc-900 leading-none dynamic-content truncate max-w-[200px] sm:max-w-[300px]">{session.gateName}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${session.gateType === 'entry' ? 'bg-emerald-100 text-emerald-700' :
                     session.gateType === 'exit' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'
@@ -617,8 +617,8 @@ export default function ScannerPage() {
         >
           <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-zinc-100 flex items-start justify-between gap-3">
-              <div>
-                <h3 dir="auto" className="text-lg font-semibold text-zinc-900 dynamic-content">{selectedCheckIn.guestName || "Guest"}</h3>
+              <div className="min-w-0">
+                <h3 dir="auto" className="text-lg font-semibold text-zinc-900 dynamic-content break-words">{selectedCheckIn.guestName || "Guest"}</h3>
                 <p className="text-xs text-zinc-500 mt-1">{getAttendeeCategory(selectedCheckIn.registrationType)}</p>
               </div>
               <button

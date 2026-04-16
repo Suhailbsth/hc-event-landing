@@ -75,6 +75,18 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive, cameraId]);
 
+  useEffect(() => {
+    // Apply digital zoom if hardware zoom isn't supported natively
+    if (!zoomSupported && scanning) {
+       const videoElement = document.querySelector(`#${scannerIdRef.current} video`) as HTMLVideoElement | null;
+       if (videoElement) {
+         videoElement.style.transform = `scale(${zoomValue})`;
+         videoElement.style.transformOrigin = 'center center';
+         videoElement.style.transition = 'transform 0.1s ease-out';
+       }
+    }
+  }, [zoomValue, zoomSupported, scanning]);
+
   const startScanning = async () => {
     if (!cameraId || scanning) return;
 
@@ -142,9 +154,14 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
           setZoomValue(zoom.min());
         } else {
           setZoomSupported(false);
+          setZoomRange({ min: 1, max: 3, step: 0.1 });
+          setZoomValue(1);
         }
       } catch (capErr) {
-        console.warn("Could not fetch camera capabilities:", capErr);
+        console.warn("Could not fetch camera capabilities, falling back to digital zoom:", capErr);
+        setZoomSupported(false);
+        setZoomRange({ min: 1, max: 3, step: 0.1 });
+        setZoomValue(1);
       }
 
     } catch (err) {
@@ -163,7 +180,7 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
         scannerRef.current = null;
         setScanning(false);
         setTorchOn(false);
-        setZoomSupported(false);
+        setZoomValue(1); // reset digital or hardware zoom
       } catch (err) {
         console.error("Error stopping scanner:", err);
       }
@@ -171,16 +188,16 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
   };
 
   const handleZoomChange = async (value: number) => {
+    setZoomValue(value);
     if (!scannerRef.current || !zoomSupported) return;
     
     try {
       await scannerRef.current.applyVideoConstraints({
-        // @ts-expect-error - zoom is supported but might not be in standard types
+        // @ts-expect-error - zoom is supported
         advanced: [{ zoom: value }],
       });
-      setZoomValue(value);
     } catch (err) {
-      console.error("Error applying zoom:", err);
+      console.error("Error applying hardware zoom:", err);
     }
   };
 
@@ -213,12 +230,12 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
       {/* Camera Preview */}
       <div
         id={scannerIdRef.current}
-        className="w-full aspect-square bg-zinc-900 overflow-hidden"
+        className="w-full aspect-[4/5] bg-zinc-900 overflow-hidden"
       />
 
       {/* Overlay controls - top right */}
       {scanning && (
-        <div className="absolute top-4 right-4 flex flex-col gap-3">
+        <div className="absolute top-4 right-4 flex flex-col gap-3 z-20">
           {cameras.length > 1 && (
             <button
               onClick={switchCamera}
@@ -248,12 +265,12 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
         </div>
       )}
 
-      {/* Bottom Controls / Zoom Bar */}
-      {scanning && zoomSupported && (
-        <div className="absolute bottom-6 inset-x-0 px-6">
+      {/* Bottom Controls / Zoom Bar (Always available natively or digitally) */}
+      {scanning && (
+        <div className="absolute bottom-6 inset-x-0 px-6 z-20">
           <div className="flex items-center gap-4 p-4 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
             <button 
-              onClick={() => handleZoomChange(Math.max(zoomRange.min, zoomValue - zoomRange.step * 2))}
+              onClick={() => handleZoomChange(Math.max(zoomRange.min, zoomValue - zoomRange.step * 4))}
               className="text-white hover:text-indigo-400 transition-colors p-1"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,7 +287,7 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
               className="flex-1 h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-indigo-500"
             />
             <button 
-              onClick={() => handleZoomChange(Math.min(zoomRange.max, zoomValue + zoomRange.step * 2))}
+              onClick={() => handleZoomChange(Math.min(zoomRange.max, zoomValue + zoomRange.step * 4))}
               className="text-white hover:text-indigo-400 transition-colors p-1"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -283,8 +300,8 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
 
       {/* Viewfinder Guide Overlay - CSS only */}
       {scanning && (
-        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-          <div className="w-3/4 aspect-square border-2 border-indigo-400/50 rounded-3xl relative">
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10">
+          <div className="w-[65%] aspect-square border-2 border-indigo-400/50 rounded-3xl relative">
              {/* Corner Accents */}
              <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-indigo-400 rounded-tl-xl" />
              <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-indigo-400 rounded-tr-xl" />
@@ -302,6 +319,7 @@ export default function QRScanner({ onScan, onError, isActive }: QRScannerProps)
           10%, 90% { opacity: 1; }
           50% { top: 95%; }
         }
+
       `}</style>
 
       {/* Status/Help footer */}
