@@ -87,7 +87,7 @@ export default function EventPageClient({ event }: EventPageClientProps) {
               className="px-4 sm:px-7 py-2 sm:py-2.5 bg-gradient-to-r from-white via-gray-50 to-white text-blue-900 rounded-full font-bold text-xs sm:text-sm shadow-2xl hover:shadow-3xl hover:scale-105 sm:hover:scale-110 transition-all duration-300 border border-white/80 flex items-center gap-2"
             >
               <span className="hidden xs:inline">{t('register')}</span>
-              <span className="xs:hidden">{t('join')}</span>
+              <span className="xs:hidden">{t('Join')}</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
