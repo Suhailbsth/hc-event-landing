@@ -26,54 +26,55 @@ export default function EventMap({ latitude, longitude, title, subtitle }: Event
   return (
     <div className="rounded-xl overflow-hidden shadow-lg bg-white border border-gray-200">
       <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 p-6 sm:p-8">
-        <div className="flex flex-col-reverse sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-6">
           <div className="flex-1 text-start">
-            <div className="mb-2">
-              <h4 dir="auto" className="text-2xl sm:text-3xl font-bold text-white dynamic-content">
+            <div className="flex items-center gap-3 mb-3">
+               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm sm:hidden">
+                 <MapPin className="w-5 h-5 text-white" />
+               </div>
+               <h4 dir="auto" className="text-2xl sm:text-3xl font-bold text-white dynamic-content leading-tight">
                 {title || 'Event Venue'}
               </h4>
             </div>
             {subtitle && (
-              <p dir="auto" className="text-blue-100 text-base dynamic-content">
+              <p dir="auto" className="text-blue-100 text-base dynamic-content mb-2">
                 {subtitle}
               </p>
             )}
             {latitude && longitude && (
-              <p dir="ltr" className="text-blue-200 text-sm mt-2">
-                {latitude.toFixed(4)}, {longitude.toFixed(4)}
-              </p>
+              <div className="flex items-center gap-2 text-blue-200/80 text-xs font-mono bg-black/10 w-fit px-2 py-1 rounded">
+                <Info className="w-3 h-3" />
+                <span>{latitude.toFixed(6)}, {longitude.toFixed(6)}</span>
+              </div>
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch gap-3 shrink-0">
             {mapsUrl && (
               <a
                 href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 sm:flex-none px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                className="px-6 py-3 bg-white text-blue-600 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95"
               >
                 <ExternalLink className="w-4 h-4" />
                 {copy.openInMaps}
               </a>
             )}
             {latitude && longitude && (
-              <a
-                href={`tel:+1&q=${latitude},${longitude}`}
+              <button
                 onClick={() => {
                   if (navigator.clipboard) {
                     navigator.clipboard.writeText(`${latitude}, ${longitude}`);
+                    alert('Coordinates copied to clipboard');
                   }
                 }}
-                className="flex-1 sm:flex-none px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold text-sm hover:bg-blue-400 transition-all duration-200 flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                className="px-6 py-3 bg-blue-500/40 text-white border border-white/20 backdrop-blur-md rounded-xl font-bold text-sm hover:bg-blue-500/60 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg active:scale-95"
               >
                 <MapPin className="w-4 h-4" />
                 {copy.shareCoords}
-              </a>
+              </button>
             )}
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center self-end sm:self-auto">
-              <MapPin className="w-6 h-6 text-white" />
-            </div>
           </div>
         </div>
       </div>

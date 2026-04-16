@@ -58,10 +58,11 @@ export default function EventPageClient({ event }: EventPageClientProps) {
 
   return (
     <>
-      <div className="fixed top-0 start-0 end-0 z-50 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-black/40 to-transparent backdrop-blur-md">
+      <div className="fixed top-0 start-0 end-0 z-50 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-md transition-all duration-300">
         <Link
           href={`/organizer/login?returnTo=${event.id}&eventTitle=${encodeURIComponent(event.title)}`}
-          className="px-5 py-2.5 bg-white/20 backdrop-blur-lg text-white rounded-lg border-2 border-white/40 hover:bg-white/30 hover:border-white/60 transition-all duration-300 flex items-center gap-2 shadow-lg group font-semibold"
+          className="px-3 sm:px-5 py-2 sm:py-2.5 bg-white/20 backdrop-blur-lg text-white rounded-xl border border-white/40 hover:bg-white/30 hover:border-white/60 transition-all duration-300 flex items-center gap-2 shadow-lg group font-semibold"
+          title={copy.organizerLogin}
         >
           <svg
             className="w-5 h-5 group-hover:scale-110 transition-transform"
@@ -76,16 +77,17 @@ export default function EventPageClient({ event }: EventPageClientProps) {
               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
             />
           </svg>
-          <span className="text-sm font-bold">{copy.organizerLogin}</span>
+          <span className="text-xs sm:text-sm font-bold hidden sm:inline">{copy.organizerLogin}</span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {event.registrationOpen && (
             <button
               onClick={handleRegisterClick}
-              className="px-7 py-2.5 bg-gradient-to-r from-white via-gray-50 to-white text-blue-900 rounded-full font-bold text-sm shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 border-2 border-white/80 flex items-center gap-2"
+              className="px-4 sm:px-7 py-2 sm:py-2.5 bg-gradient-to-r from-white via-gray-50 to-white text-blue-900 rounded-full font-bold text-xs sm:text-sm shadow-2xl hover:shadow-3xl hover:scale-105 sm:hover:scale-110 transition-all duration-300 border border-white/80 flex items-center gap-2"
             >
-              <span>{t('register')}</span>
+              <span className="hidden xs:inline">{t('register')}</span>
+              <span className="xs:hidden">{t('join')}</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>

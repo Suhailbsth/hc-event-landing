@@ -88,33 +88,33 @@ function OrganizerEventsContent() {
 
       {/* Header */}
       <header className="sticky top-0 z-20 backdrop-blur-md bg-white/70 border-b border-white/50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
             <button
               onClick={() => router.back()}
-              className="p-2 text-zinc-400 hover:text-black hover:bg-black/5 rounded-full transition-colors"
+              className="p-1.5 sm:p-2 text-zinc-400 hover:text-black hover:bg-black/5 rounded-full transition-colors"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <div>
-              <h1 dir="auto" className="text-xl font-serif font-medium text-zinc-900 tracking-tight dynamic-content">My Events</h1>
-              <p className="text-xs text-zinc-500 hidden sm:block font-light">
+              <h1 dir="auto" className="text-lg sm:text-xl font-serif font-medium text-zinc-900 tracking-tight dynamic-content">My Events</h1>
+              <p className="text-[10px] sm:text-xs text-zinc-500 hidden xs:block font-light">
                 Select an event to manage
               </p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-500 hover:text-red-600 bg-transparent hover:bg-red-50 rounded-full transition-colors"
+            className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-zinc-500 hover:text-red-600 bg-transparent hover:bg-red-50 rounded-full transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            <span>Logout</span>
+            <span className="hidden sm:inline">Logout</span>
           </button>
         </div>
       </header>
 
       {/* Content */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
 
         {/* Error State */}
         {error && (
@@ -142,16 +142,16 @@ function OrganizerEventsContent() {
         {/* Empty State */}
         {events.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-20 h-20 rounded-full bg-white shadow-glass-md flex items-center justify-center mb-6">
-              <Calendar className="w-8 h-8 text-zinc-300" />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white shadow-glass-md flex items-center justify-center mb-6">
+              <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-zinc-300" />
             </div>
-            <h3 className="text-2xl font-serif text-zinc-900 mb-2">No events assigned</h3>
-            <p className="text-zinc-500 max-w-sm font-light">
+            <h3 className="text-xl sm:text-2xl font-serif text-zinc-900 mb-2">No events assigned</h3>
+            <p className="text-zinc-500 max-w-sm font-light text-sm">
               You haven't been assigned to any events yet. Contact your administrator for access.
             </p>
           </div>
         ) : (
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3">
             {events.map((event) => (
               <div
                 key={event.eventId}
@@ -160,7 +160,7 @@ function OrganizerEventsContent() {
               >
                 {/* Hero / Background Area */}
                 <div
-                  className="relative h-56 flex flex-col justify-end p-8 transition-transform duration-700 group-hover:scale-[1.02]"
+                  className="relative h-48 sm:h-56 flex flex-col justify-end p-6 sm:p-8 transition-transform duration-700 group-hover:scale-[1.02]"
                   style={getBackgroundStyle(event)}
                 >
                   <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent" />
@@ -168,8 +168,8 @@ function OrganizerEventsContent() {
                   {/* Content Overlay */}
                   <div className="relative z-10">
                     {/* Status Badge */}
-                    <div className="absolute top-0 right-0 -mt-48">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase ${event.status.toLowerCase() === "active"
+                    <div className="absolute top-0 right-0 -mt-24 sm:-mt-48">
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium tracking-wide uppercase ${event.status.toLowerCase() === "active"
                           ? "bg-green-100/80 text-green-700 backdrop-blur-sm"
                           : "bg-zinc-100/80 text-zinc-600 backdrop-blur-sm"
                         }`}>
@@ -182,19 +182,19 @@ function OrganizerEventsContent() {
                       <img
                         src={event.logoUrl}
                         alt="Logo"
-                        className="w-14 h-14 object-contain bg-white rounded-xl shadow-sm p-2 mb-4"
+                        className="w-10 h-10 sm:w-14 sm:h-14 object-contain bg-white rounded-xl shadow-sm p-1.5 sm:p-2 mb-3 sm:mb-4"
                       />
                     )}
 
                     {/* Title */}
-                    <h3 dir="auto" className="text-2xl font-serif font-medium text-zinc-900 leading-tight mb-2 group-hover:text-black transition-colors dynamic-content">
+                    <h3 dir="auto" className="text-xl sm:text-2xl font-serif font-medium text-zinc-900 leading-tight mb-2 group-hover:text-black transition-colors dynamic-content">
                       {event.eventTitle}
                     </h3>
 
                     {/* Location */}
                     {event.location && (
-                      <div dir="auto" className="flex items-center text-zinc-500 text-xs font-medium tracking-wide uppercase dynamic-content">
-                        <MapPin className="w-3.5 h-3.5 me-1.5" />
+                      <div dir="auto" className="flex items-center text-zinc-500 text-[10px] sm:text-xs font-medium tracking-wide uppercase dynamic-content">
+                        <MapPin className="w-3 sm:w-3.5 h-3 sm:h-3.5 me-1.5" />
                         <span className="truncate">{event.location}</span>
                       </div>
                     )}
@@ -202,26 +202,26 @@ function OrganizerEventsContent() {
                 </div>
 
                 {/* Details Section */}
-                <div className="p-8 bg-white border-t border-zinc-50 space-y-5">
+                <div className="p-6 sm:p-8 bg-white border-t border-zinc-50 space-y-4 sm:y-5">
                   <div className="space-y-3">
                     {/* Date */}
-                    <div className="flex items-center text-zinc-400 text-[10px] font-bold uppercase tracking-widest mt-auto">
+                    <div className="flex items-center text-zinc-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mt-auto">
                       <Calendar className="w-3 h-3 me-2" />
                       <span>{formatDateRange(event.startDate, event.endDate, 'en-US')}</span>
                     </div>
 
                     {/* Gates */}
-                    <div className="flex items-center text-sm text-zinc-500">
-                      <DoorOpen className="w-4 h-4 mr-3 text-zinc-300" />
+                    <div className="flex items-center text-xs sm:text-sm text-zinc-500">
+                      <DoorOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-3 text-zinc-300" />
                       <span className="font-light">{event.gates?.length || 0} Gates Available</span>
                     </div>
                   </div>
 
                   {/* Action */}
-                  <div className="pt-4 flex items-center justify-between text-sm font-medium text-zinc-900 group-hover:text-black transition-colors">
-                    <span className="font-serif italic">Access Event</span>
-                    <div className="w-8 h-8 rounded-full bg-zinc-50 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
-                      <ChevronRight className="w-4 h-4" />
+                  <div className="pt-3 sm:pt-4 flex items-center justify-between text-xs sm:text-sm font-medium text-zinc-900 group-hover:text-black transition-colors">
+                    <span className="font-serif italic text-sm">Access Event</span>
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-50 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-300">
+                      <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </div>
                   </div>
                 </div>

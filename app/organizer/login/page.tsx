@@ -78,7 +78,7 @@ function OrganizerLoginContent() {
 
       <div className="relative z-10 w-full max-w-[400px] px-4">
         {/* Glass Card */}
-        <div className="backdrop-blur-md bg-white/70 border border-white/50 rounded-2xl shadow-glass-md p-10">
+        <div className="backdrop-blur-md bg-white/70 border border-white/50 rounded-2xl shadow-glass-md p-6 sm:p-10">
 
           {/* Header */}
           <div className="mb-10 text-start dynamic-content">

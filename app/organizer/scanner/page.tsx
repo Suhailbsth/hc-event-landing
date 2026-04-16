@@ -40,6 +40,11 @@ export default function ScannerPage() {
   const scanInProgressRef = useRef(false);
   const lastScanRef = useRef<{ code: string; timestamp: number } | null>(null);
   const SCAN_DEDUPE_WINDOW_MS = 1200;
+  const hapticFeedback = (duration: number | number[]) => {
+    if (typeof window !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(duration);
+    }
+  };
 
   useEffect(() => {
     if (!organizerApi.isAuthenticated()) {
@@ -129,9 +134,7 @@ export default function ScannerPage() {
     scanInProgressRef.current = true;
     lastScanRef.current = { code: normalizedCode, timestamp: now };
 
-    // Stop camera immediately to prevent repeat decode callbacks while processing.
     setCameraActive(false);
-
     setScanning(true);
     setError("");
     setLatestScan(null);
@@ -143,10 +146,10 @@ export default function ScannerPage() {
       if (checkIn.isDuplicate) {
         if (checkIn.invalidReason === 'grace_period') {
           setError("⚠️ Just Scanned (Grace Period)");
-          if (navigator.vibrate) navigator.vibrate(100);
+          hapticFeedback(100);
         } else {
           setDuplicateInfo(checkIn);
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          hapticFeedback([200, 100, 200]);
         }
       } else {
         const newCheckIn = {
@@ -159,7 +162,7 @@ export default function ScannerPage() {
         setAllGateCheckIns(prev => [newCheckIn, ...prev].slice(0, 20));
         setLatestScan(newCheckIn);
 
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+        hapticFeedback([100, 50, 100]);
 
         if (session) {
           setSession({ ...session, checkInCount: session.checkInCount + 1 });
@@ -174,7 +177,7 @@ export default function ScannerPage() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "Check-in failed";
       setError(message);
-      if (navigator.vibrate) navigator.vibrate(500);
+      hapticFeedback(500);
     } finally {
       setScanning(false);
       scanInProgressRef.current = false;
@@ -326,7 +329,7 @@ export default function ScannerPage() {
       <div className="min-h-screen flex items-center justify-center bg-[#f9f9fa]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-zinc-200 rounded-full animate-spin border-t-zinc-900 mx-auto"></div>
-          <p className="mt-6 text-zinc-500 font-medium font-serif italic">Initializing Scanner...</p>
+          <p className="mt-6 text-zinc-500 font-medium font-serif italic text-sm">Initializing Scanner...</p>
         </div>
       </div>
     );
@@ -338,146 +341,156 @@ export default function ScannerPage() {
     <div className="min-h-screen bg-[#f9f9fa] text-zinc-900 font-sans selection:bg-black/10 selection:text-black">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-zinc-200 shadow-sm">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.back()} className="p-2 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-full transition-colors shrink-0">
-              <ArrowLeft className="w-5 h-5" />
+        <div className="max-w-md mx-auto px-4 py-2 sm:py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button onClick={() => router.back()} className="p-1.5 sm:p-2 text-zinc-400 hover:text-black hover:bg-zinc-100 rounded-full transition-colors shrink-0">
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <div className="min-w-0">
-              <h1 dir="auto" className="text-lg font-serif font-bold text-zinc-900 leading-none dynamic-content truncate max-w-[200px] sm:max-w-[300px]">{session.gateName}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <span className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-full ${session.gateType === 'entry' ? 'bg-emerald-100 text-emerald-700' :
+              <h1 dir="auto" className="text-base sm:text-lg font-serif font-bold text-zinc-900 leading-none dynamic-content truncate">{session.gateName}</h1>
+              <div className="flex items-center gap-2 mt-1 whitespace-nowrap overflow-hidden">
+                <span className={`px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase rounded-full shrink-0 ${session.gateType === 'entry' ? 'bg-emerald-100 text-emerald-700' :
                     session.gateType === 'exit' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'
                   }`}>
                   {session.gateType}
                 </span>
-                <span className="text-xs text-zinc-400 font-medium">{getSessionDuration()}</span>
+                <span className="text-[10px] sm:text-xs text-zinc-400 font-medium shrink-0">{getSessionDuration()}</span>
               </div>
             </div>
           </div>
           <button
             onClick={handleEndSession}
-            className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+            className="p-1.5 sm:p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors shrink-0"
             title="End Session"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </header>
 
       {/* Stats Bar */}
       <div className="bg-white border-b border-zinc-100">
-        <div className="max-w-md mx-auto px-4 py-4 flex justify-around">
+        <div className="max-w-md mx-auto px-4 py-3 sm:py-4 flex justify-around">
           <div className="text-center">
-            <p className="text-3xl font-serif font-medium text-zinc-900">{session.checkInCount}</p>
-            <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Total Scans</p>
+            <p className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">{session.checkInCount}</p>
+            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Total Scans</p>
           </div>
-          <div className="w-px h-10 bg-zinc-100"></div>
+          <div className="w-px h-8 sm:h-10 bg-zinc-100"></div>
           <div className="text-center">
-            <p className="text-3xl font-serif font-medium text-zinc-900">{session.isActive ? "Online" : "Offline"}</p>
-            <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Status</p>
+            <p className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">{session.isActive ? "Online" : "Offline"}</p>
+            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Status</p>
           </div>
         </div>
       </div>
 
-      <main className="max-w-md mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-md mx-auto px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Alerts */}
         {error && (
-          <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 animate-in slide-in-from-top-2">
-            <AlertTriangle className="w-5 h-5 text-red-500" />
+          <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
             <p className="text-sm font-medium text-red-700">{error}</p>
           </div>
         )}
 
         {/* Scanner Card */}
-        <div className="bg-white rounded-2xl shadow-glass-md border border-zinc-100 p-4 sm:p-6 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-premium border border-zinc-100 p-4 sm:p-6 overflow-hidden">
           <div className="relative mb-4 flex items-center justify-between px-1">
              <div className="flex items-center gap-2">
-                <Camera className={`w-5 h-5 ${cameraActive ? 'text-indigo-600' : 'text-zinc-400'}`} />
-                <h2 className="text-base font-bold text-zinc-900">Entrance Scanner</h2>
+                <Camera className={`w-4 h-4 sm:w-5 sm:h-5 ${cameraActive ? 'text-indigo-600' : 'text-zinc-400'}`} />
+                <h2 className="text-sm sm:text-base font-bold text-zinc-900 tracking-tight">Scanner Portal</h2>
              </div>
              {cameraActive && (
-               <div className="flex items-center gap-1">
+               <div className="flex items-center gap-1.5">
                   <span className="flex h-2 w-2 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                   </span>
-                  <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-tight">Active</span>
+                  <span className="text-[9px] font-black text-indigo-600 uppercase tracking-tighter">Live</span>
                </div>
              )}
           </div>
 
-          <div className="relative mb-4 min-h-[120px]">
+          <div className="relative mb-4 min-h-[140px] sm:min-h-[180px]">
             {!cameraActive && !latestScan && (
-              <div className="text-center py-8 bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
-                <p className="text-sm text-zinc-500 font-medium">Camera is currently inactive</p>
-                <p className="text-[10px] text-zinc-400 mt-1 uppercase tracking-wider">Tap start to begin scanning</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-zinc-50/50 rounded-2xl border-2 border-dashed border-zinc-200/60">
+                <div className="w-12 h-12 bg-white rounded-full p-3 shadow-sm mb-3">
+                   <Camera className="w-full h-full text-zinc-300" />
+                </div>
+                <p className="text-xs sm:text-sm text-zinc-500 font-medium">Camera Is Inactive</p>
+                <p className="text-[9px] sm:text-[10px] text-zinc-400 mt-1 uppercase tracking-widest font-bold">Press Start To Begin</p>
               </div>
             )}
 
             {latestScan && (
-              <div className={`absolute inset-0 z-10 p-4 rounded-xl border shadow-sm animate-in slide-in-from-top-2 flex flex-col justify-between ${
+              <div className={`absolute inset-0 z-10 p-4 sm:p-5 rounded-2xl border-2 shadow-xl animate-in fade-in zoom-in-95 flex flex-col justify-between overflow-hidden ${
                 latestScan.actionType === 'checkout' ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'
               }`}>
-                <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-full ${latestScan.actionType === 'checkout' ? 'bg-amber-100' : 'bg-emerald-100'}`}>
-                    <CheckCircle2 className={`w-5 h-5 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-emerald-600'}`} />
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 ${latestScan.actionType === 'checkout' ? 'bg-amber-100 shadow-inner' : 'bg-emerald-100 shadow-inner'}`}>
+                    <CheckCircle2 className={`w-5 h-5 sm:w-6 sm:h-6 ${latestScan.actionType === 'checkout' ? 'text-amber-600' : 'text-emerald-600'}`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p dir="auto" className={`text-base font-bold truncate dynamic-content ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-emerald-900'}`}>
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <p dir="auto" className={`text-base sm:text-lg font-bold truncate dynamic-content ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-emerald-900'}`}>
                         {latestScan.guestName || "Attendee"}
                       </p>
-                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${latestScan.actionType === 'checkout' ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'}`}>
-                        {latestScan.actionType === 'checkout' ? 'OUT' : 'IN'}
-                      </span>
+                    </div>
+                    
+                    <div className="inline-flex items-center gap-1.5 mb-2">
+                       <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${latestScan.actionType === 'checkout' ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'}`}>
+                          {latestScan.actionType === 'checkout' ? 'OUT' : 'IN'}
+                       </span>
+                       <span className={`text-[10px] font-bold uppercase ${latestScan.actionType === 'checkout' ? 'text-amber-700/60' : 'text-emerald-700/60'}`}>
+                          {getAttendeeCategory(latestScan.registrationType)}
+                       </span>
                     </div>
 
-                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs">
-                      <p className={latestScan.actionType === 'checkout' ? 'text-amber-700/80' : 'text-emerald-700/80'}>
-                        <span className="font-bold">Pass:</span> {getAttendeeCategory(latestScan.registrationType)}
-                      </p>
-                      <p className={latestScan.actionType === 'checkout' ? 'text-amber-700/80' : 'text-emerald-700/80'}>
-                        <span className="font-bold">Entry:</span> {getEntryTimeText(latestScan)}
-                      </p>
+                    <div className={`text-xs font-medium space-y-0.5 ${latestScan.actionType === 'checkout' ? 'text-amber-700/80' : 'text-emerald-700/80'}`}>
+                        <div className="flex items-center gap-1.5 opacity-80">
+                           <Clock className="w-3 h-3" />
+                           <span>{getEntryTimeText(latestScan)}</span>
+                        </div>
                     </div>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setLatestScan(null)}
-                  className={`mt-4 w-full py-2.5 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95 ${
-                    latestScan.actionType === 'checkout' 
-                      ? 'bg-amber-600 hover:bg-amber-700 text-white' 
-                      : 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                  }`}
-                >
-                  Confirm & Next
-                </button>
+                <div className="mt-4 sm:mt-6">
+                   <button
+                    onClick={() => setLatestScan(null)}
+                    className={`w-full py-3.5 sm:py-4 rounded-xl text-sm sm:text-base font-bold shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                      latestScan.actionType === 'checkout' 
+                        ? 'bg-amber-600 hover:bg-amber-700 text-white' 
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                    }`}
+                  >
+                    Next Attendee
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             )}
 
             {cameraActive && (
-              <div className="rounded-xl overflow-hidden shadow-inner ring-1 ring-zinc-100">
+              <div className="rounded-2xl overflow-hidden shadow-inner ring-1 ring-zinc-100 border-2 border-zinc-100">
                 <QRScanner onScan={handleCheckIn} onError={setError} isActive={cameraActive} />
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <button
               onClick={() => setCameraActive(!cameraActive)}
-              className={`flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 ${cameraActive
-                  ? "bg-red-50 text-red-600 hover:bg-red-100 ring-1 ring-red-200"
-                  : "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-zinc-200 ring-1 ring-black"
+              className={`flex items-center justify-center gap-2 py-3.5 sm:py-4 px-2 rounded-xl text-xs sm:text-sm font-bold transition-all active:scale-95 ${cameraActive
+                  ? "bg-red-50 text-red-600 border border-red-200"
+                  : "bg-zinc-900 text-white border border-zinc-900 shadow-xl"
                 }`}
             >
-              <Camera className="w-4 h-4" />
-              {cameraActive ? "Stop Camera" : "Start Scanner"}
+              <Camera className="w-4 h-4 shrink-0" />
+              <span className="truncate">{cameraActive ? "Stop Camera" : "Start Scanner"}</span>
             </button>
-            <label className="flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 cursor-pointer transition-all active:scale-95 shadow-sm">
-              <Upload className="w-4 h-4" />
-              Upload Image
+            <label className="flex items-center justify-center gap-2 py-3.5 sm:py-4 px-2 rounded-xl text-xs sm:text-sm font-bold bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 cursor-pointer shadow-sm transition-all active:scale-95 overflow-hidden">
+              <Upload className="w-4 h-4 shrink-0" />
+              <span className="truncate">Upload QR</span>
               <input type="file" accept="image/*" className="hidden" disabled={scanning} onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
@@ -503,19 +516,19 @@ export default function ScannerPage() {
         </div>
 
         {/* Activity Feed */}
-        <div>
+        <div className="pb-8">
           <div className="flex items-center justify-between mb-4 px-1">
-            <h3 className="font-serif font-medium text-zinc-900">Recent Activity</h3>
-            <div className="flex bg-zinc-100 rounded-lg p-0.5">
+            <h3 className="font-serif font-bold text-zinc-900 tracking-tight">Recent Activity</h3>
+            <div className="flex bg-zinc-200/50 rounded-xl p-1">
               <button
                 onClick={() => setCheckInTab("thisGate")}
-                className={`px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${checkInTab === "thisGate" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
+                className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase rounded-lg transition-all ${checkInTab === "thisGate" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-800"}`}
               >
                 Local
               </button>
               <button
                 onClick={() => setCheckInTab("allGates")}
-                className={`px-3 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${checkInTab === "allGates" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-700"}`}
+                className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-xs font-bold uppercase rounded-lg transition-all ${checkInTab === "allGates" ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500 hover:text-zinc-800"}`}
               >
                 Global
               </button>
@@ -523,18 +536,18 @@ export default function ScannerPage() {
           </div>
 
           <div className="mb-4 space-y-3">
-            <div className="relative">
-              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <div className="relative group">
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-focus-within:text-black transition-colors" />
               <input
                 type="text"
                 placeholder="Search attendee by name..."
-                className="w-full ps-9 pe-4 py-2 text-sm bg-zinc-100 border-none rounded-xl focus:ring-1 focus:ring-black placeholder-zinc-400"
+                className="w-full ps-10 pe-4 py-3 text-xs sm:text-sm bg-white border border-zinc-200 rounded-xl focus:ring-1 focus:ring-black focus:border-black placeholder-zinc-400 shadow-sm"
                 value={searchQuery}
                 dir="auto"
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 no-scrollbar">
               {[
                 { key: "all", label: "All" },
                 { key: "speaker", label: "Speaker" },
@@ -546,9 +559,9 @@ export default function ScannerPage() {
                   key={filter.key}
                   type="button"
                   onClick={() => setPassFilter(filter.key as "all" | "speaker" | "exhibitor" | "vip" | "regular")}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-colors ${passFilter === filter.key
-                    ? "bg-zinc-900 text-white border-zinc-900"
-                    : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300"
+                  className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg border transition-all whitespace-nowrap ${passFilter === filter.key
+                    ? "bg-zinc-900 text-white border-zinc-900 shadow-md"
+                    : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400"
                     }`}
                 >
                   {filter.label}
@@ -559,14 +572,14 @@ export default function ScannerPage() {
 
           <div className="space-y-3">
             {activeCheckIns.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl border border-zinc-100 border-dashed">
+              <div className="text-center py-12 bg-zinc-50/50 rounded-2xl border border-zinc-200 border-dashed">
                 <Clock className="w-8 h-8 text-zinc-200 mx-auto mb-2" />
-                <p className="text-sm text-zinc-400">No activity yet</p>
+                <p className="text-xs text-zinc-400">No activity yet</p>
               </div>
             ) : filteredCheckIns.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-2xl border border-zinc-100 border-dashed">
+              <div className="text-center py-12 bg-zinc-50/50 rounded-2xl border border-zinc-200 border-dashed">
                 <Clock className="w-8 h-8 text-zinc-200 mx-auto mb-2" />
-                <p className="text-sm text-zinc-400">No attendees match your search/filter</p>
+                <p className="text-xs text-zinc-400">No attendees match your filter</p>
               </div>
             ) : (
               filteredCheckIns.map((checkIn, index) => (
@@ -574,28 +587,28 @@ export default function ScannerPage() {
                   type="button"
                   onClick={() => setSelectedCheckIn(checkIn)}
                   key={`${checkIn.registrationId}-${index}`}
-                  className={`w-full p-4 bg-white rounded-xl border transition-all text-left ${checkInTab === "thisGate" && checkIn.isNew ? "border-green-200 bg-green-50" : "border-zinc-100"
+                  className={`w-full p-4 bg-white rounded-2xl border transition-all text-left shadow-sm hover:shadow-md active:scale-[0.98] ${checkInTab === "thisGate" && checkIn.isNew ? "border-green-200 bg-green-50/50" : "border-zinc-100 hover:border-zinc-300"
                     }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <p dir="auto" className="font-medium text-zinc-900 text-sm dynamic-content">{checkIn.guestName || "Guest"}</p>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${checkIn.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                  <div className="flex justify-between items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p dir="auto" className="font-bold text-zinc-900 text-sm dynamic-content truncate uppercase tracking-tight">{checkIn.guestName || "Guest"}</p>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-sm shadow-sm ${checkIn.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
                           }`}>
                           {checkIn.actionType === 'checkout' ? 'OUT' : 'IN'}
                         </span>
                         {checkInTab === 'allGates' && checkIn.gateName && (
-                          <span className="text-[10px] font-medium text-zinc-500 bg-zinc-100 px-1.5 py-0.5 rounded">
+                          <span className="text-[9px] font-bold text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-sm border border-zinc-200 uppercase">
                             {checkIn.gateName}
                           </span>
                         )}
-                        <span className="text-xs text-zinc-400">{getRelativeTime(checkIn.timestamp)}</span>
+                        <span className="text-[10px] text-zinc-400 font-medium">{getRelativeTime(checkIn.timestamp)}</span>
                       </div>
                     </div>
                     {checkIn.actionType === 'checkout' && checkIn.durationInside && (
-                      <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg whitespace-nowrap ml-2">
-                        {checkIn.durationInside} inside
+                      <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-1 rounded-lg border border-amber-100 whitespace-nowrap shrink-0">
+                        {checkIn.durationInside}
                       </span>
                     )}
                   </div>
@@ -608,85 +621,69 @@ export default function ScannerPage() {
 
       {selectedCheckIn && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm transition-all animate-in fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setSelectedCheckIn(null);
             }
           }}
         >
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-zinc-100 flex items-start justify-between gap-3">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-zinc-100">
+            <div className="p-6 border-b border-zinc-100 flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <h3 dir="auto" className="text-lg font-semibold text-zinc-900 dynamic-content break-words">{selectedCheckIn.guestName || "Guest"}</h3>
-                <p className="text-xs text-zinc-500 mt-1">{getAttendeeCategory(selectedCheckIn.registrationType)}</p>
+                <h3 dir="auto" className="text-xl font-serif font-black text-zinc-900 dynamic-content break-words leading-tight uppercase tracking-tight">{selectedCheckIn.guestName || "Guest"}</h3>
+                <div className="flex items-center gap-2 mt-2">
+                   <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                   <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">{getAttendeeCategory(selectedCheckIn.registrationType)}</p>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedCheckIn(null)}
-                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+                className="p-2 rounded-xl text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-5 space-y-3 text-sm">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-zinc-500">Action</span>
-                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${selectedCheckIn.actionType === 'checkout' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}`}>
-                  {selectedCheckIn.actionType === 'checkout' ? 'OUT' : 'IN'}
+            <div className="p-6 space-y-4 text-xs font-medium">
+              <div className="flex items-center justify-between gap-3 p-3 bg-zinc-50 rounded-2xl">
+                <span className="text-zinc-500">Session Status</span>
+                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${selectedCheckIn.actionType === 'checkout' ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'}`}>
+                  {selectedCheckIn.actionType === 'checkout' ? 'Outside' : 'Inside'}
                 </span>
               </div>
-              <div className="flex items-start justify-between gap-3">
-                <span className="text-zinc-500">Email</span>
-                <span className="text-zinc-900 text-right break-all">{selectedCheckIn.guestEmail || "N/A"}</span>
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-1">
+                    <p className="text-zinc-400 text-[9px] uppercase font-bold tracking-widest">Action</p>
+                    <p className="text-zinc-900 font-bold uppercase">{selectedCheckIn.actionType === 'checkout' ? 'Check-out' : 'Check-in'}</p>
+                 </div>
+                 <div className="space-y-1 text-right">
+                    <p className="text-zinc-400 text-[9px] uppercase font-bold tracking-widest">Time</p>
+                    <p className="text-zinc-900 font-bold">{formatTime(getScanTimestamp(selectedCheckIn))}</p>
+                 </div>
               </div>
-              <div className="flex items-start justify-between gap-3">
-                <span className="text-zinc-500">Gate / Zone</span>
-                <span className="text-zinc-900 text-right">{getLocationText(selectedCheckIn)}</span>
+              <div className="space-y-4 pt-2">
+                 <div className="flex items-start justify-between gap-4">
+                    <span className="text-zinc-500 shrink-0">Gate / Area</span>
+                    <span className="text-zinc-900 text-right truncate">{getLocationText(selectedCheckIn)}</span>
+                 </div>
+                 <div className="flex items-start justify-between gap-4">
+                    <span className="text-zinc-500 shrink-0">Duration</span>
+                    <span className="text-zinc-900 text-right font-bold">{selectedCheckIn.durationInside || "N/A"}</span>
+                 </div>
+                 <div className="flex items-start justify-between gap-4">
+                    <span className="text-zinc-500 shrink-0">Email</span>
+                    <span className="text-zinc-900 text-right break-all">{selectedCheckIn.guestEmail || "N/A"}</span>
+                 </div>
               </div>
-              <div className="flex items-start justify-between gap-3">
-                <span className="text-zinc-500">Scanned At</span>
-                <span className="text-zinc-900 text-right">{formatDateTime(getScanTimestamp(selectedCheckIn))}</span>
-              </div>
-              <div className="flex items-start justify-between gap-3">
-                <span className="text-zinc-500">Entry Time</span>
-                <span className="text-zinc-900 text-right">{getEntryTimeText(selectedCheckIn)}</span>
-              </div>
-              {selectedCheckIn.durationInside && (
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-zinc-500">Duration</span>
-                  <span className="text-zinc-900 text-right">{selectedCheckIn.durationInside}</span>
-                </div>
-              )}
-              {selectedCheckIn.previousSessionCheckedOut && (
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-zinc-500">Session Switch</span>
-                  <span className="text-zinc-900 text-right">
-                    {selectedCheckIn.previousSessionZoneName || "Previous session"} closed
-                    {selectedCheckIn.previousSessionDuration ? ` (${selectedCheckIn.previousSessionDuration})` : ""}
-                  </span>
-                </div>
-              )}
-              {selectedCheckIn.scannerUserName && (
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-zinc-500">Scanner</span>
-                  <span className="text-zinc-900 text-right">{selectedCheckIn.scannerUserName}</span>
-                </div>
-              )}
-              {selectedCheckIn.invalidReason && (
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-zinc-500">Reason</span>
-                  <span className="text-zinc-900 text-right">{toLabelCase(selectedCheckIn.invalidReason)}</span>
-                </div>
-              )}
             </div>
 
-            <div className="p-5 border-t border-zinc-100">
+            <div className="p-6 border-t border-zinc-100">
               <button
                 onClick={() => setSelectedCheckIn(null)}
-                className="w-full py-3 bg-zinc-900 text-white rounded-xl font-medium hover:bg-black transition-colors"
+                className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-xl active:scale-95"
               >
-                Close
+                Dismiss Details
               </button>
             </div>
           </div>
@@ -695,23 +692,25 @@ export default function ScannerPage() {
 
       {/* Duplicate Overlay */}
       {duplicateInfo && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="bg-amber-500 p-6 text-center">
-              <AlertTriangle className="w-12 h-12 text-white mx-auto mb-2" />
-              <h3 className="text-xl font-serif font-bold text-white">Already Checked In</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200 border border-zinc-100">
+            <div className="bg-amber-500 p-8 text-center text-white">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/40">
+                 <AlertTriangle className="w-8 h-8 text-white animate-pulse" />
+              </div>
+              <h3 className="text-2xl font-serif font-black uppercase tracking-tight">Access Restricted</h3>
+              <p className="text-sm font-bold opacity-80 mt-1 uppercase">Already Checked In</p>
             </div>
-            <div className="p-6">
-              <p dir="auto" className="text-center font-medium text-zinc-900 text-lg mb-1">{duplicateInfo.guestName}</p>
-              <p className="text-center text-zinc-500 text-sm mb-6">
-                Scanned at {duplicateInfo.checkInTime ? formatTime(duplicateInfo.checkInTime) : "earlier"}
-                {duplicateInfo.gateName && ` at ${duplicateInfo.gateName}`}
+            <div className="p-8 text-center">
+              <p dir="auto" className="text-lg font-black text-zinc-900 mb-1 uppercase tracking-tighter dynamic-content">{duplicateInfo.guestName}</p>
+              <p className="text-xs font-bold text-zinc-400 mb-8 uppercase tracking-wide">
+                 {duplicateInfo.gateName && `At ${duplicateInfo.gateName} • `}{formatTime(duplicateInfo.checkInTime || "")}
               </p>
               <button
                 onClick={() => setDuplicateInfo(null)}
-                className="w-full py-3 bg-zinc-900 text-white rounded-xl font-medium hover:bg-black transition-colors"
+                className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-black transition-all shadow-zinc-200 shadow-xl active:scale-95"
               >
-                Dismiss
+                Dismiss Warning
               </button>
             </div>
           </div>
@@ -720,9 +719,9 @@ export default function ScannerPage() {
 
       <ConfirmDialog
         isOpen={showEndSessionDialog}
-        title="End Session?"
-        message="Are you sure you want to stop scanning? You can resume later."
-        confirmText="End Session"
+        title="End Session"
+        message="Are you sure you want to stop scanning for this gate? You will be returned to the event dashboard."
+        confirmText="Confirm End"
         cancelText="Cancel"
         variant="danger"
         onConfirm={confirmEndSession}

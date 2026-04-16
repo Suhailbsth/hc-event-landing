@@ -199,17 +199,17 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
             </div>
 
             {!hideRegisterButton && (
-              <div className="flex flex-wrap items-center gap-6">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6">
                 {!event.isFree && (
-                  <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-lg rounded-2xl px-8 py-5 border-2 border-white/30 shadow-xl hover:bg-white/25 transition-all duration-300">
-                    <span className="text-white/90 text-sm font-semibold uppercase tracking-wider">
+                  <div className="inline-flex items-center justify-between sm:justify-start gap-3 bg-white/20 backdrop-blur-lg rounded-2xl px-6 sm:px-8 py-4 sm:py-5 border-2 border-white/30 shadow-xl hover:bg-white/25 transition-all duration-300">
+                    <span className="text-white/90 text-[10px] sm:text-sm font-semibold uppercase tracking-wider">
                       {copy.price}
                     </span>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-white text-4xl font-bold tracking-tight">
+                      <span className="text-white text-3xl sm:text-4xl font-bold tracking-tight">
                         {event.earlyBirdPrice || event.regularPrice}
                       </span>
-                      <span className="text-white/80 text-lg font-semibold">
+                      <span className="text-white/80 text-base sm:text-lg font-semibold">
                         {event.currency}
                       </span>
                     </div>
@@ -219,9 +219,9 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
                 {event.registrationOpen && (
                   <button
                     onClick={onRegisterClick}
-                    className="group relative px-12 py-5 bg-gradient-to-r from-white to-gray-50 text-blue-900 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-3xl hover:scale-[1.02] transition-all duration-300 overflow-hidden border-2 border-white/50"
+                    className="group relative px-10 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-white to-gray-50 text-blue-900 rounded-2xl font-bold text-lg sm:text-xl shadow-2xl hover:shadow-3xl hover:scale-[1.02] transition-all duration-300 overflow-hidden border-2 border-white/50 w-full sm:w-auto"
                   >
-                    <span className="relative z-10 flex items-center gap-2">
+                    <span className="relative z-10 flex items-center justify-center gap-2">
                       {t('register')}
                       <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -233,30 +233,30 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               </div>
             )}
 
-            <div className="grid grid-cols-3 gap-6 max-w-2xl" dir="ltr">
-              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
-                <div className="text-4xl font-bold text-white mb-2">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 max-w-2xl mt-10" dir="ltr">
+              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
+                <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
                   {event.speakers?.length ?? 0}
                 </div>
-                <div className="text-white/90 text-sm font-semibold tracking-wide">
+                <div className="text-white/90 text-xs sm:text-sm font-semibold tracking-wide">
                   {copy.speakers}
                 </div>
               </div>
 
-              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
-                <div className="text-4xl font-bold text-white mb-2">
+              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
+                <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
                   {event.sessions?.length ?? 0}
                 </div>
-                <div className="text-white/90 text-sm font-semibold tracking-wide">
+                <div className="text-white/90 text-xs sm:text-sm font-semibold tracking-wide">
                   {copy.sessions}
                 </div>
               </div>
 
-              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105">
-                <div className="text-4xl font-bold text-white mb-2">
+              <div className="text-center bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-6 border border-white/20 hover:bg-white/20 transition-all duration-300 hover:shadow-xl hover:scale-105 xs:col-span-2 sm:col-span-1">
+                <div className="text-3xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
                   {event.totalRegistrations}
                 </div>
-                <div className="text-white/90 text-sm font-semibold tracking-wide">
+                <div className="text-white/90 text-xs sm:text-sm font-semibold tracking-wide">
                   {copy.registered}
                 </div>
               </div>
