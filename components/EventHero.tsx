@@ -95,7 +95,7 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
               </div>
             )}
 
-            <h1 dir="auto" className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-8 drop-shadow-2xl leading-tight animate-fade-in-up text-start dynamic-content">
+            <h1 dir="auto" className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-8 drop-shadow-2xl leading-tight animate-fade-in-up text-start dynamic-content">
               {title}
             </h1>
 
