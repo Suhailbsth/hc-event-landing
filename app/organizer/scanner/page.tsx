@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { organizerApi, GateSession, AttendeeCheckIn, CheckInStats } from "@/lib/organizerApi";
+import { scannerCache, ScannerCache } from "@/lib/scannerCache";
 import QRScanner from "@/components/QRScanner";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import {
@@ -40,6 +41,11 @@ export default function ScannerPage() {
   const scanInProgressRef = useRef(false);
   const lastScanRef = useRef<{ code: string; timestamp: number } | null>(null);
   const SCAN_DEDUPE_WINDOW_MS = 1200;
+
+  // Offline cache status
+  const [cacheStatus, setCacheStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [cacheCount, setCacheCount] = useState(0);
+
   const hapticFeedback = (duration: number | number[]) => {
     if (typeof window !== 'undefined' && navigator.vibrate) {
       navigator.vibrate(duration);
@@ -84,6 +90,19 @@ export default function ScannerPage() {
         return;
       }
       setSession(activeSession);
+
+      // Preload visitor cache in background right after session loads
+      const token = localStorage.getItem("organizerToken") || "";
+      setCacheStatus("loading");
+      scannerCache.preload(eventId, token)
+        .then((count) => {
+          setCacheCount(count);
+          setCacheStatus("ready");
+        })
+        .catch((err) => {
+          console.error("[ScannerCache] Preload failed:", err);
+          setCacheStatus("error");
+        });
     } catch (error) {
       console.error("Failed to load session:", error);
       setError("Failed to load session");
@@ -141,7 +160,21 @@ export default function ScannerPage() {
     setDuplicateInfo(null);
 
     try {
-      const checkIn = await organizerApi.checkInAttendee(normalizedCode, session?.gateType);
+      const startTime = performance.now();
+      let checkIn: AttendeeCheckIn;
+
+      // ── Fast path: compact tiny QR via local cache ──────────────────────
+      if (ScannerCache.isTinyFormat(normalizedCode) && scannerCache.isLoaded() && session) {
+        console.log(`[Scanner] Processing TinyFormat QR: ${normalizedCode}`);
+        checkIn = await organizerApi.checkInFast(normalizedCode, session, scannerCache);
+      } else {
+        // ── Legacy path: full JWT-URL (old passes) ──────────────────────────
+        console.log(`[Scanner] Processing Legacy QR`);
+        checkIn = await organizerApi.checkInAttendee(normalizedCode, session?.gateType);
+      }
+
+      const processingTime = performance.now() - startTime;
+      console.log(`[Scanner] Scan-to-Result logic complete in ${processingTime.toFixed(2)}ms`);
 
       if (checkIn.isDuplicate) {
         if (checkIn.invalidReason === 'grace_period') {
@@ -161,6 +194,9 @@ export default function ScannerPage() {
         setRecentCheckIns(prev => [newCheckIn, ...prev].slice(0, 10));
         setAllGateCheckIns(prev => [newCheckIn, ...prev].slice(0, 20));
         setLatestScan(newCheckIn);
+
+        const totalTime = performance.now() - startTime;
+        console.log(`[Scanner] UI total update time: ${totalTime.toFixed(2)}ms`);
 
         hapticFeedback([100, 50, 100]);
 
@@ -380,10 +416,38 @@ export default function ScannerPage() {
             <p className="text-2xl sm:text-3xl font-serif font-bold text-zinc-900">{session.isActive ? "Online" : "Offline"}</p>
             <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Status</p>
           </div>
+          <div className="w-px h-8 sm:h-10 bg-zinc-100"></div>
+          {/* Offline Cache Status Badge */}
+          <div className="text-center">
+            {cacheStatus === "loading" && (
+              <>
+                <p className="text-2xl sm:text-3xl font-serif font-bold text-amber-500">...</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-amber-400 font-bold">Loading</p>
+              </>
+            )}
+            {cacheStatus === "ready" && (
+              <>
+                <p className="text-2xl sm:text-3xl font-serif font-bold text-emerald-600">{cacheCount}</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-emerald-500 font-bold">Loaded ✓</p>
+              </>
+            )}
+            {cacheStatus === "error" && (
+              <>
+                <p className="text-2xl sm:text-3xl font-serif font-bold text-red-500">!</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-red-400 font-bold">Cache Err</p>
+              </>
+            )}
+            {cacheStatus === "idle" && (
+              <>
+                <p className="text-2xl sm:text-3xl font-serif font-bold text-zinc-400">–</p>
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Cache</p>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      <main className="max-w-md mx-auto px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
+      <main className="max-w-md mx-auto px-4 py-4 sm:py-6 space-y-6 sm:space-y-8 pb-20">
         {/* Alerts */}
         {error && (
           <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
@@ -394,7 +458,7 @@ export default function ScannerPage() {
 
         {/* Scanner Card */}
         <div className="bg-white rounded-2xl shadow-premium border border-zinc-100 p-4 sm:p-6 overflow-hidden">
-          <div className="relative mb-4 flex items-center justify-between px-1">
+          <div className="relative mb-6 flex items-center justify-between px-1">
              <div className="flex items-center gap-2">
                 <Camera className={`w-4 h-4 sm:w-5 sm:h-5 ${cameraActive ? 'text-indigo-600' : 'text-zinc-400'}`} />
                 <h2 className="text-sm sm:text-base font-bold text-zinc-900 tracking-tight">Scanner Portal</h2>
@@ -410,7 +474,7 @@ export default function ScannerPage() {
              )}
           </div>
 
-          <div className="relative mb-4 min-h-[140px] sm:min-h-[180px]">
+          <div className="relative mb-4 min-h-[200px] sm:min-h-[240px]">
             {!cameraActive && !latestScan && (
               <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-zinc-50/50 rounded-2xl border-2 border-dashed border-zinc-200/60">
                 <div className="w-12 h-12 bg-white rounded-full p-3 shadow-sm mb-3">
@@ -422,8 +486,8 @@ export default function ScannerPage() {
             )}
 
             {latestScan && (
-              <div className={`absolute inset-0 z-10 p-4 sm:p-5 rounded-2xl border-2 shadow-xl animate-in fade-in zoom-in-95 flex flex-col justify-between overflow-hidden ${
-                latestScan.actionType === 'checkout' ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'
+              <div className={`absolute inset-0 z-10 p-5 sm:p-6 rounded-2xl border flex flex-col justify-between overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-300 ${
+                latestScan.actionType === 'checkout' ? 'bg-amber-50 border-amber-200 shadow-amber-200/20' : 'bg-emerald-50 border-emerald-200 shadow-emerald-200/20'
               }`}>
                 <div className="flex items-start gap-3 sm:gap-4">
                   <div className={`p-2.5 sm:p-3 rounded-xl shrink-0 ${latestScan.actionType === 'checkout' ? 'bg-amber-100 shadow-inner' : 'bg-emerald-100 shadow-inner'}`}>
@@ -437,7 +501,7 @@ export default function ScannerPage() {
                     </div>
                     
                     <div className="inline-flex items-center gap-1.5 mb-2">
-                       <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${latestScan.actionType === 'checkout' ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'}`}>
+                       <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${latestScan.actionType === 'checkout' ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'}`}>
                           {latestScan.actionType === 'checkout' ? 'OUT' : 'IN'}
                        </span>
                        <span className={`text-[10px] font-bold uppercase ${latestScan.actionType === 'checkout' ? 'text-amber-700/60' : 'text-emerald-700/60'}`}>
@@ -457,14 +521,14 @@ export default function ScannerPage() {
                 <div className="mt-4 sm:mt-6">
                    <button
                     onClick={() => setLatestScan(null)}
-                    className={`w-full py-3.5 sm:py-4 rounded-xl text-sm sm:text-base font-bold shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                    className={`w-full py-4 sm:py-4.5 rounded-2xl text-sm sm:text-base font-black uppercase tracking-widest shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2 mb-1 ${
                       latestScan.actionType === 'checkout' 
-                        ? 'bg-amber-600 hover:bg-amber-700 text-white' 
-                        : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        ? 'bg-amber-500 hover:bg-amber-600 text-white' 
+                        : 'bg-emerald-500 hover:bg-emerald-600 text-white'
                     }`}
                   >
                     Next Attendee
-                    <ChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-4 h-4 opacity-70" />
                   </button>
                 </div>
               </div>
@@ -587,7 +651,7 @@ export default function ScannerPage() {
                   type="button"
                   onClick={() => setSelectedCheckIn(checkIn)}
                   key={`${checkIn.registrationId}-${index}`}
-                  className={`w-full p-4 bg-white rounded-2xl border transition-all text-left shadow-sm hover:shadow-md active:scale-[0.98] ${checkInTab === "thisGate" && checkIn.isNew ? "border-green-200 bg-green-50/50" : "border-zinc-100 hover:border-zinc-300"
+                  className={`w-full p-4 bg-white rounded-2xl border transition-all text-left shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] ${checkInTab === "thisGate" && checkIn.isNew ? "border-green-300 bg-green-50/50 shadow-green-100" : "border-zinc-100 hover:border-zinc-300"
                     }`}
                 >
                   <div className="flex justify-between items-start gap-3">

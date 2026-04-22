@@ -672,6 +672,136 @@ class OrganizerApiService {
     if (!response.ok) throw new Error("Failed to fetch occupancy");
     return await response.json();
   }
+
+  // ── Offline-First Fast Path ────────────────────────────────────────────────
+
+  /**
+   * checkInFast — the new <50ms scan path.
+   *
+   * 1. Parses compact QR  (0ms)
+   * 2. Verifies event matches current session  (0ms)
+   * 3. Looks up visitor in local ScannerCache Map  (<1ms)
+   * 4. Marks as checked-in locally  (<1ms)
+   * 5. Returns the result to UI immediately  (~16ms total)
+   * 6. In background: fires POST /api/CheckIn/fast  (non-blocking)
+   *
+   * Falls through to checkInAttendee() for legacy JWT-URL passes.
+   */
+  async checkInFast(
+    rawQr: string,
+    session: GateSession,
+    // Inline type to avoid circular module dependency.
+    cache: {
+      lookup: (id: string) => { name: string; email: string; type: string; checkedIn: boolean; etag: string } | null;
+      markCheckedIn: (id: string, state?: boolean) => void;
+      reconcileVisitor: (id: string, updatedEtag?: string, checkedInState?: boolean) => void;
+      syncToBackend: (payload: {
+        visitorIdShort: string; eventIdShort: string; token: string; eventId: string;
+        gateId: string; gateName: string; gateType: string; sessionId: string;
+        scannerName: string; scannedAt: string; etag: string;
+      }, token: string) => Promise<{
+        success: boolean;
+        isDuplicate: boolean;
+        updatedEtag?: string;
+        checkedInState?: boolean;
+      }>;
+    },
+  ): Promise<AttendeeCheckIn> {
+    // Parse compact format: {rid12}|{eid8}|{hmac12}
+    const parts = rawQr.trim().split("|");
+    if (parts.length !== 3) throw new Error("Could not parse QR code");
+    const [rid, eid, tok] = parts.map(p => p.toLowerCase());
+
+    // Verify event match — compare eid against the first 8 chars of the session eventId
+    const sessionEid = session.eventId.replace(/-/g, "").substring(0, 8).toLowerCase();
+    if (eid !== sessionEid) {
+      throw new Error("QR code is for a different event");
+    }
+
+    // Local lookup — O(1), <1ms
+    const t0 = performance.now();
+    const visitor = cache.lookup(rid);
+    const lookupTime = performance.now() - t0;
+
+    if (!visitor) {
+      console.warn(`[checkInFast] Lookup failed after ${lookupTime.toFixed(2)}ms`);
+      throw new Error("Visitor not found. QR code may belong to a different event.");
+    }
+    console.log(`[checkInFast] Local lookup: ${lookupTime.toFixed(2)}ms`);
+
+    if (visitor.checkedIn && session.gateType?.toLowerCase() === "entry") {
+      return {
+        id: "",
+        eventId: session.eventId,
+        registrationId: rid,
+        guestName: visitor.name,
+        guestEmail: visitor.email,
+        registrationType: visitor.type,
+        checkInTime: new Date().toISOString(),
+        gateName: session.gateName,
+        scannerUserName: "",
+        isValid: true,
+        isDuplicate: true,
+        invalidReason: "already_checked_in",
+      };
+    }
+
+    // Determine action: toggle if 'both', force checkout if 'exit', else 'checkin'
+    const isBothGate = session.gateType?.toLowerCase() === "both";
+    const actionType = session.gateType?.toLowerCase() === "exit" || (isBothGate && visitor.checkedIn)
+        ? "checkout"
+        : "checkin";
+
+    const newCheckedInState = actionType === "checkin";
+
+    // Mark locally FIRST (instant, before API call)
+    cache.markCheckedIn(rid, newCheckedInState);
+
+    const now = new Date().toISOString();
+    const result: AttendeeCheckIn = {
+      id: "",
+      eventId: session.eventId,
+      registrationId: rid,
+      guestName: visitor.name,
+      guestEmail: visitor.email,
+      registrationType: visitor.type,
+      checkInTime: now,
+      gateName: session.gateName,
+      scannerUserName: this.getCurrentUser()?.fullName || "Organizer",
+      isValid: true,
+      isDuplicate: false,
+      actionType: actionType,
+      timestamp: now,
+    };
+
+    // Fire-and-forget background sync (does NOT block the UI)
+    const token = typeof window !== "undefined" ? localStorage.getItem("organizerToken") || "" : "";
+    const payload = {
+      visitorIdShort: rid,
+      eventIdShort: eid,
+      token: tok,
+      eventId: session.eventId,
+      gateId: session.gateId,
+      gateName: session.gateName,
+      gateType: actionType, // Crucial: Send 'checkin' or 'checkout' so backend knows the outcome!
+      sessionId: session.sessionId,
+      scannerName: this.getCurrentUser()?.fullName || "Organizer",
+      scannedAt: now,
+      etag: visitor.etag,
+    };
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    cache.syncToBackend(payload, token).then((syncResult) => {
+      if (syncResult.updatedEtag || syncResult.checkedInState !== undefined) {
+        cache.reconcileVisitor(rid, syncResult.updatedEtag, syncResult.checkedInState);
+      }
+
+      if (syncResult.isDuplicate) {
+        console.info(`[checkInFast] Gate conflict for ${rid} — another gate already checked in this visitor`);
+      }
+    }).catch(console.error);
+
+    return result;
+  }
 }
 
 export const organizerApi = new OrganizerApiService();
