@@ -28,6 +28,8 @@ export async function generateMetadata({
       : event.description || event.shortDescription;
 
     const eventUrl = buildEventWebsiteUrl(event.title, resolvedParams.slug);
+    const metaImage = event.bannerImageUrl || event.backgroundImageUrl || (event as any).BannerImageUrl || (event as any).BackgroundImageUrl;
+    const metaImages = metaImage ? [{ url: metaImage, width: 1200, height: 630, alt: title }] : [];
 
     return {
       title: `${title} - Future Cards Events`,
@@ -46,16 +48,7 @@ export async function generateMetadata({
         description,
         url: eventUrl,
         siteName: 'Future Cards Events',
-        images: event.bannerImageUrl
-          ? [
-              {
-                url: event.bannerImageUrl,
-                width: 1200,
-                height: 630,
-                alt: title,
-              },
-            ]
-          : [],
+        images: metaImages,
         locale: isArabic ? 'ar_AE' : 'en_US',
         type: 'website',
       },
@@ -63,7 +56,7 @@ export async function generateMetadata({
         card: 'summary_large_image',
         title,
         description,
-        images: event.bannerImageUrl ? [event.bannerImageUrl] : [],
+        images: metaImage ? [metaImage] : [],
       },
       alternates: {
         canonical: eventUrl,

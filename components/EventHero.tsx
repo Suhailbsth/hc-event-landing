@@ -18,8 +18,9 @@ export default function EventHero({ event, onRegisterClick, hideRegisterButton =
   const copy = eventPageTranslations[language];
   const isArabic = language === 'ar';
 
-  const backgroundImage = event.backgroundImageUrl || event.bannerImageUrl;
-  const showImageBackground = event.useBackgroundAsHero && backgroundImage;
+  const backgroundImage = event.backgroundImageUrl || event.bannerImageUrl || (event as any).BackgroundImageUrl || (event as any).BannerImageUrl;
+  const useHero = event.useBackgroundAsHero || (event as any).UseBackgroundAsHero;
+  const showImageBackground = useHero && backgroundImage;
 
   const title = isArabic && event.arabicTitle ? event.arabicTitle : event.title;
   const shortDesc = isArabic && event.arabicShortDescription
