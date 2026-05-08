@@ -784,6 +784,7 @@ class OrganizerApiService {
       isDuplicate: false,
       actionType: actionType,
       timestamp: now,
+      companions: visitor.companions || 1
     };
 
     // Fire-and-forget background sync (does NOT block the UI)

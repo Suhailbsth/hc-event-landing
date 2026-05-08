@@ -45,7 +45,8 @@ export default function ScannerPage() {
   // Marriage event detection
   const isMarriageEvent = session?.eventTitle?.toLowerCase().includes("marriage") || 
                           session?.eventTitle?.toLowerCase().includes("wedding") ||
-                          session?.eventTitle?.toLowerCase().includes("nikkah");
+                          session?.eventTitle?.toLowerCase().includes("nikkah") ||
+                          session?.eventTitle?.toLowerCase().includes("wedding"); // Double check
 
   // Helper to get friendly pass type
   const getFriendlyPassType = (type: string) => {
@@ -85,10 +86,15 @@ export default function ScannerPage() {
 
   useEffect(() => {
     if (session?.eventId) {
+      console.log("[Scanner] Session Loaded:", { 
+        title: session.eventTitle, 
+        isMarriage: isMarriageEvent,
+        gate: session.gateName 
+      });
       loadStatistics();
       loadRecentCheckIns();
     }
-  }, [session]);
+  }, [session?.eventId, session?.gateId]); // Only reload if event or gate changes, not on count updates
 
   const loadActiveSession = async () => {
     try {
@@ -354,10 +360,6 @@ export default function ScannerPage() {
   const activeCheckIns = checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns;
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const filteredCheckIns = activeCheckIns.filter(checkIn => {
-    const category = getAttendeeCategory(checkIn.registrationType).toLowerCase();
-    const categoryMatch = true; // Remove filtering for marriage events to simplify
-
-    if (!categoryMatch) return false;
     if (!normalizedSearch) return true;
 
     const guestName = (checkIn.guestName || "").toLowerCase();
@@ -663,12 +665,12 @@ export default function ScannerPage() {
                             {checkIn.gateName}
                           </span>
                         )}
-                         <span className="text-[10px] text-zinc-400 font-medium">{getRelativeTime(checkIn.timestamp)}</span>
-                         {checkIn.companions && checkIn.companions > 1 && (
-                           <span className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded ml-auto">
-                             +{checkIn.companions - 1} GUESTS
-                           </span>
-                         )}
+                          <span className="text-[10px] text-zinc-400 font-medium">{getRelativeTime(checkIn.timestamp)}</span>
+                          {checkIn.companions && checkIn.companions > 1 && (
+                            <span className="text-[10px] font-black text-white bg-indigo-600 px-2 py-0.5 rounded-full shadow-sm ml-auto">
+                              {checkIn.companions} PEOPLE
+                            </span>
+                          )}
                       </div>
                     </div>
                     {checkIn.actionType === 'checkout' && checkIn.durationInside && (
