@@ -11,10 +11,17 @@ export default function HtmlDirectionProvider() {
   useEffect(() => {
     const html = document.documentElement;
     const isEventRoute = pathname?.startsWith('/events/');
+    const isMarriagePass = pathname?.startsWith('/marriage-pass');
 
-    html.dir = 'ltr';
-    html.lang = isEventRoute && language === 'ar' ? 'ar-AE' : 'en-US';
-    document.body.style.direction = 'ltr';
+    if (isMarriagePass || (isEventRoute && language === 'ar')) {
+      html.dir = 'rtl';
+      html.lang = 'ar-AE';
+      document.body.style.direction = 'rtl';
+    } else {
+      html.dir = 'ltr';
+      html.lang = 'en-US';
+      document.body.style.direction = 'ltr';
+    }
   }, [language, pathname]);
 
   return null;

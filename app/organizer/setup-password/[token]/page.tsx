@@ -12,7 +12,7 @@ interface TokenValidationResponse {
     reason?: "expired" | "invalid" | "already_used";
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5237";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://localhost:7003";
 
 export default function SetupPasswordPage() {
     const router = useRouter();

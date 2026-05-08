@@ -30,7 +30,7 @@ function DownloadPassContent() {
     const [tokenData, setTokenData] = useState<TokenData | null>(null);
     const [walletLoading, setWalletLoading] = useState<string | null>(null);
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5237';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:7003';
 
     useEffect(() => {
         if (!token) {
@@ -109,10 +109,10 @@ function DownloadPassContent() {
             // Using fetch() to get a blob and simulate an <a> click will NOT trigger the native Wallet prompt.
             window.location.href = `${endpoint}?${params}`;
             
-            // Give the browser a second to trigger the download prompt before removing loading state
+            // Keep loading for longer as the file generation takes time and browser takes time to trigger download
             setTimeout(() => {
                 setWalletLoading(null);
-            }, 2000);
+            }, 10000);
         } catch (error) {
             console.error("Error:", error);
             alert('Failed to generate Apple Wallet pass. Please try again.');
