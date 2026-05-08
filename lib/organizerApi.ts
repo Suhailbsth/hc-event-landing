@@ -86,6 +86,7 @@ export interface GateSession {
   sessionStartTime: string;
   checkInCount: number;
   isActive: boolean;
+  eventTitle?: string;
 }
 
 export interface AttendeeTimeReport {
@@ -125,6 +126,7 @@ export interface AttendeeCheckIn {
   registrationId: string;
   checkInTime: string;
   checkedInGate?: string;
+  companions?: number;
   gateName?: string;
   scannerUserName?: string;
   guestName: string;
@@ -162,20 +164,6 @@ export interface CheckInStats {
   hourlyBreakdown: { [hour: string]: number };
   generatedAt: string;
 }
-
-export interface CheckInStats {
-  totalCheckIns: number;
-  summary: {
-    total: number;
-    valid: number;
-    invalid: number;
-    duplicate: number;
-    [key: string]: number; // For gate-specific stats like gate_Main, gate_VIP
-  };
-  hourlyBreakdown: { [hour: string]: number };
-  generatedAt: string;
-}
-
 
 export async function inviteOrganizer(
   eventId: string,
@@ -410,6 +398,8 @@ class OrganizerApiService {
           registrationType: checkIn.registrationType,
           checkInTime: checkIn.checkInTime,
           gateName: checkIn.gateName || checkIn.checkedInGate,
+          checkedInGate: checkIn.checkedInGate,
+          companions: checkIn.companions || 1,
           scannerUserName: checkIn.scannerUserName || "",
           isValid: checkIn.isValid,
           isDuplicate: checkIn.isDuplicate || false,
@@ -510,6 +500,7 @@ class OrganizerApiService {
         checkInTime: validationResult.previousCheckInTime,
         gateName: validationResult.previousCheckInGate || activeSession.gateName,
         scannerUserName: "",
+        companions: validationResult.companions || 1,
         isValid: true,
         isDuplicate: true,
       };
@@ -589,6 +580,7 @@ class OrganizerApiService {
       previousSessionCheckOutTime: checkInResult.checkIn?.previousSessionCheckOutTime,
       previousSessionDuration: checkInResult.checkIn?.previousSessionDuration,
       sessionTransitionReason: checkInResult.checkIn?.sessionTransitionReason,
+      companions: checkInResult.checkIn?.companions || validationResult.companions || 1,
     };
   }
 
@@ -692,7 +684,7 @@ class OrganizerApiService {
     session: GateSession,
     // Inline type to avoid circular module dependency.
     cache: {
-      lookup: (id: string) => { name: string; email: string; type: string; checkedIn: boolean; etag: string } | null;
+      lookup: (id: string) => { name: string; email: string; type: string; checkedIn: boolean; etag: string; tok: string; eid: string; companions?: number } | null;
       markCheckedIn: (id: string, state?: boolean) => void;
       reconcileVisitor: (id: string, updatedEtag?: string, checkedInState?: boolean) => void;
       syncToBackend: (payload: {
@@ -707,15 +699,26 @@ class OrganizerApiService {
       }>;
     },
   ): Promise<AttendeeCheckIn> {
-    // Parse compact format: {rid12}|{eid8}|{hmac12}
-    const parts = rawQr.trim().split("|");
-    if (parts.length !== 3) throw new Error("Could not parse QR code");
-    const [rid, eid, tok] = parts.map(p => p.toLowerCase());
+    // Parse format
+    let rid = "";
+    let eid = "";
+    let tok = "";
 
-    // Verify event match — compare eid against the first 8 chars of the session eventId
-    const sessionEid = session.eventId.replace(/-/g, "").substring(0, 8).toLowerCase();
-    if (eid !== sessionEid) {
-      throw new Error("QR code is for a different event");
+    if (rawQr.includes("|")) {
+      // ── Path A: Compact format: {rid12}|{eid8}|{hmac12} ─────────────────
+      const parts = rawQr.trim().split("|");
+      if (parts.length !== 3) throw new Error("Could not parse QR code");
+      [rid, eid, tok] = parts.map(p => p.toLowerCase());
+
+      // Verify event match — compare eid against the first 8 chars of the session eventId
+      const sessionEid = session.eventId.replace(/-/g, "").substring(0, 8).toLowerCase();
+      if (eid !== sessionEid) {
+        throw new Error("QR code is for a different event");
+      }
+    } else {
+      // ── Path B: Raw GUID format (Marriage Event / Simple Pass) ─────────
+      // Extract rid from GUID (e.g., 86deda96-e611... -> 86deda96e611)
+      rid = rawQr.replace(/-/g, "").substring(0, 12).toLowerCase();
     }
 
     // Local lookup — O(1), <1ms
@@ -724,9 +727,17 @@ class OrganizerApiService {
     const lookupTime = performance.now() - t0;
 
     if (!visitor) {
-      console.warn(`[checkInFast] Lookup failed after ${lookupTime.toFixed(2)}ms`);
-      throw new Error("Visitor not found. QR code may belong to a different event.");
+      console.warn(`[checkInFast] Lookup failed after ${lookupTime.toFixed(2)}ms for RID: ${rid}`);
+      throw new Error("Visitor not found. This pass might not be synced to this device yet.");
     }
+
+    // If we scanned a Raw GUID, we need to get eid and tok from the cache record
+    // to ensure the backend background-sync still works (it needs the token for security).
+    if (!tok && visitor.tok) {
+      tok = visitor.tok;
+      eid = visitor.eid;
+    }
+
     console.log(`[checkInFast] Local lookup: ${lookupTime.toFixed(2)}ms`);
 
     if (visitor.checkedIn && session.gateType?.toLowerCase() === "entry") {
@@ -743,6 +754,7 @@ class OrganizerApiService {
         isValid: true,
         isDuplicate: true,
         invalidReason: "already_checked_in",
+        companions: visitor.companions || 1
       };
     }
 
