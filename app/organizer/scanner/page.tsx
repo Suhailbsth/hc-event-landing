@@ -42,6 +42,20 @@ export default function ScannerPage() {
   const lastScanRef = useRef<{ code: string; timestamp: number } | null>(null);
   const SCAN_DEDUPE_WINDOW_MS = 1200;
 
+  // Marriage event detection
+  const isMarriageEvent = session?.eventTitle?.toLowerCase().includes("marriage") || 
+                          session?.eventTitle?.toLowerCase().includes("wedding") ||
+                          session?.eventTitle?.toLowerCase().includes("nikkah") ||
+                          session?.eventTitle?.toLowerCase().includes("wedding"); // Double check
+
+  // Helper to get friendly pass type
+  const getFriendlyPassType = (type: string) => {
+    const t = type?.toLowerCase();
+    if (t === 'regular' || t === 'attendee') return isMarriageEvent ? 'Guest' : 'Regular Attendee';
+    if (t === 'vip') return isMarriageEvent ? 'VIP Guest' : 'VIP';
+    return type;
+  };
+
   // Offline cache status
   const [cacheStatus, setCacheStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [cacheCount, setCacheCount] = useState(0);
@@ -72,10 +86,15 @@ export default function ScannerPage() {
 
   useEffect(() => {
     if (session?.eventId) {
+      console.log("[Scanner] Session Loaded:", { 
+        title: session.eventTitle, 
+        isMarriage: isMarriageEvent,
+        gate: session.gateName 
+      });
       loadStatistics();
       loadRecentCheckIns();
     }
-  }, [session]);
+  }, [session?.eventId, session?.gateId]); // Only reload if event or gate changes, not on count updates
 
   const loadActiveSession = async () => {
     try {
@@ -163,8 +182,9 @@ export default function ScannerPage() {
       const startTime = performance.now();
       let checkIn: AttendeeCheckIn;
 
-      // ── Fast path: compact tiny QR via local cache ──────────────────────
-      if (ScannerCache.isTinyFormat(normalizedCode) && scannerCache.isLoaded() && session) {
+      // ── Fast path: compact tiny QR OR Raw GUID via local cache ─────────
+      const isFastPath = (ScannerCache.isTinyFormat(normalizedCode) || ScannerCache.isRawGuid(normalizedCode));
+      if (isFastPath && scannerCache.isLoaded() && session) {
         console.log(`[Scanner] Processing TinyFormat QR: ${normalizedCode}`);
         checkIn = await organizerApi.checkInFast(normalizedCode, session, scannerCache);
       } else {
@@ -176,39 +196,41 @@ export default function ScannerPage() {
       const processingTime = performance.now() - startTime;
       console.log(`[Scanner] Scan-to-Result logic complete in ${processingTime.toFixed(2)}ms`);
 
+      // ── Update local states ──────────────────────────────────────────
+      // Every scan should appear in the list immediately, even duplicates or check-outs
+      const newCheckIn = {
+        ...checkIn,
+        timestamp: new Date().toISOString(),
+        isNew: true,
+      };
+
       if (checkIn.isDuplicate) {
         if (checkIn.invalidReason === 'grace_period') {
           setError("⚠️ Just Scanned (Grace Period)");
           hapticFeedback(100);
         } else {
-          setDuplicateInfo(checkIn);
+          setDuplicateInfo(newCheckIn);
           hapticFeedback([200, 100, 200]);
         }
       } else {
-        const newCheckIn = {
-          ...checkIn,
-          timestamp: new Date().toISOString(),
-          isNew: true,
-        };
-
-        setRecentCheckIns(prev => [newCheckIn, ...prev].slice(0, 10));
-        setAllGateCheckIns(prev => [newCheckIn, ...prev].slice(0, 20));
-        setLatestScan(newCheckIn);
-
-        const totalTime = performance.now() - startTime;
-        console.log(`[Scanner] UI total update time: ${totalTime.toFixed(2)}ms`);
-
         hapticFeedback([100, 50, 100]);
-
         if (session) {
           setSession({ ...session, checkInCount: session.checkInCount + 1 });
         }
-
-        setTimeout(() => {
-          setRecentCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
-          setAllGateCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
-        }, 2000);
       }
+
+      // Add to lists regardless of duplicate status so user sees the feedback
+      setRecentCheckIns(prev => [newCheckIn, ...prev].slice(0, 50));
+      setAllGateCheckIns(prev => [newCheckIn, ...prev].slice(0, 100));
+      setLatestScan(newCheckIn);
+
+      const totalTime = performance.now() - startTime;
+      console.log(`[Scanner] UI total update time: ${totalTime.toFixed(2)}ms`);
+
+      setTimeout(() => {
+        setRecentCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
+        setAllGateCheckIns(prev => prev.map(item => ({ ...item, isNew: false })));
+      }, 2000);
 
     } catch (error) {
       const message = error instanceof Error ? error.message : "Check-in failed";
@@ -286,7 +308,7 @@ export default function ScannerPage() {
     const normalized = (registrationType || "").toLowerCase();
 
     if (normalized.includes("vip")) {
-      return "VIP";
+      return isMarriageEvent ? "VIP Guest" : "VIP";
     }
     if (normalized.includes("speaker") || normalized.includes("keynote")) {
       return "Speaker";
@@ -295,7 +317,7 @@ export default function ScannerPage() {
       return "Exhibitor";
     }
 
-    return "Regular Attendee";
+    return isMarriageEvent ? "Guest" : "Regular Attendee";
   };
 
   const parseDurationToMs = (duration?: string) => {
@@ -338,15 +360,6 @@ export default function ScannerPage() {
   const activeCheckIns = checkInTab === "thisGate" ? recentCheckIns : allGateCheckIns;
   const normalizedSearch = searchQuery.trim().toLowerCase();
   const filteredCheckIns = activeCheckIns.filter(checkIn => {
-    const category = getAttendeeCategory(checkIn.registrationType).toLowerCase();
-    const categoryMatch =
-      passFilter === "all" ||
-      (passFilter === "speaker" && category === "speaker") ||
-      (passFilter === "exhibitor" && category === "exhibitor") ||
-      (passFilter === "vip" && category === "vip") ||
-      (passFilter === "regular" && category === "regular attendee");
-
-    if (!categoryMatch) return false;
     if (!normalizedSearch) return true;
 
     const guestName = (checkIn.guestName || "").toLowerCase();
@@ -496,7 +509,7 @@ export default function ScannerPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <p dir="auto" className={`text-base sm:text-lg font-bold truncate dynamic-content ${latestScan.actionType === 'checkout' ? 'text-amber-900' : 'text-emerald-900'}`}>
-                        {latestScan.guestName || "Attendee"}
+                        {latestScan.guestName || (isMarriageEvent ? "Guest" : "Attendee")}
                       </p>
                     </div>
                     
@@ -504,10 +517,15 @@ export default function ScannerPage() {
                        <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded shadow-sm ${latestScan.actionType === 'checkout' ? 'bg-amber-500 text-white' : 'bg-emerald-500 text-white'}`}>
                           {latestScan.actionType === 'checkout' ? 'OUT' : 'IN'}
                        </span>
-                       <span className={`text-[10px] font-bold uppercase ${latestScan.actionType === 'checkout' ? 'text-amber-700/60' : 'text-emerald-700/60'}`}>
-                          {getAttendeeCategory(latestScan.registrationType)}
-                       </span>
-                    </div>
+                        <span className={`text-[10px] font-bold uppercase ${latestScan.actionType === 'checkout' ? 'text-amber-700/60' : 'text-emerald-700/60'}`}>
+                           {getAttendeeCategory(latestScan.registrationType)}
+                        </span>
+                        {latestScan.companions && latestScan.companions > 1 && (
+                          <span className="text-[10px] font-black bg-indigo-500 text-white px-2 py-0.5 rounded shadow-sm animate-pulse ml-1">
+                            +{latestScan.companions - 1} GUESTS
+                          </span>
+                        )}
+                     </div>
 
                     <div className={`text-xs font-medium space-y-0.5 ${latestScan.actionType === 'checkout' ? 'text-amber-700/80' : 'text-emerald-700/80'}`}>
                         <div className="flex items-center gap-1.5 opacity-80">
@@ -611,27 +629,7 @@ export default function ScannerPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-2 overflow-x-auto pb-1 no-scrollbar">
-              {[
-                { key: "all", label: "All" },
-                { key: "speaker", label: "Speaker" },
-                { key: "exhibitor", label: "Exhibitor" },
-                { key: "vip", label: "VIP" },
-                { key: "regular", label: "Regular" },
-              ].map(filter => (
-                <button
-                  key={filter.key}
-                  type="button"
-                  onClick={() => setPassFilter(filter.key as "all" | "speaker" | "exhibitor" | "vip" | "regular")}
-                  className={`px-3 sm:px-4 py-1.5 text-[10px] sm:text-xs font-bold rounded-lg border transition-all whitespace-nowrap ${passFilter === filter.key
-                    ? "bg-zinc-900 text-white border-zinc-900 shadow-md"
-                    : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400"
-                    }`}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
+          {/* Filters REMOVED per user request */}
           </div>
 
           <div className="space-y-3">
@@ -667,7 +665,12 @@ export default function ScannerPage() {
                             {checkIn.gateName}
                           </span>
                         )}
-                        <span className="text-[10px] text-zinc-400 font-medium">{getRelativeTime(checkIn.timestamp)}</span>
+                          <span className="text-[10px] text-zinc-400 font-medium">{getRelativeTime(checkIn.timestamp)}</span>
+                          {checkIn.companions && checkIn.companions > 1 && (
+                            <span className="text-[10px] font-black text-white bg-indigo-600 px-2 py-0.5 rounded-full shadow-sm ml-auto">
+                              {checkIn.companions} PEOPLE
+                            </span>
+                          )}
                       </div>
                     </div>
                     {checkIn.actionType === 'checkout' && checkIn.durationInside && (
@@ -739,6 +742,12 @@ export default function ScannerPage() {
                     <span className="text-zinc-500 shrink-0">Email</span>
                     <span className="text-zinc-900 text-right break-all">{selectedCheckIn.guestEmail || "N/A"}</span>
                  </div>
+                 {selectedCheckIn.companions && selectedCheckIn.companions > 1 && (
+                    <div className="flex items-start justify-between gap-4 p-3 bg-indigo-50 rounded-2xl border border-indigo-100 mt-2">
+                       <span className="text-indigo-600 font-bold shrink-0">Group Size</span>
+                       <span className="text-indigo-700 font-black text-lg">{selectedCheckIn.companions} People</span>
+                    </div>
+                  )}
               </div>
             </div>
 

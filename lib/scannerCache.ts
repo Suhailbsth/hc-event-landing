@@ -31,6 +31,7 @@ export interface VisitorRecord {
   checkedIn: boolean;
   /** Cosmos DB ETag captured at preload time — used for optimistic concurrency */
   etag: string;
+  companions?: number;
 }
 
 export interface PreloadResponse {
@@ -64,6 +65,10 @@ export interface FastCheckInResult {
   checkedInState?: boolean;
   actionType?: string;
   checkedInAt?: string;
+  registrationType?: string;
+  checkInTime?: string;
+  companions?: number;
+  isValid?: boolean;
 }
 
 interface PendingSync {
@@ -181,7 +186,18 @@ class ScannerCache {
    * Format: {12 hex}|{8 hex}|{12 hex}
    */
   static isTinyFormat(raw: string): boolean {
+    if (!raw) return false;
     return /^[0-9a-f]{12}\|[0-9a-f]{8}\|[0-9a-f]{12}$/i.test(raw.trim());
+  }
+
+  /**
+   * Checks if the raw scanned string is a full GUID (Legacy/Simple format).
+   * Example: 86deda96-e611-4ca5-afa5-cef819c9c4ed
+   */
+  static isRawGuid(raw: string): boolean {
+    if (!raw) return false;
+    // Standard GUID regex
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(raw.trim());
   }
 
   /**
@@ -214,6 +230,7 @@ class ScannerCache {
       if (response.status === 409) {
         // ETag conflict — another gate checked them in first (not an error)
         const body = await response.json().catch(() => ({}));
+        const visitor = this.visitors.get(payload.visitorIdShort.toLowerCase());
         this.reconcileVisitor(payload.visitorIdShort, body.updatedEtag, body.checkedInState);
         return {
           success: true,
@@ -223,6 +240,10 @@ class ScannerCache {
           checkedInState: body.checkedInState,
           checkedInAt: body.checkedInAt,
           actionType: body.actionType,
+          registrationType: visitor?.type,
+          checkInTime: new Date().toISOString(),
+          companions: visitor?.companions || 1,
+          isValid: true,
         };
       }
 
@@ -244,6 +265,10 @@ class ScannerCache {
         checkedInState: body.checkedInState,
         checkedInAt: body.checkedInAt,
         actionType: body.actionType,
+        registrationType: this.visitors.get(payload.visitorIdShort.toLowerCase())?.type,
+        checkInTime: new Date().toISOString(),
+        companions: this.visitors.get(payload.visitorIdShort.toLowerCase())?.companions || 1,
+        isValid: true,
       };
     } catch (err) {
       // Network down or API error — queue for retry
