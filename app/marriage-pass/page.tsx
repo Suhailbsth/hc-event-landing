@@ -295,14 +295,14 @@ function MarriagePassContent() {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-gray-400 text-[9px] font-bold uppercase mb-0.5 tracking-wider">اسم الضيف</p>
-                                <div className="flex items-center gap-2">
-                                    <p className="text-lg font-black text-[#5D4037] truncate leading-none">
+                                <div className="flex flex-col gap-1">
+                                    <p className="text-lg font-black text-[#5D4037] truncate leading-tight">
                                         {tokenData?.firstName} {tokenData?.lastName}
                                     </p>
                                     {tokenData?.companions !== undefined && tokenData.companions > 0 && (
-                                        <div className="bg-[#C5A059] text-white px-3 py-1.5 rounded-full text-xs font-black shrink-0 shadow-lg shadow-[#C5A059]/20 flex items-center gap-1.5">
-                                            <Users className="w-3.5 h-3.5" />
-                                            <span>+{tokenData.companions}</span>
+                                        <div className="bg-[#C5A059] text-white px-4 py-2.5 rounded-xl text-base font-black shrink-0 shadow-lg shadow-[#C5A059]/20 flex items-center gap-2 w-fit mt-1.5">
+                                            <Users className="w-6 h-6" />
+                                            <span>عدد المرافقين: {tokenData.companions}</span>
                                         </div>
                                     )}
                                 </div>

@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, AlertCircle, Download, Smartphone, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, Download, Smartphone, Loader2, Users } from 'lucide-react';
 
 interface TokenData {
     registrationId: string;
@@ -19,6 +19,7 @@ interface TokenData {
     eventTitle?: string;
     eventDate?: string;
     eventVenue?: string;
+    companions?: number;
 }
 
 function DownloadPassContent() {
@@ -228,6 +229,15 @@ function DownloadPassContent() {
                             {tokenData?.firstName} {tokenData?.lastName}
                         </span>
                     </div>
+                    {tokenData?.companions !== undefined && tokenData.companions > 0 && (
+                        <div className="flex justify-between items-center pt-3 border-t">
+                            <span className="text-gray-500">Companions</span>
+                            <div className="bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg flex items-center gap-2 font-bold">
+                                <Users className="w-5 h-5" />
+                                <span>{tokenData.companions}</span>
+                            </div>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center">
                         <span className="text-gray-500">Email</span>
                         <span className="text-gray-700 text-sm">{tokenData?.email}</span>
