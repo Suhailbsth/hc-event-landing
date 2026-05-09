@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Loader2, Heart, Calendar, MapPin, User, Info, Smartphone, Download } from 'lucide-react';
+import { Loader2, Heart, Calendar, MapPin, User, Info, Smartphone, Download, Check, X } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 
 interface TokenData {
@@ -21,6 +21,8 @@ interface TokenData {
     eventDate?: string;
     eventVenue?: string;
     qrCodeContent?: string;
+    status?: string;
+    cancellationReason?: string;
 }
 
 function MarriagePassContent() {
@@ -31,6 +33,9 @@ function MarriagePassContent() {
     const [error, setError] = useState<string | null>(null);
     const [tokenData, setTokenData] = useState<TokenData | null>(null);
     const [walletLoading, setWalletLoading] = useState<string | null>(null);
+    const [statusLoading, setStatusLoading] = useState(false);
+    const [showRejectReason, setShowRejectReason] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState('');
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://localhost:7003';
 
@@ -61,6 +66,33 @@ function MarriagePassContent() {
             setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleUpdateStatus = async (newStatus: 'accepted' | 'rejected') => {
+        if (!token) return;
+        
+        try {
+            setStatusLoading(true);
+            const response = await fetch(`${API_BASE_URL}/api/EventWallet/update-status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: token,
+                    status: newStatus,
+                    reason: newStatus === 'rejected' ? rejectionReason : null
+                })
+            });
+
+            if (!response.ok) throw new Error('فشل تحديث الحالة');
+
+            // Refresh data to show new status
+            await validateToken();
+            setShowRejectReason(false);
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'حدث خطأ أثناء التحديث');
+        } finally {
+            setStatusLoading(false);
         }
     };
 
@@ -148,6 +180,9 @@ function MarriagePassContent() {
     }
 
     const qrValue = tokenData?.qrCodeContent || tokenData?.registrationId || '';
+    const isAccepted = tokenData?.status === 'confirmed';
+    const isRejected = tokenData?.status === 'cancelled';
+    const hasResponded = isAccepted || isRejected;
 
     return (
         <div className="min-h-screen bg-[#FDFBF7] flex flex-col items-center py-4 px-3" dir="rtl">
@@ -168,14 +203,85 @@ function MarriagePassContent() {
                 {/* Compact Header - Groom & Bride Focus */}
                 <div className="pt-5 pb-3 text-center px-4 border-b border-[#C5A059]/10">
                     <div className="flex items-center justify-center gap-2 mb-1">
-                        <Heart className="w-4 h-4 text-[#C5A059] fill-[#C5A059]/20" />
                         <span className="text-[#C5A059] text-xs font-bold uppercase tracking-widest">دعوة زفاف</span>
-                        <Heart className="w-4 h-4 text-[#C5A059] fill-[#C5A059]/20" />
                     </div>
                     <h1 className="text-2xl font-black text-[#5D4037] leading-tight">
                         {tokenData?.eventTitle || "حفل زفاف"}
                     </h1>
                     <p className="text-gray-400 text-xs font-bold mt-1">يتشرفون بقدومكم الكريم</p>
+                </div>
+
+                {/* RSVP Section - Primary Action */}
+                <div className="px-5 py-4 bg-[#FDFBF7]/50 border-b border-[#C5A059]/10">
+                    {!hasResponded ? (
+                        <div className="space-y-3">
+                            <p className="text-center text-[#5D4037] text-xs font-bold mb-2">هل ستتمكن من الحضور؟</p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => handleUpdateStatus('accepted')}
+                                    disabled={statusLoading}
+                                    className="bg-[#C5A059] hover:bg-[#A58342] text-white py-2.5 rounded-xl text-sm font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+                                >
+                                    {statusLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                    تأكيد الحضور
+                                </button>
+                                <button
+                                    onClick={() => setShowRejectReason(true)}
+                                    disabled={statusLoading}
+                                    className="bg-white border-2 border-gray-100 text-gray-500 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                >
+                                    <X className="w-4 h-4" />
+                                    اعتذار
+                                </button>
+                            </div>
+
+                            {showRejectReason && (
+                                <div className="mt-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-top-2">
+                                    <textarea
+                                        value={rejectionReason}
+                                        onChange={(e) => setRejectionReason(e.target.value)}
+                                        placeholder="هل تود ذكر سبب الاعتذار؟ (اختياري)"
+                                        className="w-full text-xs p-2 border-none focus:ring-0 resize-none h-16 bg-gray-50 rounded-lg text-gray-600 outline-none"
+                                    />
+                                    <div className="flex gap-2 mt-2">
+                                        <button
+                                            onClick={() => handleUpdateStatus('rejected')}
+                                            disabled={statusLoading}
+                                            className="flex-1 bg-red-50 text-red-600 py-2 rounded-lg text-xs font-bold active:scale-95"
+                                        >
+                                            تأكيد الاعتذار
+                                        </button>
+                                        <button
+                                            onClick={() => setShowRejectReason(false)}
+                                            className="px-3 bg-gray-50 text-gray-400 py-2 rounded-lg text-xs font-bold"
+                                        >
+                                            إلغاء
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className={`p-4 rounded-2xl text-center border-2 ${isAccepted ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}`}>
+                            {isAccepted ? (
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="flex items-center gap-2 text-green-600 font-black text-sm">
+                                        <Check className="w-4 h-4" />
+                                        تم تأكيد حضورك بنجاح
+                                    </div>
+                                    <p className="text-[10px] text-green-600/70 font-bold">شكراً لك، نحن بانتظارك بكل حب</p>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="flex items-center gap-2 text-gray-500 font-black text-sm">
+                                        <X className="w-4 h-4" />
+                                        تم تسجيل اعتذارك
+                                    </div>
+                                    <p className="text-[10px] text-gray-400 font-bold">نتمنى لكم دوام الأفراح والمسرات</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* QR Code Section - More Dense */}
@@ -233,6 +339,7 @@ function MarriagePassContent() {
                     </div>
                 </div>
 
+
                 {/* Action Section - Wallet & Share Integrated */}
                 <div className="px-5 pb-5 pt-3 border-t border-gray-50 bg-[#FDFBF7]/20">
                     <div className="space-y-2">
@@ -247,7 +354,7 @@ function MarriagePassContent() {
                                     <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
                                 </svg>
                             )}
-                            حفظ في Apple Wallet
+                            إضافة إلى Apple Wallet
                         </button>
 
                         <div className="grid grid-cols-2 gap-2">
@@ -267,7 +374,7 @@ function MarriagePassContent() {
                                 }}
                                 className="flex items-center justify-center gap-1.5 bg-[#C5A059] text-white py-2 rounded-xl text-xs font-bold active:scale-95 shadow-sm"
                             >
-                                <Info className="w-3.5 h-3.5" />
+                                <Download className="w-3.5 h-3.5" />
                                 مشاركة البطاقة
                             </button>
                         </div>
