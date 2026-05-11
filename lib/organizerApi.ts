@@ -399,7 +399,7 @@ class OrganizerApiService {
           checkInTime: checkIn.checkInTime,
           gateName: checkIn.gateName || checkIn.checkedInGate,
           checkedInGate: checkIn.checkedInGate,
-          companions: checkIn.companions || 1,
+          companions: checkIn.companions,
           scannerUserName: checkIn.scannerUserName || "",
           isValid: checkIn.isValid,
           isDuplicate: checkIn.isDuplicate || false,
@@ -580,7 +580,7 @@ class OrganizerApiService {
       previousSessionCheckOutTime: checkInResult.checkIn?.previousSessionCheckOutTime,
       previousSessionDuration: checkInResult.checkIn?.previousSessionDuration,
       sessionTransitionReason: checkInResult.checkIn?.sessionTransitionReason,
-      companions: checkInResult.checkIn?.companions || validationResult.companions || 1,
+      companions: checkInResult.checkIn?.companions ?? validationResult.companions,
     };
   }
 
@@ -754,7 +754,7 @@ class OrganizerApiService {
         isValid: true,
         isDuplicate: true,
         invalidReason: "already_checked_in",
-        companions: visitor.companions || 1
+        companions: visitor.companions
       };
     }
 
@@ -784,7 +784,7 @@ class OrganizerApiService {
       isDuplicate: false,
       actionType: actionType,
       timestamp: now,
-      companions: visitor.companions || 1
+      companions: visitor.companions
     };
 
     // Fire-and-forget background sync (does NOT block the UI)

@@ -242,7 +242,7 @@ class ScannerCache {
           actionType: body.actionType,
           registrationType: visitor?.type,
           checkInTime: new Date().toISOString(),
-          companions: visitor?.companions || 1,
+          companions: visitor?.companions,
           isValid: true,
         };
       }
@@ -267,7 +267,7 @@ class ScannerCache {
         actionType: body.actionType,
         registrationType: this.visitors.get(payload.visitorIdShort.toLowerCase())?.type,
         checkInTime: new Date().toISOString(),
-        companions: this.visitors.get(payload.visitorIdShort.toLowerCase())?.companions || 1,
+        companions: this.visitors.get(payload.visitorIdShort.toLowerCase())?.companions,
         isValid: true,
       };
     } catch (err) {

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Loader2, Heart, Calendar, MapPin, User, Users, Info, Smartphone, Download, Check, X } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
+import Image from 'next/image';
 
 interface TokenData {
     registrationId: string;
@@ -24,6 +25,8 @@ interface TokenData {
     status?: string;
     cancellationReason?: string;
     companions?: number;
+    latitude?: string | number;
+    longitude?: string | number;
 }
 
 function MarriagePassContent() {
@@ -256,12 +259,12 @@ function MarriagePassContent() {
 
                     {/* QR Code Section - Only if accepted */}
                     {isAccepted ? (
-                        <div className="p-4">
-                            <div className="bg-[#FDFBF7] p-4 rounded-[2rem] border border-[#C5A059]/15 flex flex-col items-center shadow-[inset_0_2px_10px_rgba(197,160,89,0.05)]">
-                                <div className="bg-white p-3 rounded-[1.5rem] shadow-lg border border-white relative group">
+                        <div className="p-3">
+                            <div className="bg-[#FDFBF7] p-3 rounded-[1.8rem] border border-[#C5A059]/15 flex flex-col items-center shadow-[inset_0_2px_8px_rgba(197,160,89,0.05)]">
+                                <div className="bg-white p-2.5 rounded-[1.2rem] shadow-lg border border-white relative group">
                                     <QRCodeCanvas 
                                         value={qrValue} 
-                                        size={160}
+                                        size={140}
                                         level="H"
                                         includeMargin={true}
                                         fgColor="#3E2723"
@@ -299,9 +302,9 @@ function MarriagePassContent() {
                                     <p className="text-lg font-black text-[#5D4037] truncate leading-tight">
                                         {tokenData?.firstName} {tokenData?.lastName}
                                     </p>
-                                    {tokenData?.companions !== undefined && tokenData.companions > 0 && (
-                                        <div className="bg-[#C5A059] text-white px-4 py-2.5 rounded-xl text-base font-black shrink-0 shadow-lg shadow-[#C5A059]/20 flex items-center gap-2 w-fit mt-1.5">
-                                            <Users className="w-6 h-6" />
+                                    {tokenData?.companions !== undefined && tokenData.companions >= 0 && (
+                                        <div className="bg-[#C5A059] text-white px-3 py-1.5 rounded-lg text-sm font-black shrink-0 shadow-lg shadow-[#C5A059]/20 flex items-center gap-2 w-fit mt-1">
+                                            <Users className="w-4 h-4" />
                                             <span>عدد المرافقين: {tokenData.companions}</span>
                                         </div>
                                     )}
@@ -318,13 +321,20 @@ function MarriagePassContent() {
                                     <p className="text-[10px] font-black text-gray-700 truncate">{tokenData?.eventDate}</p>
                                 </div>
                             </div>
-                            <div className="bg-gray-50/50 p-2.5 rounded-xl border border-gray-100 flex items-center gap-2.5">
-                                <MapPin className="w-4 h-4 text-[#C5A059]" />
+                            <a 
+                                href={tokenData?.latitude && tokenData?.longitude 
+                                    ? `https://www.google.com/maps/search/?api=1&query=${tokenData.latitude},${tokenData.longitude}`
+                                    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(tokenData?.eventVenue || "")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-gray-50/50 p-2.5 rounded-xl border border-gray-100 flex items-center gap-2.5 hover:bg-gray-100 transition-colors group/loc"
+                            >
+                                <MapPin className="w-4 h-4 text-[#C5A059] group-hover/loc:scale-110 transition-transform" />
                                 <div className="min-w-0">
                                     <p className="text-gray-400 text-[8px] font-bold mb-0">المكان</p>
-                                    <p className="text-[10px] font-black text-gray-700 truncate">{tokenData?.eventVenue}</p>
+                                    <p className="text-[10px] font-black text-gray-700 truncate group-hover/loc:text-[#C5A059] transition-colors">{tokenData?.eventVenue}</p>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     </div>
 
@@ -370,12 +380,28 @@ function MarriagePassContent() {
                         </div>
                     )}
 
-                    {/* Rejected State Action */}
-                    {isRejected && (
-                        <div className="px-6 pb-6 pt-3 border-t border-gray-50 bg-gray-50/30 text-center">
-                            <p className="text-gray-400 text-[10px] font-medium">تم تسجيل اعتذارك، نتمنى لكم دوام الأفراح</p>
-                        </div>
-                    )}
+                    {/* Compact Marketing Footer inside card */}
+                    <div className="py-3 border-t border-gray-50 bg-gray-50/50">
+                        <a 
+                            href="https://future-cards.com/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex flex-col items-center gap-1.5 group no-underline"
+                        >
+                            <div className="h-7 w-28 relative group-hover:scale-105 transition-transform duration-300">
+                                <Image 
+                                    src="/logo_final.png" 
+                                    alt="Future Cards Logo"
+                                    fill
+                                    className="object-contain brightness-0 opacity-80"
+                                />
+                            </div>
+                            <div className="text-center px-4">
+                                <p className="text-[#5D4037] text-[11px] font-black tracking-tight group-hover:text-[#C5A059] transition-colors">فيوتشر كاردز … ابدأ مناسبتك الآن</p>
+                                <p className="text-[#C5A059] text-[8px] font-bold opacity-60">التقنية التي تليق بدعواتكم</p>
+                            </div>
+                        </a>
+                    </div>
                 </div>
             </div>
 
