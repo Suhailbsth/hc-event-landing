@@ -521,8 +521,8 @@ export default function ScannerPage() {
                            {getAttendeeCategory(latestScan.registrationType)}
                         </span>
                         {latestScan.companions && latestScan.companions > 0 && (
-                          <span className="text-[10px] font-black bg-indigo-500 text-white px-2 py-0.5 rounded shadow-sm animate-pulse ml-1">
-                            +{latestScan.companions} GUESTS
+                          <span className="text-[10px] font-black bg-indigo-600 text-white px-2 py-0.5 rounded shadow-sm animate-pulse ml-1">
+                            {latestScan.companions + 1} PEOPLE
                           </span>
                         )}
                      </div>
