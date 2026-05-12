@@ -520,9 +520,9 @@ export default function ScannerPage() {
                         <span className={`text-[10px] font-bold uppercase ${latestScan.actionType === 'checkout' ? 'text-amber-700/60' : 'text-emerald-700/60'}`}>
                            {getAttendeeCategory(latestScan.registrationType)}
                         </span>
-                        {latestScan.companions && latestScan.companions > 1 && (
+                        {latestScan.companions && latestScan.companions > 0 && (
                           <span className="text-[10px] font-black bg-indigo-500 text-white px-2 py-0.5 rounded shadow-sm animate-pulse ml-1">
-                            +{latestScan.companions - 1} GUESTS
+                            +{latestScan.companions} GUESTS
                           </span>
                         )}
                      </div>
@@ -666,9 +666,9 @@ export default function ScannerPage() {
                           </span>
                         )}
                           <span className="text-[10px] text-zinc-400 font-medium">{getRelativeTime(checkIn.timestamp)}</span>
-                          {checkIn.companions && checkIn.companions > 1 && (
+                          {checkIn.companions && checkIn.companions > 0 && (
                             <span className="text-[10px] font-black text-white bg-indigo-600 px-2 py-0.5 rounded-full shadow-sm ml-auto">
-                              {checkIn.companions} PEOPLE
+                              {(checkIn.companions || 0) + 1} PEOPLE
                             </span>
                           )}
                       </div>
@@ -742,10 +742,10 @@ export default function ScannerPage() {
                     <span className="text-zinc-500 shrink-0">Email</span>
                     <span className="text-zinc-900 text-right break-all">{selectedCheckIn.guestEmail || "N/A"}</span>
                  </div>
-                 {selectedCheckIn.companions && selectedCheckIn.companions > 1 && (
+                 {selectedCheckIn.companions && selectedCheckIn.companions > 0 && (
                     <div className="flex items-start justify-between gap-4 p-3 bg-indigo-50 rounded-2xl border border-indigo-100 mt-2">
                        <span className="text-indigo-600 font-bold shrink-0">Group Size</span>
-                       <span className="text-indigo-700 font-black text-lg">{selectedCheckIn.companions} People</span>
+                       <span className="text-indigo-700 font-black text-lg">{(selectedCheckIn.companions || 0) + 1} People</span>
                     </div>
                   )}
               </div>
